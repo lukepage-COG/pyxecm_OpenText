@@ -257,7 +257,7 @@ class CoreShare:
 
         request_header = {
             "User-Agent": USER_AGENT,
-            "Authorization": "Bearer {}".format(self._access_token_admin),
+            "Authorization": f"Bearer {self._access_token_admin}",
         }
         if content_type:
             request_header["Content-Type"] = content_type
@@ -282,7 +282,7 @@ class CoreShare:
 
         request_header = {
             "User-Agent": USER_AGENT,
-            "Authorization": "Bearer {}".format(self._access_token_user),
+            "Authorization": f"Bearer {self._access_token_user}",
         }
         if content_type:
             request_header["Content-Type"] = content_type
@@ -530,14 +530,9 @@ class CoreShare:
             dict_object = json.loads(response_object.text) if response_object.text else vars(response_object)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -902,10 +897,7 @@ class CoreShare:
             self.authenticate_user()
 
         request_header = self.request_header_user()
-        request_url = self.config()["groupsUrl"] + "?offset={}&count={}".format(
-            offset,
-            count,
-        )
+        request_url = self.config()["groupsUrl"] + f"?offset={offset}&count={count}"
 
         self.logger.debug("Get Core Share groups; calling -> %s", request_url)
 
@@ -1041,7 +1033,7 @@ class CoreShare:
             headers=request_header,
             data=json.dumps(payload),
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add Core Share group -> '{}'".format(group_name),
+            failure_message=f"Failed to add Core Share group -> '{group_name}'",
             user_credentials=False,
         )
 
@@ -1091,7 +1083,7 @@ class CoreShare:
             self.authenticate_admin()
 
         request_header = self.request_header_admin()
-        request_url = self.config()["groupsUrl"] + "/{}".format(group_id) + "/members"
+        request_url = self.config()["groupsUrl"] + f"/{group_id}" + "/members"
 
         self.logger.debug(
             "Get members for Core Share group with ID -> %s; calling -> %s",
@@ -1104,9 +1096,7 @@ class CoreShare:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get members of Core Share group -> '{}'".format(
-                group_id,
-            ),
+            failure_message=f"Failed to get members of Core Share group -> '{group_id}'",
             user_credentials=False,
         )
 
@@ -1171,7 +1161,7 @@ class CoreShare:
             self.authenticate_admin()
 
         request_header = self.request_header_admin()
-        request_url = self.config()["groupsUrl"] + "/{}".format(group_id) + "/members"
+        request_url = self.config()["groupsUrl"] + f"/{group_id}" + "/members"
 
         user = self.get_user_by_id(user_id=user_id)
         user_email = self.get_result_value(response=user, key="email")
@@ -1193,10 +1183,7 @@ class CoreShare:
             headers=request_header,
             json_data=payload,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add Core Share user -> '{}' to Core Share group with ID -> {}".format(
-                user_email,
-                group_id,
-            ),
+            failure_message=f"Failed to add Core Share user -> '{user_email}' to Core Share group with ID -> {group_id}",
             user_credentials=False,
         )
 
@@ -1242,7 +1229,7 @@ class CoreShare:
             self.authenticate_admin()
 
         request_header = self.request_header_admin()
-        request_url = self.config()["groupsUrl"] + "/{}".format(group_id) + "/members"
+        request_url = self.config()["groupsUrl"] + f"/{group_id}" + "/members"
 
         user = self.get_user_by_id(user_id=user_id)
         user_email = self.get_result_value(response=user, key="email")
@@ -1264,11 +1251,7 @@ class CoreShare:
             headers=request_header,
             json_data=payload,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to remove Core Share user -> '{}' ({}) from Core Share group with ID -> {}".format(
-                user_email,
-                user_id,
-                group_id,
-            ),
+            failure_message=f"Failed to remove Core Share user -> '{user_email}' ({user_id}) from Core Share group with ID -> {group_id}",
             user_credentials=False,
         )
 
@@ -1303,9 +1286,7 @@ class CoreShare:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get Core Share group with ID -> {}".format(
-                group_id,
-            ),
+            failure_message=f"Failed to get Core Share group with ID -> {group_id}",
             user_credentials=False,
         )
 
@@ -1379,9 +1360,7 @@ class CoreShare:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot find Core Share group with name / property -> {}".format(
-                query_string,
-            ),
+            failure_message=f"Cannot find Core Share group with name / property -> {query_string}",
             user_credentials=False,
         )
 
@@ -1570,9 +1549,7 @@ class CoreShare:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get Core Share user with ID -> {}".format(
-                user_id,
-            ),
+            failure_message=f"Failed to get Core Share user with ID -> {user_id}",
             user_credentials=True,
         )
 
@@ -1713,7 +1690,7 @@ class CoreShare:
         request_header = self.request_header_admin()
         request_url = (
             self.config()["searchUserUrl"]
-            + "/{}".format(user_status)
+            + f"/{user_status}"
             + "?q="
             + query_string
             + "&pageSize="
@@ -1731,9 +1708,7 @@ class CoreShare:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to search Core Share user with name / property -> {}".format(
-                query_string,
-            ),
+            failure_message=f"Failed to search Core Share user with name / property -> {query_string}",
             user_credentials=False,
         )
 
@@ -1840,11 +1815,7 @@ class CoreShare:
             headers=request_header,
             json_data=payload,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add Core Share user -> '{} {}' ({})".format(
-                first_name,
-                last_name,
-                email,
-            ),
+            failure_message=f"Failed to add Core Share user -> '{first_name} {last_name}' ({email})",
             user_credentials=False,
         )
 
@@ -1867,7 +1838,7 @@ class CoreShare:
 
         request_header = self.request_header_admin()
 
-        request_url = self.config()["usersUrlv1"] + "/{}".format(user_id)
+        request_url = self.config()["usersUrlv1"] + f"/{user_id}"
 
         self.logger.debug(
             "Resend invite for Core Share user with ID -> %s; calling -> %s",
@@ -1883,9 +1854,7 @@ class CoreShare:
             headers=request_header,
             json_data=update_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to resend invite for Core Share user with ID -> {}".format(
-                user_id,
-            ),
+            failure_message=f"Failed to resend invite for Core Share user with ID -> {user_id}",
             user_credentials=False,
         )
 
@@ -1910,7 +1879,7 @@ class CoreShare:
 
         request_header = self.request_header_admin()
 
-        request_url = self.config()["usersUrlv1"] + "/{}".format(user_id)
+        request_url = self.config()["usersUrlv1"] + f"/{user_id}"
 
         self.logger.debug(
             "Update data of Core Share user with ID -> %s; calling -> %s",
@@ -1929,9 +1898,7 @@ class CoreShare:
             headers=request_header,
             json_data=update_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update Core Share user with ID -> {}".format(
-                user_id,
-            ),
+            failure_message=f"Failed to update Core Share user with ID -> {user_id}",
             user_credentials=False,
         )
 
@@ -1958,7 +1925,7 @@ class CoreShare:
 
         request_header = self.request_header_admin()
 
-        request_url = self.config()["usersUrlv1"] + "/{}".format(user_id) + "/roles/" + str(role_id)
+        request_url = self.config()["usersUrlv1"] + f"/{user_id}" + "/roles/" + str(role_id)
 
         self.logger.debug(
             "Add access role -> %s to Core Share user with ID -> %s; calling -> %s",
@@ -1972,10 +1939,7 @@ class CoreShare:
             method="PUT",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add access role with ID -> {} to Core Share user with ID -> {}".format(
-                role_id,
-                user_id,
-            ),
+            failure_message=f"Failed to add access role with ID -> {role_id} to Core Share user with ID -> {user_id}",
             user_credentials=False,
         )
 
@@ -2002,7 +1966,7 @@ class CoreShare:
 
         request_header = self.request_header_admin()
 
-        request_url = self.config()["usersUrlv1"] + "/{}".format(user_id) + "/roles/" + str(role_id)
+        request_url = self.config()["usersUrlv1"] + f"/{user_id}" + "/roles/" + str(role_id)
 
         self.logger.debug(
             "Remove access role with ID -> %s from Core Share user with ID -> %s; calling -> %s",
@@ -2016,10 +1980,7 @@ class CoreShare:
             method="DELETE",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to remove access role with ID -> {} from Core Share user with ID -> {}".format(
-                role_id,
-                user_id,
-            ),
+            failure_message=f"Failed to remove access role with ID -> {role_id} from Core Share user with ID -> {user_id}",
             user_credentials=False,
         )
 
@@ -2121,7 +2082,7 @@ class CoreShare:
 
         request_header = self.request_header_admin()
 
-        request_url = self.config()["usersUrlv1"] + "/{}".format(user_id)
+        request_url = self.config()["usersUrlv1"] + f"/{user_id}"
 
         self.logger.debug(
             "Update password of Core Share user with ID -> %s; calling -> %s",
@@ -2137,9 +2098,7 @@ class CoreShare:
             headers=request_header,
             json_data=update_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update password of Core Share user with ID -> {}".format(
-                user_id,
-            ),
+            failure_message=f"Failed to update password of Core Share user with ID -> {user_id}",
             user_credentials=False,
         )
 
@@ -2185,7 +2144,7 @@ class CoreShare:
             )
             return None
 
-        request_url = self.config()["usersUrlv3"] + "/{}".format(user_id) + "/photo"
+        request_url = self.config()["usersUrlv3"] + f"/{user_id}" + "/photo"
         files = {
             "file": (photo_path, photo_data, mime_type),
         }
@@ -2202,9 +2161,7 @@ class CoreShare:
             headers=self.request_header_user(content_type=""),
             files=files,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update profile photo of Core Share user with ID -> '{}'".format(
-                user_id,
-            ),
+            failure_message=f"Failed to update profile photo of Core Share user with ID -> '{user_id}'",
             user_credentials=True,
             verify=False,
         )
@@ -2284,7 +2241,7 @@ class CoreShare:
         request_header = self.request_header_user()
         request_url = (
             self.config()["foldersUrlv1"]
-            + "/{}".format(parent_id)
+            + f"/{parent_id}"
             + "/children"
             + "?limit=25&order=lastModified:desc&filter=any"
         )
@@ -2300,9 +2257,7 @@ class CoreShare:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get Core Share folders under parent -> {}".format(
-                parent_id,
-            ),
+            failure_message=f"Failed to get Core Share folders under parent -> {parent_id}",
             user_credentials=True,
         )
 
@@ -2324,7 +2279,7 @@ class CoreShare:
             self.authenticate_user()
 
         request_header = self.request_header_user()
-        request_url = self.config()["foldersUrlv1"] + "/{}".format(resource_id) + "/collaborators"
+        request_url = self.config()["foldersUrlv1"] + f"/{resource_id}" + "/collaborators"
 
         self.logger.debug(
             "Unshare Core Share folder -> %s; calling -> %s",
@@ -2337,9 +2292,7 @@ class CoreShare:
             method="DELETE",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to unshare Core Share folder with ID -> {}".format(
-                resource_id,
-            ),
+            failure_message=f"Failed to unshare Core Share folder with ID -> {resource_id}",
             user_credentials=True,
         )
 
@@ -2361,7 +2314,7 @@ class CoreShare:
             self.authenticate_user()
 
         request_header = self.request_header_user()
-        request_url = self.config()["foldersUrlv1"] + "/{}".format(resource_id)
+        request_url = self.config()["foldersUrlv1"] + f"/{resource_id}"
 
         payload = {"state": "deleted"}
 
@@ -2377,9 +2330,7 @@ class CoreShare:
             headers=request_header,
             data=json.dumps(payload),
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to delete Core Share folder -> {}".format(
-                resource_id,
-            ),
+            failure_message=f"Failed to delete Core Share folder -> {resource_id}",
             user_credentials=True,
         )
 
@@ -2401,7 +2352,7 @@ class CoreShare:
             self.authenticate_user()
 
         request_header = self.request_header_user()
-        request_url = self.config()["documentsUrlv1"] + "/{}".format(resource_id)
+        request_url = self.config()["documentsUrlv1"] + f"/{resource_id}"
 
         payload = {"state": "deleted"}
 
@@ -2417,9 +2368,7 @@ class CoreShare:
             headers=request_header,
             data=json.dumps(payload),
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to delete Core Share document -> {}".format(
-                resource_id,
-            ),
+            failure_message=f"Failed to delete Core Share document -> {resource_id}",
             user_credentials=True,
         )
 
@@ -2444,7 +2393,7 @@ class CoreShare:
 
         request_header = self.request_header_user()
 
-        request_url = self.config()["foldersUrlv1"] + "/{}".format(resource_id) + "/collaborators/" + str(user_id)
+        request_url = self.config()["foldersUrlv1"] + f"/{resource_id}" + "/collaborators/" + str(user_id)
 
         payload = {"action": "LEAVE_SHARE"}
 
@@ -2461,10 +2410,7 @@ class CoreShare:
             headers=request_header,
             data=json.dumps(payload),
             timeout=REQUEST_TIMEOUT,
-            failure_message="User with ID -> {} failed to leave Core Share folder with ID -> {}".format(
-                user_id,
-                resource_id,
-            ),
+            failure_message=f"User with ID -> {user_id} failed to leave Core Share folder with ID -> {resource_id}",
             user_credentials=True,
         )
 
@@ -2489,7 +2435,7 @@ class CoreShare:
 
         request_header = self.request_header_user()
 
-        request_url = self.config()["foldersUrlv1"] + "/{}".format(resource_id) + "/collaborators"
+        request_url = self.config()["foldersUrlv1"] + f"/{resource_id}" + "/collaborators"
 
         self.logger.debug(
             "User -> %s stops sharing Core Share shared folder -> %s; calling -> %s",
@@ -2503,10 +2449,7 @@ class CoreShare:
             method="DELETE",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="User with ID -> {} failed to stop sharing Core Share folder with ID -> {}".format(
-                user_id,
-                resource_id,
-            ),
+            failure_message=f"User with ID -> {user_id} failed to stop sharing Core Share folder with ID -> {resource_id}",
             user_credentials=True,
         )
 
@@ -2666,7 +2609,7 @@ class CoreShare:
 
         request_header = self.request_header_admin()
 
-        request_url = self.config()["groupsUrl"] + "/{}".format(group_id) + "/shares/incoming"
+        request_url = self.config()["groupsUrl"] + f"/{group_id}" + "/shares/incoming"
 
         self.logger.debug(
             "Get shares of Core Share group -> %s; calling -> %s",
@@ -2679,9 +2622,7 @@ class CoreShare:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get shares of Core Share group -> {}".format(
-                group_id,
-            ),
+            failure_message=f"Failed to get shares of Core Share group -> {group_id}",
             user_credentials=False,
         )
 
@@ -2707,7 +2648,7 @@ class CoreShare:
         request_header = self.request_header_admin()
 
         request_url = (
-            self.config()["foldersUrlv1"] + "/{}".format(resource_id) + "/collaboratorsAsAdmin/" + str(group_id)
+            self.config()["foldersUrlv1"] + f"/{resource_id}" + "/collaboratorsAsAdmin/" + str(group_id)
         )
 
         self.logger.debug(
@@ -2722,10 +2663,7 @@ class CoreShare:
             method="DELETE",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to revoke sharing Core Share folder with ID -> '{}' with group with ID -> '{}'!".format(
-                resource_id,
-                group_id,
-            ),
+            failure_message=f"Failed to revoke sharing Core Share folder with ID -> '{resource_id}' with group with ID -> '{group_id}'!",
             user_credentials=False,
         )
 

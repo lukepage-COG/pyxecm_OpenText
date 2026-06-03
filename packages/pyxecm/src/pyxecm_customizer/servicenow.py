@@ -218,7 +218,7 @@ class ServiceNow:
         request_header = REQUEST_HEADERS
 
         if self.config()["authType"] == "oauth":
-            request_header["Authorization"] = ("Bearer {}".format(self._access_token),)
+            request_header["Authorization"] = (f"Bearer {self._access_token}",)
 
         if content_type:
             request_header["Content-Type"] = content_type
@@ -262,14 +262,9 @@ class ServiceNow:
             dict_object = json.loads(response_object.text) if response_object.text else vars(response_object)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSON. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSON. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSON; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSON; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -384,7 +379,7 @@ class ServiceNow:
             return self._session.auth
         elif auth_type == "oauth":
             token = self.get_oauth_token()
-            self._session.headers.update({"Authorization": "Bearer {}".format(token)})
+            self._session.headers.update({"Authorization": f"Bearer {token}"})
 
             return token
         else:
@@ -458,10 +453,7 @@ class ServiceNow:
 
         request_header = self.request_header()
 
-        request_url = self.config()["restUrl"] + "table/{}/{}".format(
-            table_name,
-            sys_id,
-        )
+        request_url = self.config()["restUrl"] + f"table/{table_name}/{sys_id}"
 
         try:
             response = self._session.get(url=request_url, headers=request_header)
@@ -553,10 +545,7 @@ class ServiceNow:
 
         encoded_query = urllib.parse.urlencode(params, doseq=True)
 
-        request_url = self.config()["tableUrl"] + "/{}?{}".format(
-            table_name,
-            encoded_query,
-        )
+        request_url = self.config()["tableUrl"] + f"/{table_name}?{encoded_query}"
 
         try:
             while True:
@@ -616,10 +605,7 @@ class ServiceNow:
 
         encoded_query = urllib.parse.urlencode(params, doseq=True)
 
-        request_url = self.config()["statsUrl"] + "/{}?{}".format(
-            table_name,
-            encoded_query,
-        )
+        request_url = self.config()["statsUrl"] + f"/{table_name}?{encoded_query}"
 
         try:
             response = self._session.get(
@@ -957,7 +943,7 @@ class ServiceNow:
         request_url = self.config()["attachmentsUrl"]
 
         params = {
-            "sysparm_query": "table_sys_id={}".format(article_sys_id),
+            "sysparm_query": f"table_sys_id={article_sys_id}",
             "sysparm_fields": "sys_id,file_name",
         }
 

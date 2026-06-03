@@ -152,17 +152,11 @@ class HTTP:
         if not headers:
             headers = REQUEST_FORM_HEADERS
 
-        message = "Make HTTP request to URL -> '{}' using -> {} method".format(
-            url,
-            method,
-        )
+        message = f"Make HTTP request to URL -> '{url}' using -> {method} method"
         if payload:
-            message += " with payload -> {}".format(payload)
+            message += f" with payload -> {payload}"
         if retries:
-            message += " (max number of retries -> {}, wait time between retries -> {})".format(
-                retries,
-                wait_time,
-            )
+            message += f" (max number of retries -> {retries}, wait time between retries -> {wait_time})"
             try:
                 retries = int(retries)
             except ValueError:
@@ -308,7 +302,7 @@ class HTTP:
                 "Failed to request download file -> '%s' from site -> %s%s",
                 filename,
                 url,
-                "; error -> {}".format(response.text) if response else "",
+                f"; error -> {response.text}" if response else "",
             )
             return False
 
@@ -352,11 +346,11 @@ class HTTP:
 
         for unit in ["B", "KB", "MB", "GB", "TB"]:
             if size_in_bytes < 1024:
-                return "{:.2f} {}".format(size_in_bytes, unit)
+                return f"{size_in_bytes:.2f} {unit}"
             size_in_bytes /= 1024
 
         # We should never get here but linter wants it:
-        return "{:.2f}".format(size_in_bytes)
+        return f"{size_in_bytes:.2f}"
 
 
     def extract_content(self, url: str, xpath: str) -> str | None:

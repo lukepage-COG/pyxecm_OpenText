@@ -252,20 +252,20 @@ class OTCA:
                 self.authenticate_chat()
 
             if content_system == "xecm":
-                request_header["Authorization"] = "Bearer {}".format(self._chat_token_hashed)
+                request_header["Authorization"] = f"Bearer {self._chat_token_hashed}"
             if content_system == "otcm":
-                request_header["Authorization"] = "Bearer {}".format(self._chat_token)
+                request_header["Authorization"] = f"Bearer {self._chat_token}"
             elif content_system in {"xecm-direct", "otcm-direct"}:
                 request_header["otcsticket"] = self._chat_token
 
         elif service_type == "embed":
             if self._embed_token is None:
                 self.authenticate_embed()
-            request_header["Authorization"] = "Bearer {}".format(self._embed_token)
+            request_header["Authorization"] = f"Bearer {self._embed_token}"
         elif service_type == "studio":
             if self._studio_token is None:
                 self.authenticate_studio()
-            request_header["Authorization"] = "Bearer {}".format(self._studio_token)
+            request_header["Authorization"] = f"Bearer {self._studio_token}"
 
         return request_header
 
@@ -470,14 +470,9 @@ class OTCA:
             list_object = json.loads(response_object.text) if response_object.text else vars(response_object)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSON. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSON. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSON; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSON; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -826,7 +821,7 @@ class OTCA:
             headers=request_header,
             json_data=search_data,
             timeout=None,
-            failure_message="Failed to to do a semantic search with query -> '{}' !".format(query),
+            failure_message=f"Failed to to do a semantic search with query -> '{query}' !",
         )
 
 
@@ -1541,7 +1536,7 @@ class OTCA:
 
         if query:
             encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-            request_url = self.config()["studioExportUrl"] + "?{}".format(encoded_query)
+            request_url = self.config()["studioExportUrl"] + f"?{encoded_query}"
         else:
             request_url = self.config()["studioExportUrl"]
 
@@ -1682,7 +1677,7 @@ class OTCA:
 
         if query:
             encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-            request_url = self.config()["studioLLModelsUrl"] + "?{}".format(encoded_query)
+            request_url = self.config()["studioLLModelsUrl"] + f"?{encoded_query}"
         else:
             request_url = self.config()["studioLLModelsUrl"]
 
@@ -1799,7 +1794,7 @@ class OTCA:
             json_data=request_data,
             timeout=None,
             show_error=True,
-            failure_message="Failed to add LLM -> '{}' to tenant ID -> '{}'!".format(name, tenant_id),
+            failure_message=f"Failed to add LLM -> '{name}' to tenant ID -> '{tenant_id}'!",
         )
 
         return response
@@ -1880,7 +1875,7 @@ class OTCA:
             json_data=node_data,
             timeout=None,
             show_error=True,
-            failure_message="Failed to add node to graph -> '{}'!".format(graph_name),
+            failure_message=f"Failed to add node to graph -> '{graph_name}'!",
         )
 
         return response
@@ -1986,9 +1981,7 @@ class OTCA:
             json_data=edge_data,
             timeout=None,
             show_error=True,
-            failure_message="Failed to add edge in graph -> '{}' from node -> '{}' to node -> '{}' !".format(
-                graph_name, source_node_name, target_node_name
-            ),
+            failure_message=f"Failed to add edge in graph -> '{graph_name}' from node -> '{source_node_name}' to node -> '{target_node_name}' !",
         )
 
         return response
@@ -2172,7 +2165,7 @@ class OTCA:
             headers=request_header,
             timeout=None,
             show_error=True,
-            failure_message="Failed to get models with type -> '{}' and ID -> {}!".format(model_type, model_id),
+            failure_message=f"Failed to get models with type -> '{model_type}' and ID -> {model_id}!",
         )
 
 
@@ -2224,7 +2217,7 @@ class OTCA:
             headers=request_header,
             timeout=None,
             show_error=True,
-            failure_message="Failed to delete model -> '{}' ({})!".format(model_type, model_id),
+            failure_message=f"Failed to delete model -> '{model_type}' ({model_id})!",
         )
 
 
@@ -2256,7 +2249,7 @@ class OTCA:
             json_data=request_body,
             timeout=None,
             show_error=True,
-            failure_message="Failed to update model -> '{}' ({}).".format(model_type, model_id),
+            failure_message=f"Failed to update model -> '{model_type}' ({model_id}).",
         )
 
 
@@ -2609,7 +2602,7 @@ class OTCA:
             json_data=request_body,
             timeout=None,
             show_error=True,
-            failure_message="Failed to register AI prompt -> '{}'!".format(name),
+            failure_message=f"Failed to register AI prompt -> '{name}'!",
         )
 
         return response
@@ -2651,7 +2644,7 @@ class OTCA:
 
         prompt = self.register_prompt(
             name=name + "_prompt",
-            description="Prompt for agent '{}'".format(name),
+            description=f"Prompt for agent '{name}'",
             template=prompt_template,
         )
 
@@ -2695,7 +2688,7 @@ class OTCA:
             json_data=request_body,
             timeout=None,
             show_error=True,
-            failure_message="Failed to register AI agent -> '{}'!".format(name),
+            failure_message=f"Failed to register AI agent -> '{name}'!",
         )
         return response
 
@@ -2947,7 +2940,7 @@ class OTCA:
             json_data=request_data,
             timeout=None,
             show_error=True,
-            failure_message="Failed to add prompt -> '%s' for LLM -> '{}'!".format(name),
+            failure_message=f"Failed to add prompt -> '%s' for LLM -> '{name}'!",
         )
 
         return response

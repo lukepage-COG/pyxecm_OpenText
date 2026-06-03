@@ -331,14 +331,9 @@ class AVTS:
             list_object = json.loads(response_object.text) if response_object.text else vars(response_object)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSON. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSON. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSON; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSON; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -604,10 +599,7 @@ class AVTS:
             json_data=payload,
             headers=request_header,
             timeout=None,
-            failure_message="Failed to create repository -> '{}' ({})".format(
-                name,
-                node_id,
-            ),
+            failure_message=f"Failed to create repository -> '{name}' ({node_id})",
             show_error=False,
         )
 
@@ -910,7 +902,7 @@ class AVTS:
             json_data=payload,
             headers=request_header,
             timeout=None,
-            failure_message="Failed to create repository -> '{}'".format(name),
+            failure_message=f"Failed to create repository -> '{name}'",
             show_error=False,
         )
 
@@ -1291,7 +1283,7 @@ class AVTS:
             json_data=payload,
             headers=request_header,
             timeout=None,
-            failure_message="Failed to create repository -> '{}'".format(name),
+            failure_message=f"Failed to create repository -> '{name}'",
             show_error=False,
         )
 
@@ -1327,9 +1319,7 @@ class AVTS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to set admin_consent for repository -> '{}'".format(
-                repo_id,
-            ),
+            failure_message=f"Failed to set admin_consent for repository -> '{repo_id}'",
         )
 
 
@@ -1360,9 +1350,7 @@ class AVTS:
             method="POST",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to start crawling repository -> '{}'!".format(
-                repo_name,
-            ),
+            failure_message=f"Failed to start crawling repository -> '{repo_name}'!",
         )
 
 
@@ -1391,9 +1379,7 @@ class AVTS:
             method="POST",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to stop crawling repository -> '{}'!".format(
-                repo_name,
-            ),
+            failure_message=f"Failed to stop crawling repository -> '{repo_name}'!",
         )
 
 

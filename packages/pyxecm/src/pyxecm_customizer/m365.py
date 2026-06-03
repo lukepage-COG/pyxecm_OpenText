@@ -122,7 +122,7 @@ class M365:
         m365_config["sharepointAppRootSite"] = sharepoint_app_root_site
         m365_config["sharepointAppClientId"] = sharepoint_app_client_id
         m365_config["sharepointAppClientSecret"] = sharepoint_app_client_secret
-        m365_config["authenticationUrl"] = "https://login.microsoftonline.com/{}/oauth2/v2.0/token".format(tenant_id)
+        m365_config["authenticationUrl"] = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
         m365_config["graphUrl"] = "https://graph.microsoft.com/v1.0/"
         m365_config["betaUrl"] = "https://graph.microsoft.com/beta/"
         m365_config["directoryObjects"] = m365_config["graphUrl"] + "directoryObjects"
@@ -238,7 +238,7 @@ class M365:
 
         request_header = {
             "User-Agent": USER_AGENT,
-            "Authorization": "Bearer {}".format(self._access_token),
+            "Authorization": f"Bearer {self._access_token}",
             "Content-Type": content_type,
         }
 
@@ -268,7 +268,7 @@ class M365:
         if not self._user_access_token:
             self.logger.error("No M365 user is authenticated! Cannot include Bearer token in request header!")
         else:
-            request_header["Authorization"] = "Bearer {}".format(self._user_access_token)
+            request_header["Authorization"] = f"Bearer {self._user_access_token}"
 
         return request_header
 
@@ -557,14 +557,9 @@ class M365:
             dict_object = json.loads(response_object.text) if response_object.text else vars(response_object)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -847,7 +842,7 @@ class M365:
             "Requesting M365 Access Token for user -> %s from -> %s%s",
             username,
             request_url,
-            " with scope -> '{}'".format(scope) if scope else "",
+            f" with scope -> '{scope}'" if scope else "",
         )
 
         authenticate_post_body = self.credentials_user(username=username, password=password, scope=scope)
@@ -1093,7 +1088,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get M365 user -> '{}'".format(user_email or user_id),
+            failure_message=f"Failed to get M365 user -> '{user_email or user_id}'",
             show_error=show_error,
         )
 
@@ -1162,7 +1157,7 @@ class M365:
             headers=request_header,
             json_data=user_post_body,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add M365 user -> '{}'".format(email),
+            failure_message=f"Failed to add M365 user -> '{email}'",
         )
 
 
@@ -1199,10 +1194,7 @@ class M365:
             headers=request_header,
             json_data=updated_settings,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update M365 user -> '{}' with -> {}".format(
-                user_id,
-                updated_settings,
-            ),
+            failure_message=f"Failed to update M365 user -> '{user_id}' with -> {updated_settings}",
         )
 
 
@@ -1240,7 +1232,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get M365 licenses of M365 user -> {}".format(user_id),
+            failure_message=f"Failed to get M365 licenses of M365 user -> {user_id}",
         )
 
 
@@ -1288,10 +1280,7 @@ class M365:
             headers=request_header,
             json_data=license_post_body,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to assign M365 license -> {} to M365 user -> {}".format(
-                sku_id,
-                user_id,
-            ),
+            failure_message=f"Failed to assign M365 license -> {sku_id} to M365 user -> {user_id}",
         )
 
 
@@ -1326,10 +1315,8 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get photo of M365 user -> {}".format(user_id),
-            warning_message="M365 User -> {} does not yet have a photo.".format(
-                user_id,
-            ),
+            failure_message=f"Failed to get photo of M365 user -> {user_id}",
+            warning_message=f"M365 User -> {user_id} does not yet have a photo.",
             show_error=show_error,
             parse_request_response=False,  # the response is NOT JSON!
         )
@@ -1370,9 +1357,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to download photo for M365 user with ID -> {}".format(
-                user_id,
-            ),
+            failure_message=f"Failed to download photo for M365 user with ID -> {user_id}",
             stream=True,
             parse_request_response=False,
         )
@@ -1387,7 +1372,7 @@ class M365:
                 file_extension = "img"  # Default extension if type is unknown
             file_path = os.path.join(
                 photo_path,
-                "{}.{}".format(user_id, file_extension),
+                f"{user_id}.{file_extension}",
             )
 
             try:
@@ -1460,10 +1445,7 @@ class M365:
             headers=request_header,
             data=data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update M365 user with ID -> {} with photo -> '{}'".format(
-                user_id,
-                photo_path,
-            ),
+            failure_message=f"Failed to update M365 user with ID -> {user_id} with photo -> '{photo_path}'",
         )
 
 
@@ -1530,7 +1512,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get mySite (drive) of M365 user -> {}".format(user_id),
+            failure_message=f"Failed to get mySite (drive) of M365 user -> {user_id}",
         )
 
 
@@ -1738,7 +1720,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get M365 group -> '{}'".format(group_name),
+            failure_message=f"Failed to get M365 group -> '{group_name}'",
             show_error=show_error,
         )
 
@@ -1858,7 +1840,7 @@ class M365:
             headers=request_header,
             json_data=group_post_body,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add M365 group -> '{}'".format(name),
+            failure_message=f"Failed to add M365 group -> '{name}'",
         )
 
 
@@ -1902,10 +1884,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get members of M365 group -> '{}' ({})".format(
-                group_name,
-                group_id,
-            ),
+            failure_message=f"Failed to get members of M365 group -> '{group_name}' ({group_id})",
         )
 
 
@@ -1944,10 +1923,7 @@ class M365:
             headers=request_header,
             json_data=group_member_post_body,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add member -> {} to M365 group -> {}".format(
-                member_id,
-                group_id,
-            ),
+            failure_message=f"Failed to add member -> {member_id} to M365 group -> {group_id}",
         )
 
 
@@ -1985,10 +1961,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to check if M365 user -> {} is in M365 group -> {}".format(
-                member_id,
-                group_id,
-            ),
+            failure_message=f"Failed to check if M365 user -> {member_id} is in M365 group -> {group_id}",
             show_error=show_error,
         )
 
@@ -2035,10 +2008,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get owners of M365 group -> '{}' ({})".format(
-                group_name,
-                group_id,
-            ),
+            failure_message=f"Failed to get owners of M365 group -> '{group_name}' ({group_id})",
         )
 
 
@@ -2077,10 +2047,7 @@ class M365:
             headers=request_header,
             json_data=group_member_post_body,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add owner -> {} to M365 group -> {}".format(
-                owner_id,
-                group_id,
-            ),
+            failure_message=f"Failed to add owner -> {owner_id} to M365 group -> {group_id}",
         )
 
 
@@ -2152,7 +2119,7 @@ class M365:
             method="DELETE",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to purge deleted item -> {}".format(item_id),
+            failure_message=f"Failed to purge deleted item -> {item_id}",
         )
 
 
@@ -2193,10 +2160,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to check if M365 Group -> '{}' ({}) has a M365 Team connected".format(
-                group_name,
-                group_id,
-            ),
+            failure_message=f"Failed to check if M365 Group -> '{group_name}' ({group_id}) has a M365 Team connected",
             parse_request_response=False,
             show_error=False,
         )
@@ -2276,7 +2240,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get M365 Team -> '{}'".format(name),
+            failure_message=f"Failed to get M365 Team -> '{name}'",
         )
 
 
@@ -2388,7 +2352,7 @@ class M365:
             json_data=team_post_body,
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add M365 Team -> '{}'".format(name),
+            failure_message=f"Failed to add M365 Team -> '{name}'",
         )
 
 
@@ -2422,8 +2386,8 @@ class M365:
             method="DELETE",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            warning_message="M365 Team with ID -> {} is already deleted.".format(team_id),
-            failure_message="Failed to delete M365 Team with ID -> {}".format(team_id),
+            warning_message=f"M365 Team with ID -> {team_id} is already deleted.",
+            failure_message=f"Failed to delete M365 Team with ID -> {team_id}",
             show_error=show_error,
         )
 
@@ -2448,7 +2412,7 @@ class M365:
         # We need a special handling of team names with single quotes:
         escaped_group_name = name.replace("'", "''")
         encoded_group_name = quote(escaped_group_name, safe="")
-        request_url = self.config()["groupsUrl"] + "?$filter=displayName eq '{}'".format(encoded_group_name)
+        request_url = self.config()["groupsUrl"] + f"?$filter=displayName eq '{encoded_group_name}'"
 
         request_header = self.request_header()
 
@@ -2663,10 +2627,7 @@ class M365:
             headers=request_header,
             params=params or None,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get Channels for M365 Team -> '{}' ({})".format(
-                name,
-                team_id,
-            ),
+            failure_message=f"Failed to get Channels for M365 Team -> '{name}' ({team_id})",
         )
 
 
@@ -2746,12 +2707,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get Tabs for M365 Team -> '{}' ({}) and Channel -> '{}' ({})".format(
-                team_name,
-                team_id,
-                channel_name,
-                channel_id,
-            ),
+            failure_message=f"Failed to get Tabs for M365 Team -> '{team_name}' ({team_id}) and Channel -> '{channel_name}' ({channel_id})",
         )
 
 
@@ -2813,9 +2769,7 @@ class M365:
                 filter_expression,
                 request_url,
             )
-            failure_message = "Failed to get list of M365 Teams apps using filter -> {}".format(
-                filter_expression,
-            )
+            failure_message = f"Failed to get list of M365 Teams apps using filter -> {filter_expression}"
         else:
             self.logger.debug(
                 "Get list of all MS Teams Apps; calling -> %s",
@@ -2888,7 +2842,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get M365 Teams app with ID -> {}".format(app_id),
+            failure_message=f"Failed to get M365 Teams app with ID -> {app_id}",
         )
 
         return response
@@ -2934,9 +2888,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get M365 Teams apps for user -> {}".format(
-                user_id,
-            ),
+            failure_message=f"Failed to get M365 Teams apps for user -> {user_id}",
         )
 
         return response
@@ -2982,9 +2934,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get list of M365 Teams apps for M365 Team -> {}".format(
-                team_id,
-            ),
+            failure_message=f"Failed to get list of M365 Teams apps for M365 Team -> {team_id}",
         )
 
 
@@ -3120,9 +3070,7 @@ class M365:
             headers=request_header,
             data=app_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update existing M365 Teams app -> '{}' (may be because it is not a new version)".format(
-                app_path,
-            ),
+            failure_message=f"Failed to update existing M365 Teams app -> '{app_path}' (may be because it is not a new version)",
         )
 
 
@@ -3147,7 +3095,7 @@ class M365:
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
             parse_request_response=False,
-            failure_message="Failed to remove M365 Teams app with ID -> {} from app catalog".format(app_id),
+            failure_message=f"Failed to remove M365 Teams app with ID -> {app_id} from app catalog",
         )
 
         # Check the status code of the response
@@ -3199,7 +3147,7 @@ class M365:
 
         if not app_internal_id:
             response = self.get_teams_apps(
-                filter_expression="contains(displayName, '{}')".format(app_name),
+                filter_expression=f"contains(displayName, '{app_name}')",
             )
             app_internal_id = self.get_result_value(
                 response=response,
@@ -3235,16 +3183,8 @@ class M365:
             headers=request_header,
             json_data=post_body,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to assign M365 Teams app -> '{}' ({}) to M365 user -> {}".format(
-                app_name,
-                app_internal_id,
-                user_id,
-            ),
-            warning_message="Failed to assign M365 Teams app -> '{}' ({}) to M365 user -> {} (could be the app is assigned organization-wide)".format(
-                app_name,
-                app_internal_id,
-                user_id,
-            ),
+            failure_message=f"Failed to assign M365 Teams app -> '{app_name}' ({app_internal_id}) to M365 user -> {user_id}",
+            warning_message=f"Failed to assign M365 Teams app -> '{app_name}' ({app_internal_id}) to M365 user -> {user_id} (could be the app is assigned organization-wide)",
             show_error=show_error,
         )
 
@@ -3280,9 +3220,7 @@ class M365:
         if not app_installation_id:
             response = self.get_teams_apps_of_user(
                 user_id=user_id,
-                filter_expression="contains(teamsAppDefinition/displayName, '{}')".format(
-                    app_name,
-                ),
+                filter_expression=f"contains(teamsAppDefinition/displayName, '{app_name}')",
             )
             # Retrieve the installation specific App ID - this is different from thew App catalalog ID!!
             app_installation_id = self.get_result_value(response=response, key="id", index=0)
@@ -3312,11 +3250,7 @@ class M365:
             method="POST",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to upgrade M365 Teams app -> '{}' ({}) of M365 user -> {}".format(
-                app_name,
-                app_installation_id,
-                user_id,
-            ),
+            failure_message=f"Failed to upgrade M365 Teams app -> '{app_name}' ({app_installation_id}) of M365 user -> {user_id}",
         )
 
 
@@ -3347,9 +3281,7 @@ class M365:
         if not app_installation_id:
             response = self.get_teams_apps_of_user(
                 user_id=user_id,
-                filter_expression="contains(teamsAppDefinition/displayName, '{}')".format(
-                    app_name,
-                ),
+                filter_expression=f"contains(teamsAppDefinition/displayName, '{app_name}')",
             )
             # Retrieve the installation specific App ID - this is different from thew App catalalog ID!!
             app_installation_id = self.get_result_value(response=response, key="id", index=0)
@@ -3377,11 +3309,7 @@ class M365:
             method="DELETE",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to remove M365 Teams app -> '{}' ({}) from M365 user -> {}".format(
-                app_name,
-                app_installation_id,
-                user_id,
-            ),
+            failure_message=f"Failed to remove M365 Teams app -> '{app_name}' ({app_installation_id}) from M365 user -> {user_id}",
         )
 
 
@@ -3453,7 +3381,7 @@ class M365:
 
         response = self.get_teams_apps_of_team(
             team_id=team_id,
-            filter_expression="contains(teamsAppDefinition/displayName, '{}')".format(app_name),
+            filter_expression=f"contains(teamsAppDefinition/displayName, '{app_name}')",
         )
         # Retrieve the installation specific App ID - this is different from thew App catalalog ID!!
         app_installation_id = self.get_result_value(response=response, key="id", index=0)
@@ -3481,11 +3409,7 @@ class M365:
             method="POST",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to upgrade M365 Teams app -> '{}' ({}) of M365 team with ID -> {}".format(
-                app_name,
-                app_installation_id,
-                team_id,
-            ),
+            failure_message=f"Failed to upgrade M365 Teams app -> '{app_name}' ({app_installation_id}) of M365 team with ID -> {team_id}",
         )
 
 
@@ -3577,12 +3501,7 @@ class M365:
             headers=request_header,
             json_data=tab_config,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add Tab for M365 Team -> '{}' ({}) and Channel -> '{}' ({})".format(
-                team_name,
-                team_id,
-                channel_name,
-                channel_id,
-            ),
+            failure_message=f"Failed to add Tab for M365 Team -> '{team_name}' ({team_id}) and Channel -> '{channel_name}' ({channel_id})",
         )
 
 
@@ -3694,14 +3613,7 @@ class M365:
             headers=request_header,
             json_data=tab_config,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update Tab -> '{}' ({}) for M365 Team -> '{}' ({}) and Channel -> '{}' ({})".format(
-                tab_name,
-                tab_id,
-                team_name,
-                team_id,
-                channel_name,
-                channel_id,
-            ),
+            failure_message=f"Failed to update Tab -> '{tab_name}' ({tab_id}) for M365 Team -> '{team_name}' ({team_id}) and Channel -> '{channel_name}' ({channel_id})",
         )
 
 
@@ -3795,14 +3707,7 @@ class M365:
                 method="DELETE",
                 headers=request_header,
                 timeout=REQUEST_TIMEOUT,
-                failure_message="Failed to delete Tab -> '{}' ({}) for M365 Team -> '{}' ({}) and Channel -> '{}' ({})".format(
-                    tab_name,
-                    tab_id,
-                    team_name,
-                    team_id,
-                    channel_name,
-                    channel_id,
-                ),
+                failure_message=f"Failed to delete Tab -> '{tab_name}' ({tab_id}) for M365 Team -> '{team_name}' ({team_id}) and Channel -> '{channel_name}' ({channel_id})",
                 parse_request_response=False,
             )
 
@@ -3883,7 +3788,7 @@ class M365:
             json_data=payload,
             timeout=REQUEST_TIMEOUT,
             parse_request_response=False,
-            failure_message="Failed to create the M365 label -> '{}'".format(name),
+            failure_message=f"Failed to create the M365 label -> '{name}'",
         )
 
         if response and response.status_code == 201:
@@ -3934,10 +3839,7 @@ class M365:
             headers=request_header,
             json_data=body,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to assign label -> '{}' to M365 user -> '{}'".format(
-                label_name,
-                user_email,
-            ),
+            failure_message=f"Failed to assign label -> '{label_name}' to M365 user -> '{user_email}'",
         )
 
 
@@ -3988,7 +3890,7 @@ class M365:
 
         """
 
-        request_url = self.config()["applicationsUrl"] + "?$filter=displayName eq '{}'".format(app_registration_name)
+        request_url = self.config()["applicationsUrl"] + f"?$filter=displayName eq '{app_registration_name}'"
         request_header = self.request_header()
 
         self.logger.debug(
@@ -4002,9 +3904,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot find Azure App Registration -> '{}'".format(
-                app_registration_name,
-            ),
+            failure_message=f"Cannot find Azure App Registration -> '{app_registration_name}'",
         )
 
 
@@ -4088,9 +3988,7 @@ class M365:
             headers=request_header,
             json_data=app_registration_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot add App Registration -> '{}'".format(
-                app_registration_name,
-            ),
+            failure_message=f"Cannot add App Registration -> '{app_registration_name}'",
         )
 
 
@@ -4143,10 +4041,7 @@ class M365:
             headers=request_header,
             json_data=app_registration_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot update App Registration -> '{}' ({})".format(
-                app_registration_name,
-                app_registration_id,
-            ),
+            failure_message=f"Cannot update App Registration -> '{app_registration_name}' ({app_registration_id})",
         )
 
 
@@ -4217,7 +4112,7 @@ class M365:
 
         request_url = self.config()["usersUrl"] + "/" + user_id
         if folder:
-            request_url += "/mailFolders/{}/messages".format(folder)
+            request_url += f"/mailFolders/{folder}/messages"
         else:
             request_url += "/messages"
 
@@ -4235,12 +4130,12 @@ class M365:
             filter_parts: list[str] = []
             if sender:
                 escaped_sender = sender.replace("'", "''")
-                filter_parts.append("from/emailAddress/address eq '{}'".format(escaped_sender))
+                filter_parts.append(f"from/emailAddress/address eq '{escaped_sender}'")
             if subject:
                 escaped_subject = subject.replace("'", "''")
-                filter_parts.append("contains(subject, '{}')".format(escaped_subject))
+                filter_parts.append(f"contains(subject, '{escaped_subject}')")
             if received_after:
-                filter_parts.append("receivedDateTime ge {}".format(received_after))
+                filter_parts.append(f"receivedDateTime ge {received_after}")
             if additional_filter:
                 filter_parts.append(additional_filter)
             if filter_parts:
@@ -4264,7 +4159,7 @@ class M365:
             headers=request_header,
             params=query_params,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot retrieve emails for M365 user -> {}".format(user_id),
+            failure_message=f"Cannot retrieve emails for M365 user -> {user_id}",
             show_error=show_error,
         )
 
@@ -4336,10 +4231,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot get email body for M365 user -> {} and email with ID -> {}".format(
-                user_id,
-                email_id,
-            ),
+            failure_message=f"Cannot get email body for M365 user -> {user_id} and email with ID -> {email_id}",
             parse_request_response=False,
         )
 
@@ -4453,10 +4345,7 @@ class M365:
             method="DELETE",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot delete email with ID -> {} from inbox of M365 user -> {}".format(
-                email_id,
-                user_id,
-            ),
+            failure_message=f"Cannot delete email with ID -> {email_id} from inbox of M365 user -> {user_id}",
         )
 
 
@@ -4960,7 +4849,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot get SharePoint site with ID -> '{}'".format(site_id),
+            failure_message=f"Cannot get SharePoint site with ID -> '{site_id}'",
         )
 
         return response
@@ -4995,7 +4884,7 @@ class M365:
 
         """
 
-        request_url = self.config()["sitesUrl"] + "?search={}".format(site_name)
+        request_url = self.config()["sitesUrl"] + f"?search={site_name}"
 
         request_header = self.request_header()
 
@@ -5004,7 +4893,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot get SharePoint site -> '{}'".format(site_name),
+            failure_message=f"Cannot get SharePoint site -> '{site_name}'",
         )
 
         # As we lookup the site by search we could have multiple results.
@@ -5056,7 +4945,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot get SharePoint site for group with ID -> '{}'".format(group_id),
+            failure_message=f"Cannot get SharePoint site for group with ID -> '{group_id}'",
         )
 
         return response
@@ -5117,7 +5006,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot get pages of SharePoint site with ID -> '{}'".format(site_id),
+            failure_message=f"Cannot get pages of SharePoint site with ID -> '{site_id}'",
         )
 
         return response
@@ -5183,7 +5072,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot get SharePoint page -> '{}' for site -> '{}'".format(page_id, site_id),
+            failure_message=f"Cannot get SharePoint page -> '{page_id}' for site -> '{site_id}'",
         )
 
         return response
@@ -5225,10 +5114,7 @@ class M365:
             headers=request_header,
             json_data=payload,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to create SharePoint page -> '{}' in SharePoint site -> '{}'".format(
-                page_name,
-                site_id,
-            ),
+            failure_message=f"Failed to create SharePoint page -> '{page_name}' in SharePoint site -> '{site_id}'",
         )
 
         # Check if the page should be directly published:
@@ -5265,10 +5151,7 @@ class M365:
             method="POST",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot publish SharePoint page -> '{}' on SharePoint site -> '{}'".format(
-                page_id,
-                site_id,
-            ),
+            failure_message=f"Cannot publish SharePoint page -> '{page_id}' on SharePoint site -> '{site_id}'",
             parse_request_response=False,
         )
 
@@ -5346,12 +5229,12 @@ class M365:
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
             warning_message="Cannot find section{} for SharePoint page -> '{}' of SharePoint site -> '{}'".format(
-                "s" if not section_id else " -> {}".format(section_id),
+                "s" if not section_id else f" -> {section_id}",
                 page_id,
                 site_id,
             ),
             failure_message="Cannot get section{} for SharePoint page -> '{}' of SharePoint site -> '{}'".format(
-                "s" if not section_id else " -> {}".format(section_id),
+                "s" if not section_id else f" -> {section_id}",
                 page_id,
                 site_id,
             ),
@@ -5490,12 +5373,7 @@ class M365:
             headers=request_header,
             json_data=payload,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to create SharePoint section of type -> '{}' ({}) on SharePoint page -> '{}' in SharePoint site -> '{}'".format(
-                section_type,
-                columns,
-                page_id,
-                site_id,
-            ),
+            failure_message=f"Failed to create SharePoint section of type -> '{section_type}' ({columns}) on SharePoint page -> '{page_id}' in SharePoint site -> '{site_id}'",
         )
 
         # Check if the page should be republished:
@@ -5575,11 +5453,7 @@ class M365:
             method="DELETE",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to delete SharePoint section of type -> '{}' on SharePoint page -> '{}' in Sharepoint site -> '{}', ".format(
-                section_type,
-                page_id,
-                site_id,
-            ),
+            failure_message=f"Failed to delete SharePoint section of type -> '{section_type}' on SharePoint page -> '{page_id}' in Sharepoint site -> '{site_id}', ",
         )
 
         return response
@@ -5737,10 +5611,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot get webparts for page -> '{}' of SharePoint site -> '{}'".format(
-                page_id,
-                site_id,
-            ),
+            failure_message=f"Cannot get webparts for page -> '{page_id}' of SharePoint site -> '{site_id}'",
         )
 
         return response
@@ -5829,11 +5700,7 @@ class M365:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot get SharePoint webpart -> '{}' on SharePoint page -> '{}' in SharePoint site -> '{}'".format(
-                webpart_id,
-                page_id,
-                site_id,
-            ),
+            failure_message=f"Cannot get SharePoint webpart -> '{webpart_id}' on SharePoint page -> '{page_id}' in SharePoint site -> '{site_id}'",
         )
 
         return response
@@ -5936,7 +5803,7 @@ class M365:
             failure_message="Failed to create SharePoint webpart of type -> '{}' on SharePoint page -> '{}'{} in SharePoint site -> '{}', ".format(
                 webpart_type_id,
                 page_id,
-                " (horizontal section -> {}, column -> {})".format(section_id, column_id)
+                f" (horizontal section -> {section_id}, column -> {column_id})"
                 if section_type == "horizontalSections"
                 else " (vertical section)",
                 site_id,
@@ -6048,11 +5915,7 @@ class M365:
             json_data=payload,
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Cannot update SharePoint webpart -> '{}' on SharePoint page -> '{}' for Sharepoint site -> '{}', ".format(
-                webpart_id,
-                page_id,
-                site_id,
-            ),
+            failure_message=f"Cannot update SharePoint webpart -> '{webpart_id}' on SharePoint page -> '{page_id}' for Sharepoint site -> '{site_id}', ",
         )
         # Check if the page should be republished:
         if response and republish:
@@ -6129,10 +5992,7 @@ class M365:
             headers=request_header,
             json_data=payload,
             timeout=REQUEST_TIMEOUT,
-            warning_message="Failed to follow SharePoint site -> '{}' as user -> '{}'".format(
-                site_id,
-                username or user_id,
-            ),
+            warning_message=f"Failed to follow SharePoint site -> '{site_id}' as user -> '{username or user_id}'",
             show_error=False,
             show_warning=True,
         )

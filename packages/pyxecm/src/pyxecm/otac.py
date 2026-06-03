@@ -135,7 +135,7 @@ class OTAC:
 
         otac_base_url = protocol + "://" + otac_config["hostname"]
         if str(port) not in ["80", "443"]:
-            otac_base_url += ":{}".format(port)
+            otac_base_url += f":{port}"
         otac_exec_url = otac_base_url + "/archive/admin/exec"
         otac_config["execUrl"] = otac_exec_url
         otac_config["baseUrl"] = otac_base_url
@@ -331,14 +331,9 @@ class OTAC:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -620,7 +615,7 @@ class OTAC:
             response = client.service.invokeCommand(
                 command="SetCertificateFlags",
                 parameters=[
-                    {"key": "CERT_TYPE", "data": "@{}".format(logical_archive)},
+                    {"key": "CERT_TYPE", "data": f"@{logical_archive}"},
                     {"key": "CERT_NAME", "data": auth_id},
                     {"key": "CERT_FLAGS", "data": enabled},
                 ],

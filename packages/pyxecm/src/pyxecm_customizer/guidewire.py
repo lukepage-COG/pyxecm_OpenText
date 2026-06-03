@@ -264,7 +264,7 @@ class Guidewire:
         }
 
         if self.config()["authType"] == "oauth" and self._access_token:
-            request_header["Authorization"] = "Bearer {}".format(self._access_token)
+            request_header["Authorization"] = f"Bearer {self._access_token}"
 
         return request_header
 

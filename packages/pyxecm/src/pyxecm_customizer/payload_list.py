@@ -415,7 +415,7 @@ class PayloadList:
         """
 
         if index not in self.payload_items.index:
-            exception = "Index -> {} is out of range".format(index)
+            exception = f"Index -> {index} is out of range"
             raise IndexError(exception)
 
         return self.payload_items.loc[index]
@@ -458,7 +458,7 @@ class PayloadList:
             raise ValueError(msg)
 
         if index not in self.payload_items.index:
-            exception = "Index -> {} is out of range".format(index)
+            exception = f"Index -> {index} is out of range"
             raise IndexError(exception)
 
         self.payload_items.loc[index] = value
@@ -498,7 +498,7 @@ class PayloadList:
 
         """
 
-        error_message = "Payload list has no attribute -> '{}'".format(attribute)
+        error_message = f"Payload list has no attribute -> '{attribute}'"
 
         try:
             # Prevent infinite recursion in case the object is not fully initialized

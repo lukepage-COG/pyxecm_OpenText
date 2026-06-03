@@ -186,7 +186,7 @@ class SuccessFactors:
         """
 
         request_header = {
-            "Authorization": "Bearer {}".format(self._access_token),
+            "Authorization": f"Bearer {self._access_token}",
             "Content-Type": content_type,
             "Accept": content_type,
         }
@@ -372,14 +372,9 @@ class SuccessFactors:
             dict_object = json.loads(response_object.text) if response_object.text else vars(response_object)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -572,7 +567,7 @@ class SuccessFactors:
             timeout=REQUEST_TIMEOUT,
             failure_message="Failed to request an SuccessFactors Access Token",
             show_warning=True,
-            warning_message="Unable to connect to -> {}".format(request_url),
+            warning_message=f"Unable to connect to -> {request_url}",
         )
         if not response:
             return None
@@ -629,9 +624,7 @@ class SuccessFactors:
 
         request_url = (
             self.config()["asUrl"]
-            + "Country(code='{}')".format(
-                code,
-            )
+            + f"Country(code='{code}')"
             if code
             else self.config()["asUrl"] + "Country"
         )
@@ -753,16 +746,12 @@ class SuccessFactors:
         request_url = self.config()["asUrl"] + "User"
         if user_id:
             # querying a user by key predicate:
-            request_url += "('{}')".format(user_id)
+            request_url += f"('{user_id}')"
 
         # Add query parameters (these are NOT passed via JSON body!)
         query = {}
         if field_name and field_value:
-            query["$filter"] = "{} {} {}".format(
-                field_name,
-                field_operation,
-                field_value,
-            )
+            query["$filter"] = f"{field_name} {field_operation} {field_value}"
         if max_results > 0:
             query["$top"] = max_results
         encoded_query = urllib.parse.urlencode(query, doseq=True)
@@ -825,7 +814,7 @@ class SuccessFactors:
         if not self._access_token and not self.authenticate():
             return None
 
-        request_url = self.config()["asUrl"] + "UserAccount('{}')".format(username)
+        request_url = self.config()["asUrl"] + f"UserAccount('{username}')"
 
         request_header = self.request_header()
 
@@ -865,7 +854,7 @@ class SuccessFactors:
         if not self._access_token and not self.authenticate():
             return None
 
-        request_url = self.config()["asUrl"] + "User('{}')".format(user_id)
+        request_url = self.config()["asUrl"] + f"User('{user_id}')"
 
         request_header = self.request_header()
         # We need to use a special MERGE header to tell
@@ -878,7 +867,7 @@ class SuccessFactors:
             headers=request_header,
             json_data=update_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update user with ID -> {}".format(user_id),
+            failure_message=f"Failed to update user with ID -> {user_id}",
         )
         if response:
             self.logger.debug("User with ID -> %s updated successfully.", user_id)
@@ -1016,11 +1005,7 @@ class SuccessFactors:
         # Add query parameters (these are NOT passed via JSON body!)
         query = {}
         if field_name and field_value:
-            query["$filter"] = "{} {} {}".format(
-                field_name,
-                field_operation,
-                field_value,
-            )
+            query["$filter"] = f"{field_name} {field_operation} {field_value}"
         if max_results > 0:
             query["$top"] = max_results
         encoded_query = urllib.parse.urlencode(query, doseq=True)
@@ -1102,9 +1087,7 @@ class SuccessFactors:
         if not entity:
             return None
 
-        request_url = self.config()["asUrl"] + "Entity('{}')?$format=JSON".format(
-            entity,
-        )
+        request_url = self.config()["asUrl"] + f"Entity('{entity}')?$format=JSON"
 
         request_header = self.request_header()
 
@@ -1149,10 +1132,7 @@ class SuccessFactors:
 
         update_data = {
             "__metadata": {
-                "uri": "PerEmail(emailType='{}',personIdExternal='{}')".format(
-                    email_type,
-                    user_id,
-                ),
+                "uri": f"PerEmail(emailType='{email_type}',personIdExternal='{user_id}')",
                 "type": "SFOData.PerEmail",
             },
             "emailAddress": email_address,
@@ -1166,7 +1146,7 @@ class SuccessFactors:
             headers=request_header,
             json_data=update_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to set email of user with ID -> {}".format(user_id),
+            failure_message=f"Failed to set email of user with ID -> {user_id}",
         )
         if response:
             self.logger.debug(
