@@ -44,7 +44,6 @@ select = ["ALL"]
 # F: Stands for "Flake8" rules, which include a broad range of Python style and error checks (e.g., unused imports, undefined variables, etc.).
 # FIX: Selects rules that Ruff can automatically fix (e.g., applying auto-corrections for code style violations).
 # I: Relates to "Import" rules, which enforce best practices for managing Python imports (e.g., sorting imports, unused imports, etc.).
-# UP032: Prevents Ruff from converting .format() calls to f-strings.
 # D204 and D205: Prevents Ruff from enforcing changes to empty lines after docstrings.
 
 ignore = [
@@ -67,7 +66,6 @@ ignore = [
   "PERF203",
   "PLW2901",
   "PD002",
-  "UP032",
   "D202",
   "D203",
   "D213",
@@ -77,18 +75,6 @@ ignore = [
   "PLR0913",
   "PLR0915",
   "PLR2004",
-  "PTH",
-  "PTH123",
-  "PTH103",
-  "PTH104",
-  "PTH107",
-  "PTH110",
-  "PTH112",
-  "PTH113",
-  "PTH118",
-  "PTH119",
-  "PTH120",
-  "PTH122",
   "FBT001",
   "FBT002",
   "RET504",
@@ -126,3 +112,7 @@ exclude = []
 "**/__init__.py" = [
   "D104"
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["packages/pyxecm/tests"]
+addopts = "--cov=packages/pyxecm/src/pyxecm --cov-report=term-missing"

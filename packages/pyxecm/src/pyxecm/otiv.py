@@ -66,7 +66,6 @@ class OTIV:
 
         self._config = otiv_config
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -78,4 +77,3 @@ class OTIV:
         """
         return self._config
 
-    # end method definition

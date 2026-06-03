@@ -7,12 +7,12 @@ __maintainer__ = "Dr. Marc Diefenbruch"
 __email__ = "mdiefenb@opentext.com"
 
 import fnmatch
-import glob
 import logging
 import os
 import re
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from queue import Queue
 
 import xmltodict
@@ -52,7 +52,6 @@ class XML:
 
         return tag.split("}", 1)[-1]
 
-    # end method definition
 
     @classmethod
     def xml_to_dict(cls, xml_string: str, encode: bool = False, include_attributes: bool = False) -> dict:
@@ -90,7 +89,7 @@ class XML:
             node_dict = {}
 
             if element.attrib and include_attributes:
-                node_dict.update({"@{}".format(k): v for k, v in element.attrib.items()})
+                node_dict.update({f"@{k}": v for k, v in element.attrib.items()})
 
             if children:
                 child_dict = {}
@@ -129,7 +128,6 @@ class XML:
 
         return xml_element_to_dict(root)
 
-    # end method definition
 
     @classmethod
     def load_xml_file(
@@ -158,7 +156,7 @@ class XML:
 
         """
 
-        if not os.path.exists(file_path):
+        if not Path(file_path).exists():
             logger.error("XML File -> %s does not exist!", file_path)
             return None
 
@@ -201,7 +199,6 @@ class XML:
 
         return results
 
-    # end method definition
 
     @classmethod
     def load_xml_files_from_directory(
@@ -241,7 +238,7 @@ class XML:
         try:
             # Check if the provided path is a directory or a zip file that can be extracted
             # into a directory:
-            if not os.path.isdir(path_to_root) and not path_to_root.endswith(".zip"):
+            if not Path(path_to_root).is_dir() and not path_to_root.endswith(".zip"):
                 logger.error(
                     "The provided path -> '%s' is not a valid directory or Zip file.",
                     path_to_root,
@@ -250,8 +247,8 @@ class XML:
 
             # If we have a zip file we extract it - but only if it has not been extracted before:
             if path_to_root.endswith(".zip"):
-                zip_file_folder = os.path.splitext(path_to_root)[0]
-                if not os.path.exists(zip_file_folder):
+                zip_file_folder = Path(path_to_root).stem
+                if not Path(zip_file_folder).exists():
                     logger.info(
                         "Unzipping -> '%s' into folder -> '%s'...",
                         path_to_root,
@@ -284,10 +281,10 @@ class XML:
             # Walk through the directory
             for root, _, files in os.walk(path_to_root):
                 for file_data in files:
-                    file_path = os.path.join(root, file_data)
-                    file_size = os.path.getsize(file_path)
-                    file_name = os.path.basename(file_path)
-                    dir_name = os.path.dirname(file_path)
+                    file_path = Path(root) / file_data
+                    file_size = Path(file_path).stat().st_size
+                    file_name = Path(file_path).name
+                    dir_name = str(Path(file_path).parent)
 
                     if any(fnmatch.fnmatch(file_path, pattern) for pattern in filenames) and file_name.endswith(".xml"):
                         logger.info(
@@ -327,7 +324,6 @@ class XML:
 
         return results
 
-    # end method definition
 
     @classmethod
     def load_xml_files_from_directories(
@@ -386,9 +382,9 @@ class XML:
             """
 
             try:
-                file_size = os.path.getsize(file_path)
-                file_name = os.path.basename(file_path)
-                dir_name = os.path.dirname(file_path)
+                file_size = Path(file_path).stat().st_size
+                file_name = Path(file_path).name
+                dir_name = str(Path(file_path).parent)
 
                 if (
                     not filenames or any(fnmatch.fnmatch(file_path, pattern) for pattern in filenames)
@@ -423,7 +419,6 @@ class XML:
                     file_path,
                 )
 
-        # end method process_xml_file
 
         def process_directory_or_zip(path_to_root: str) -> list | None:
             """Process all files in a directory or zip file.
@@ -437,8 +432,8 @@ class XML:
             try:
                 # Handle zip files
                 if path_to_root.endswith(".zip"):
-                    zip_file_folder = os.path.splitext(path_to_root)[0]
-                    if not os.path.exists(zip_file_folder):
+                    zip_file_folder = Path(path_to_root).stem
+                    if not Path(zip_file_folder).exists():
                         logger.info(
                             "Unzipping -> '%s' into folder -> '%s'...",
                             path_to_root,
@@ -475,7 +470,6 @@ class XML:
                             zip_file_folder,
                         )
                     path_to_root = zip_file_folder
-                # end if path_to_root.endswith(".zip")
 
                 # Use inner threading to process files within the directory
                 with ThreadPoolExecutor(
@@ -483,7 +477,7 @@ class XML:
                 ) as inner_executor:
                     for root, _, files in os.walk(path_to_root):
                         for file_data in files:
-                            file_path = os.path.join(root, file_data)
+                            file_path = Path(root) / file_data
                             inner_executor.submit(process_xml_file, file_path)
 
             except FileNotFoundError:
@@ -507,14 +501,13 @@ class XML:
                     path_to_root,
                 )
 
-        # end method process_directory_or_zip
 
         try:
             # Resolve wildcards in the directories list
             expanded_directories: list[str] = []
             for directory in directories:
                 if "*" in directory:
-                    expanded_directory: list = glob.glob(directory)
+                    expanded_directory: list = list(Path(directory).parent.glob(Path(directory).name))
                     logger.info(
                         "Expanding directory -> '%s' with wildcards...",
                         directory,
@@ -571,7 +564,6 @@ class XML:
 
         return results
 
-    # end method definition
 
     @classmethod
     def get_xml_element(
@@ -601,7 +593,6 @@ class XML:
 
         return element
 
-    # end method definition
 
     @classmethod
     def modify_xml_element(
@@ -632,7 +623,6 @@ class XML:
         else:
             logger.warning("XML Element -> %s not found.", xpath)
 
-    # end method definition
 
     @classmethod
     def search_setting(
@@ -672,11 +662,11 @@ class XML:
         """
 
         if is_simple:
-            pattern = r"&quot;{}&quot;:[^,]*".format(setting_key) if is_escaped else r'"{}":[^,]*'.format(setting_key)
+            pattern = rf"&quot;{setting_key}&quot;:[^,]*" if is_escaped else rf'"{setting_key}":[^,]*'
         elif is_escaped:
-            pattern = r"&quot;{}&quot;:&quot;.*&quot;".format(setting_key)
+            pattern = rf"&quot;{setting_key}&quot;:&quot;.*&quot;"
         else:
-            pattern = r'"{}":"([^"]*)"'.format(setting_key)
+            pattern = rf'"{setting_key}":"([^"]*)"'
 
         match = re.search(pattern, element_text)
         if match:
@@ -686,7 +676,6 @@ class XML:
         else:
             return None
 
-    # end method definition
 
     @classmethod
     def replace_setting(
@@ -729,17 +718,16 @@ class XML:
         """
 
         if is_simple:
-            pattern = r"&quot;{}&quot;:[^,]*".format(setting_key) if is_escaped else r'"{}":[^,]*'.format(setting_key)
+            pattern = rf"&quot;{setting_key}&quot;:[^,]*" if is_escaped else rf'"{setting_key}":[^,]*'
         elif is_escaped:
-            pattern = r"&quot;{}&quot;:&quot;.*&quot;".format(setting_key)
+            pattern = rf"&quot;{setting_key}&quot;:&quot;.*&quot;"
         else:
-            pattern = r'"{}":"([^"]*)"'.format(setting_key)
+            pattern = rf'"{setting_key}":"([^"]*)"'
 
         new_text = re.sub(pattern, new_value, element_text)
 
         return new_text
 
-    # end method definition
 
     @classmethod
     def replace_in_xml_files(
@@ -803,13 +791,13 @@ class XML:
         # Traverse the directory and its subdirectories
         for subdir, _, files in os.walk(directory):
             for filename in files:
-                file_extension = os.path.splitext(filename)[1].lower()
+                file_extension = Path(filename).suffix.lower()
                 # Check if the file has one of the configured extensions
                 if file_extension not in normalized_file_extensions:
                     continue
 
                 # Read the contents of the file
-                file_path = os.path.join(subdir, filename)
+                file_path = Path(subdir) / filename
 
                 # if xpath is given we do an intelligent replacement
                 if xpath:
@@ -1054,17 +1042,15 @@ class XML:
                         # as it would undo the manual XML tweaks we
                         # need for Extended ECM. We also need "wb"
                         # as we have bytes and not str as a data type
-                        with open(file_path, "wb") as f:
+                        with Path(file_path).open("wb") as f:
                             f.write(new_contents)
 
                         found = True
-                    # end if xml_modified
-                # end if xpath
 
                 # Not using xpath - do a simple search and replace:
                 else:
                     logger.debug("Replacement without xpath (plain text)...")
-                    with open(file_path, encoding="UTF-8") as f:
+                    with Path(file_path).open(encoding="UTF-8") as f:
                         contents = f.read()
                     # Replace all occurrences of the search pattern with the replace string
                     new_contents = pattern.sub(replace_string, contents)
@@ -1077,15 +1063,12 @@ class XML:
                             file_path,
                         )
                         # Write the updated contents to the file
-                        with open(file_path, "w", encoding="UTF-8") as f:
+                        with Path(file_path).open("w", encoding="UTF-8") as f:
                             f.write(new_contents)
                         found = True
-            # end for files
-        # end for subdir
 
         return found
 
-    # end method definition
 
     @classmethod
     def extract_from_xml_files(
@@ -1118,7 +1101,7 @@ class XML:
                 # Check if the file is an XML file
                 if filename.endswith(".xml"):
                     # Read the contents of the file
-                    file_path = os.path.join(subdir, filename)
+                    file_path = Path(subdir) / filename
 
                     logger.debug("Extraction with xpath -> %s...", xpath)
                     tree = etree.parse(file_path)
@@ -1161,4 +1144,3 @@ class XML:
 
         return extracted_data_list
 
-    # end method definition

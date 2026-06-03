@@ -8,12 +8,12 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import os
 import platform
 import sys
 import time
 from http import HTTPStatus
 from importlib.metadata import version
+from pathlib import Path
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -127,7 +127,7 @@ class OTPD:
         # Base URL Settings
         otpd_base_url = protocol + "://" + otpd_config["hostname"]
         if str(port) not in ["80", "443"]:
-            otpd_base_url += ":{}".format(port)
+            otpd_base_url += f":{port}"
         otpd_config["baseUrl"] = otpd_base_url
 
         # Server Manager URL Settings:
@@ -144,7 +144,6 @@ class OTPD:
         self._config = otpd_config
         self._jsessionid = None
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -156,7 +155,6 @@ class OTPD:
 
         return self._config
 
-    # end method definition
 
     def credentials(self) -> dict:
         """Get credentials (username + password).
@@ -170,7 +168,6 @@ class OTPD:
             "password": self.config()["password"],
         }
 
-    # end method definition
 
     def set_credentials(self, username: str = "admin", password: str = "") -> None:
         """Set the credentials for PowerDocs for the based on user name and password.
@@ -186,7 +183,6 @@ class OTPD:
         self.config()["username"] = username
         self.config()["password"] = password
 
-    # end method definition
 
     def hostname(self) -> str:
         """Return the hostname of PowerDocs (e.g. "otpd").
@@ -198,7 +194,6 @@ class OTPD:
 
         return self.config()["hostname"]
 
-    # end method definition
 
     def set_hostname(self, hostname: str) -> None:
         """Set the hostname of PowerDocs.
@@ -211,7 +206,6 @@ class OTPD:
 
         self.config()["hostname"] = hostname
 
-    # end method definition
 
     def parse_request_response(
         self,
@@ -242,14 +236,9 @@ class OTPD:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -258,7 +247,6 @@ class OTPD:
         else:
             return dict_object
 
-    # end method definition
 
     # This method is currently not used and not working...
     # It cannot handle the Request - ServerManager returns an
@@ -343,7 +331,6 @@ class OTPD:
             )
         return None
 
-    # end method definition
 
     def import_database(self, file_path: str) -> dict | None:
         """Import PowerDocs database backup from a zip file.
@@ -358,7 +345,7 @@ class OTPD:
 
         """
 
-        if not file_path or not os.path.isfile(file_path):
+        if not file_path or not Path(file_path).is_file():
             self.logger.error(
                 "Cannot import PowerDocs database from non-existent file -> %s",
                 file_path,
@@ -367,10 +354,10 @@ class OTPD:
 
         try:
             # Extract the filename
-            file_name = os.path.basename(file_path)
+            file_name = Path(file_path).name
 
             # Open the file safely
-            with open(file_path, "rb") as file:
+            with Path(file_path).open("rb") as file:
                 file_tuple = (file_name, file, "application/zip")
 
                 # Prepare the multipart encoder
@@ -421,7 +408,6 @@ class OTPD:
 
         return None
 
-    # end method definition
 
     def apply_setting(
         self,
@@ -491,7 +477,7 @@ class OTPD:
                 message = "Failed to update PowerDocs setting -> '{}' with value -> '{}'{}; error -> {}".format(
                     setting_name,
                     setting_value,
-                    " (tenant -> '{}')".format(tenant_name) if tenant_name else "",
+                    f" (tenant -> '{tenant_name}')" if tenant_name else "",
                     response.text,
                 )
                 if retries > REQUEST_MAX_RETRIES:
@@ -504,7 +490,6 @@ class OTPD:
                     retries += 1
                     time.sleep(REQUEST_RETRY_DELAY * retries)  # Add a delay before retrying
 
-    # end method definition
 
     def do_request(
         self,
@@ -667,16 +652,13 @@ class OTPD:
                         time.sleep(REQUEST_RETRY_DELAY)  # Add a delay before retrying
                     else:
                         return None
-            # end try
             self.logger.info(
                 "Retrying REST API %s call -> %s... (retry = %s)",
                 method,
                 url,
                 str(retries),
             )
-        # end while True
 
-    # end method definition
 
     def generate_document(self, payload: str) -> dict | None:
         """Generate a PowerDocs document based on the provided XML payload.

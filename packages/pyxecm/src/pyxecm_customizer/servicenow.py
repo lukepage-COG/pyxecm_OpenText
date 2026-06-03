@@ -11,7 +11,6 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import os
 import platform
 import sys
 import tempfile
@@ -21,6 +20,7 @@ import urllib.parse
 from collections.abc import Callable
 from functools import cache
 from importlib.metadata import version
+from pathlib import Path
 from typing import Any
 
 import requests
@@ -46,7 +46,7 @@ REQUEST_HEADERS = {"User-Agent": USER_AGENT, "Accept": "application/json", "Cont
 
 REQUEST_TIMEOUT = 60.0
 
-KNOWLEDGE_BASE_PATH = os.path.join(tempfile.gettempdir(), "attachments")
+KNOWLEDGE_BASE_PATH = Path(tempfile.gettempdir()) / "attachments"
 
 default_logger = logging.getLogger(MODULE_NAME)
 
@@ -146,7 +146,6 @@ class ServiceNow:
         self._download_dir = download_dir
         self._product_exclusions = product_exclusions
 
-    # end method definition
 
     def thread_wrapper(self, target: Callable, *args: tuple, **kwargs: dict[str, Any]) -> None:
         """Wrap around threads to catch exceptions during exection.
@@ -170,7 +169,6 @@ class ServiceNow:
                 thread_name,
             )
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -183,7 +181,6 @@ class ServiceNow:
 
         return self._config
 
-    # end method definition
 
     def get_data(self) -> Data:
         """Get the Data object that holds all processed Knowledge base Articles.
@@ -196,7 +193,6 @@ class ServiceNow:
 
         return self._data
 
-    # end method definition
 
     def request_header(self, content_type: str = "") -> dict:
         """Return the request header used for Application calls.
@@ -222,14 +218,13 @@ class ServiceNow:
         request_header = REQUEST_HEADERS
 
         if self.config()["authType"] == "oauth":
-            request_header["Authorization"] = ("Bearer {}".format(self._access_token),)
+            request_header["Authorization"] = (f"Bearer {self._access_token}",)
 
         if content_type:
             request_header["Content-Type"] = content_type
 
         return request_header
 
-    # end method definition
 
     def parse_request_response(
         self,
@@ -267,14 +262,9 @@ class ServiceNow:
             dict_object = json.loads(response_object.text) if response_object.text else vars(response_object)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSON. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSON. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSON; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSON; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -283,7 +273,6 @@ class ServiceNow:
         else:
             return dict_object
 
-    # end method definition
 
     def exist_result_item(self, response: dict, key: str, value: str) -> bool:
         """Check existence of key / value pair in the response properties of an ServiceNow API call.
@@ -321,7 +310,6 @@ class ServiceNow:
 
         return False
 
-    # end method definition
 
     def get_result_value(
         self,
@@ -366,7 +354,6 @@ class ServiceNow:
 
         return value
 
-    # end method definition
 
     def authenticate(self, auth_type: str) -> str | None:
         """Authenticate at ServiceNow with client ID and client secret or with basic authentication.
@@ -392,14 +379,13 @@ class ServiceNow:
             return self._session.auth
         elif auth_type == "oauth":
             token = self.get_oauth_token()
-            self._session.headers.update({"Authorization": "Bearer {}".format(token)})
+            self._session.headers.update({"Authorization": f"Bearer {token}"})
 
             return token
         else:
             self.logger.error("Unsupported authentication type -> %s!", auth_type)
             return None
 
-    # end method definition
 
     def get_oauth_token(self) -> str:
         """Return the OAuth access token.
@@ -439,7 +425,6 @@ class ServiceNow:
 
         return self._access_token
 
-    # end method definition
 
     @cache
     def get_object(self, table_name: str, sys_id: str) -> dict | None:
@@ -468,10 +453,7 @@ class ServiceNow:
 
         request_header = self.request_header()
 
-        request_url = self.config()["restUrl"] + "table/{}/{}".format(
-            table_name,
-            sys_id,
-        )
+        request_url = self.config()["restUrl"] + f"table/{table_name}/{sys_id}"
 
         try:
             response = self._session.get(url=request_url, headers=request_header)
@@ -499,7 +481,6 @@ class ServiceNow:
 
         return None
 
-    # end method definition
 
     def get_summary(self, summary_sys_id: str) -> dict | None:
         """Get summary object for an article.
@@ -516,7 +497,6 @@ class ServiceNow:
 
         return self.get_object(table_name="kb_knowledge_summary", sys_id=summary_sys_id)
 
-    # end method definition
 
     def get_table(
         self,
@@ -565,10 +545,7 @@ class ServiceNow:
 
         encoded_query = urllib.parse.urlencode(params, doseq=True)
 
-        request_url = self.config()["tableUrl"] + "/{}?{}".format(
-            table_name,
-            encoded_query,
-        )
+        request_url = self.config()["tableUrl"] + f"/{table_name}?{encoded_query}"
 
         try:
             while True:
@@ -597,7 +574,6 @@ class ServiceNow:
 
         return None
 
-    # end method definition
 
     def get_table_count(
         self,
@@ -629,10 +605,7 @@ class ServiceNow:
 
         encoded_query = urllib.parse.urlencode(params, doseq=True)
 
-        request_url = self.config()["statsUrl"] + "/{}?{}".format(
-            table_name,
-            encoded_query,
-        )
+        request_url = self.config()["statsUrl"] + f"/{table_name}?{encoded_query}"
 
         try:
             response = self._session.get(
@@ -653,7 +626,6 @@ class ServiceNow:
 
         return None
 
-    # end method definition
 
     def get_categories(self) -> list | None:
         """Get the configured knowledge base categories in ServiceNow.
@@ -698,7 +670,6 @@ class ServiceNow:
             limit=50,
         )
 
-    # end method definition
 
     def get_knowledge_bases(self) -> list | None:
         """Get the configured knowledge bases in ServiceNow.
@@ -769,7 +740,6 @@ class ServiceNow:
             error_string="Cannot get Knowledge Bases; ",
         )
 
-    # end method definition
 
     def get_knowledge_base_articles(
         self,
@@ -914,7 +884,6 @@ class ServiceNow:
             error_string="Cannot get knowledge base articles; ",
         )
 
-    # end method definition
 
     def make_file_names_unique(self, file_list: list) -> None:
         """Make file names unique if required.
@@ -934,7 +903,8 @@ class ServiceNow:
         # Iterate through the list of dictionaries
         for file_info in file_list:
             original_name = file_info["file_name"]
-            name, ext = os.path.splitext(original_name)
+            name = Path(original_name).stem
+            ext = Path(original_name).suffix
 
             # Initialize count if this is the first time the name is encountered
             if original_name not in name_count:
@@ -953,7 +923,6 @@ class ServiceNow:
             # Increment the count for this file name
             name_count[original_name] += 1
 
-    # end method definition
 
     def get_article_attachments(self, article: dict) -> list | None:
         """Get a list of attachments for an article.
@@ -975,7 +944,7 @@ class ServiceNow:
         request_url = self.config()["attachmentsUrl"]
 
         params = {
-            "sysparm_query": "table_sys_id={}".format(article_sys_id),
+            "sysparm_query": f"table_sys_id={article_sys_id}",
             "sysparm_fields": "sys_id,file_name",
         }
 
@@ -1028,7 +997,6 @@ class ServiceNow:
 
         return None
 
-    # end method definition
 
     def download_attachments(
         self,
@@ -1072,7 +1040,7 @@ class ServiceNow:
         # resolve this for Extended ECM:
         self.make_file_names_unique(attachments)
 
-        base_dir = os.path.join(self._download_dir, article_number)
+        base_dir = Path(self._download_dir) / article_number
 
         # save download dir for later use in bulkDocument processing...
         article["download_dir"] = base_dir
@@ -1080,9 +1048,9 @@ class ServiceNow:
         article["download_files"] = []
         article["download_files_ids"] = []
 
-        if not os.path.exists(base_dir):
+        if not Path(base_dir).exists():
             try:
-                os.makedirs(base_dir)
+                Path(base_dir).mkdir(parents=True, exist_ok=True)
             except FileExistsError:
                 self.logger.error(
                     "Directory -> '%s' already exists. Race condition occurred.",
@@ -1099,9 +1067,9 @@ class ServiceNow:
                 return False
 
         for attachment in attachments:
-            file_path = os.path.join(base_dir, attachment["file_name"])
+            file_path = Path(base_dir) / attachment["file_name"]
 
-            if os.path.exists(file_path) and skip_existing:
+            if Path(file_path).exists() and skip_existing:
                 self.logger.info(
                     "File -> '%s' has been downloaded before. Skipping download...",
                     file_path,
@@ -1131,7 +1099,7 @@ class ServiceNow:
                 attachment_response.raise_for_status()
 
                 # Read and write the attachment file in chunks:
-                with open(file_path, "wb") as attachment_file:
+                with Path(file_path).open("wb") as attachment_file:
                     attachment_file.writelines(attachment_response.iter_content(chunk_size=8192))
 
                 # We build a list of filenames and IDs.
@@ -1148,7 +1116,6 @@ class ServiceNow:
 
         return True
 
-    # end method definition
 
     def load_articles(
         self,
@@ -1231,7 +1198,6 @@ class ServiceNow:
 
         return True
 
-    # end method definition
 
     def load_articles_worker(
         self,
@@ -1298,7 +1264,6 @@ class ServiceNow:
             table_name,
         )
 
-    # end method definition
 
     def load_article(self, article: dict, skip_existing_downloads: bool = True) -> None:
         """Process a single KBA.
@@ -1473,7 +1438,6 @@ class ServiceNow:
                             article["number"],
                         )
                         break
-                # end if product_line:
                 else:
                     self.logger.warning(
                         "Article -> %s: Cannot lookup related product line name in table -> '%s' with key -> '%s'",
@@ -1577,7 +1541,6 @@ class ServiceNow:
                             article["number"],
                         )
                         break
-                # end if application
                 else:
                     self.logger.warning(
                         "Article -> %s: Cannot lookup related application name in table -> '%s' with key -> %s",
@@ -1681,7 +1644,6 @@ class ServiceNow:
                                     "u_version_name": application_version_name,
                                 },
                             )
-                    # end if application_key
 
                     # Extended ECM can only handle a maxiumum of 50 line items:
                     if len(application_version_sets) == 49:
@@ -1690,7 +1652,6 @@ class ServiceNow:
                             article["number"],
                         )
                         break
-                # end if application_version
                 else:
                     self.logger.warning(
                         "Article -> %s: Cannot lookup related application version in table -> '%s' with key -> '%s'",
@@ -1714,4 +1675,3 @@ class ServiceNow:
         with self._data.lock():
             self._data.append(article)
 
-    # end method definition

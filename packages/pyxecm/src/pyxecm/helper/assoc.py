@@ -34,7 +34,6 @@ class Assoc:
 
         return len(matches) > 0
 
-    # end method definition
 
     @classmethod
     def escape_unicode(cls, assoc_string: str) -> bytes:
@@ -54,7 +53,6 @@ class Assoc:
 
         return encoded_string
 
-    # end method definition
 
     @classmethod
     def unescape_unicode(cls, assoc_string: str) -> str:
@@ -76,7 +74,6 @@ class Assoc:
 
         return decoded_string
 
-    # end method definition
 
     @classmethod
     def is_html_escaped(cls, assoc_string: str) -> bool:
@@ -96,7 +93,6 @@ class Assoc:
 
         return assoc_string != decoded_string
 
-    # end method definition
 
     @classmethod
     def unescape_html(cls, assoc_string: str) -> str:
@@ -113,7 +109,6 @@ class Assoc:
         decoded_string = html.unescape(assoc_string)
         return decoded_string
 
-    # end method definition
 
     @classmethod
     def string_to_dict(cls, assoc_string: str) -> dict:
@@ -168,7 +163,6 @@ class Assoc:
 
         return assoc_dict
 
-    # end method definition
 
     @classmethod
     def dict_to_string(cls, assoc_dict: dict) -> str:
@@ -203,7 +197,6 @@ class Assoc:
         assoc_string += "&gt;"
         return assoc_string
 
-    # end method definition
 
     @classmethod
     def extract_substring(
@@ -239,7 +232,6 @@ class Assoc:
         end_index += len(stop_sequence)
         return input_string[start_index:end_index]
 
-    # end method definition
 
     @classmethod
     def extract_assoc_string(cls, input_string: str, is_escaped: bool = False) -> str:
@@ -266,4 +258,3 @@ class Assoc:
             assoc_string = cls.extract_substring(input_string, "A<", ">")
         return assoc_string
 
-    # end method definition

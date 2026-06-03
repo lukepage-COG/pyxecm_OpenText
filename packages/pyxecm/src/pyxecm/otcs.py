@@ -37,7 +37,9 @@ from datetime import UTC, datetime
 from functools import cache
 from http import HTTPStatus
 from importlib.metadata import version
+from pathlib import Path
 from queue import Empty, LifoQueue, Queue
+from typing import Any
 
 import requests
 import websockets
@@ -269,7 +271,6 @@ class OTCS:
 
         return item_name
 
-    # end method definition
 
     @classmethod
     def date_is_newer(cls, date_old: str, date_new: str) -> bool:
@@ -339,7 +340,6 @@ class OTCS:
         # Compare the dates
         return new_date > old_date
 
-    # end method definition
 
     def __init__(
         self,
@@ -362,7 +362,7 @@ class OTCS:
         download_dir: str | None = None,
         feme_uri: str | None = None,
         use_numeric_category_identifier: bool = True,
-        workspace_ontology: dict[str] | None = None,
+        workspace_ontology: dict[str, Any] | None = None,
         logger: logging.Logger = default_logger,
     ) -> None:
         """Initialize the OTCS object.
@@ -437,7 +437,7 @@ class OTCS:
                 self.logger.addFilter(logfilter)
 
         if not download_dir:
-            download_dir = os.path.join(tempfile.gettempdir(), "contentserver")
+            download_dir = Path(tempfile.gettempdir()) / "contentserver"
 
         # Initialize otcs_config as an empty dictionary
         otcs_config = {}
@@ -457,7 +457,7 @@ class OTCS:
 
         otcs_base_url = protocol + "://" + otcs_config["hostname"]
         if str(port) not in ["80", "443"]:
-            otcs_base_url += ":{}".format(port)
+            otcs_base_url += f":{port}"
         otcs_config["baseUrl"] = otcs_base_url
         otcs_support_url = otcs_base_url + support_path
         otcs_config["supportUrl"] = otcs_support_url
@@ -566,9 +566,8 @@ class OTCS:
         )  # only 1 thread should handle the re-authentication
         self._session_lock = threading.Lock()
 
-    # end method definition
 
-    def config(self) -> dict:
+    def config(self) -> dict[str, Any]:
         """Return the configuration dictionary.
 
         Returns:
@@ -577,9 +576,8 @@ class OTCS:
         """
         return self._config
 
-    # end method definition
 
-    def cookie(self) -> dict | None:
+    def cookie(self) -> dict[str, Any] | None:
         """Return the login cookie of Content Server.
 
         This is set by the authenticate() method
@@ -596,7 +594,6 @@ class OTCS:
 
         return None
 
-    # end method definition
 
     def otcs_ticket(self) -> str | None:
         """Return the OTCS ticket.
@@ -609,7 +606,6 @@ class OTCS:
 
         return self._otcs_ticket
 
-    # end method definition
 
     def otcs_ticket_hashed(self) -> str | None:
         """Return the hashed OTCS ticket.
@@ -637,7 +633,6 @@ class OTCS:
 
         return hashed_output
 
-    # end method definition
 
     def set_otcs_ticket(self, ticket: str) -> None:
         """Set the OTCS ticket.
@@ -650,7 +645,6 @@ class OTCS:
 
         self._otcs_ticket = ticket
 
-    # end method definition
 
     def set_otds_ticket(self, ticket: str) -> None:
         """Set the OTDS ticket.
@@ -663,7 +657,6 @@ class OTCS:
 
         self._otds_ticket = ticket
 
-    # end method definition
 
     def set_otds_token(self, token: str) -> None:
         """Set the OTDS token.
@@ -676,9 +669,8 @@ class OTCS:
 
         self._otds_token = token
 
-    # end method definition
 
-    def credentials(self) -> dict:
+    def credentials(self) -> dict[str, Any]:
         """Get credentials (username + password).
 
         Returns:
@@ -692,7 +684,6 @@ class OTCS:
             "password": self.config()["password"],
         }
 
-    # end method definition
 
     def set_credentials(self, username: str = "admin", password: str = "") -> None:
         """Set the credentials for Extended ECM based on username and password.
@@ -708,7 +699,6 @@ class OTCS:
         self.config()["username"] = username
         self.config()["password"] = password
 
-    # end method definition
 
     def hostname(self) -> str:
         """Return the hostname of Content Server (e.g. "otcs").
@@ -721,7 +711,6 @@ class OTCS:
 
         return self.config()["hostname"]
 
-    # end method definition
 
     def set_hostname(self, hostname: str) -> None:
         """Set the hostname of Content Server.
@@ -734,7 +723,6 @@ class OTCS:
 
         self.config()["hostname"] = hostname
 
-    # end method definition
 
     def base_url(self) -> str:
         """Return the base URL of Content Server.
@@ -747,7 +735,6 @@ class OTCS:
 
         return self.config()["baseUrl"]
 
-    # end method definition
 
     def cs_url(self) -> str:
         """Return the Content Server URL.
@@ -760,7 +747,6 @@ class OTCS:
 
         return self.config()["csUrl"]
 
-    # end method definition
 
     def cs_public_url(self) -> str:
         """Return the public (external) Content Server URL (incl. base_path /cs/cs).
@@ -773,7 +759,6 @@ class OTCS:
 
         return self.config()["csPublicUrl"]
 
-    # end method definition
 
     def cs_support_url(self) -> str:
         """Return the Content Server Support URL.
@@ -786,7 +771,6 @@ class OTCS:
 
         return self.config()["supportUrl"]
 
-    # end method definition
 
     def cs_support_public_url(self) -> str:
         """Return the Content Server Public Support URL.
@@ -799,7 +783,6 @@ class OTCS:
 
         return self.config()["supportPublicUrl"]
 
-    # end method definition
 
     def rest_url(self) -> str:
         """Return the REST URL of Content Server.
@@ -812,7 +795,6 @@ class OTCS:
 
         return self.config()["restUrl"]
 
-    # end method definition
 
     def partition_name(self) -> str:
         """Return the OTDS user partition for Content Server.
@@ -825,7 +807,6 @@ class OTCS:
 
         return self.config()["partition"]
 
-    # end method definition
 
     def resource_name(self) -> str:
         """Return the OTDS resource name of Content Server.
@@ -838,7 +819,6 @@ class OTCS:
 
         return self.config()["resource"]
 
-    # end method definition
 
     def resource_id(self) -> str:
         """Return the OTDS resource ID of Content Server.
@@ -851,7 +831,6 @@ class OTCS:
 
         return self.config()["resourceId"]
 
-    # end method definition
 
     def set_resource_id(self, resource_id: str) -> None:
         """Set the OTDS resource ID of Content Server.
@@ -864,7 +843,6 @@ class OTCS:
 
         self.config()["resourceId"] = resource_id
 
-    # end method definition
 
     def get_data(self) -> Data:
         """Get the Data object that holds all loaded Content Server items (see method load_items()).
@@ -877,7 +855,6 @@ class OTCS:
 
         return self._data
 
-    # end method definition
 
     def clear_data(self) -> Data:
         """Reset the data object to an empty data frame.
@@ -892,7 +869,6 @@ class OTCS:
 
         return self._data
 
-    # end method definition
 
     def lookup_workspace_type_name(self, workspace_type_id: int) -> str | None:
         """Lookup the workspace type name based on the workspace type ID.
@@ -915,16 +891,15 @@ class OTCS:
 
         return self._workspace_type_lookup.get(workspace_type_id)["name"]
 
-    # end method definition
 
-    def get_workspace_ontology(self, force_reload: bool = False) -> dict[str] | None:
+    def get_workspace_ontology(self, force_reload: bool = False) -> dict[str, Any] | None:
         """Get the relationship model for workspace types (ontology).
 
         TODO: currently we cannot derive it from the workspace type definitions
         as this information is not managed in OTCS - this will change with 26.2.
 
         Returns:
-            dict[str] | None:
+            dict[str, Any] | None:
                 Workspace ontology or None in case it is not provided via
                 the class __init__ method or not found as a JSON file in admin
                 Personal Workspace.
@@ -969,7 +944,6 @@ class OTCS:
 
         return None
 
-    # end method definition
 
     def save_workspace_ontology(self) -> bool:
         """Save the workspace ontology as JSON file into Admin's personal workspace.
@@ -988,9 +962,9 @@ class OTCS:
         #
         # 1. Dump the ontology data structure into a file in local file system:
         #
-        download_dir = os.path.join(tempfile.gettempdir(), self.ONTOLOGY_TEMP_DIRECTORY)
-        file_path = os.path.join(download_dir, self.ONTOLOGY_FILE_NAME)
-        with open(file_path, "w", encoding="utf-8") as ontology_file:
+        download_dir = Path(tempfile.gettempdir()) / self.ONTOLOGY_TEMP_DIRECTORY
+        file_path = Path(download_dir) / self.ONTOLOGY_FILE_NAME
+        with Path(file_path).open("w", encoding="utf-8") as ontology_file:
             json.dump(self._workspace_ontology, ontology_file, indent=2)
             self.logger.info(
                 "Workspace ontology -> '%s' has been saved to JSON file -> %s", self.ONTOLOGY_FILE_NAME, file_path
@@ -1021,7 +995,7 @@ class OTCS:
                 file_url=file_path,
                 file_name=self.ONTOLOGY_FILE_NAME,
                 mime_type="application/json",
-                description="Updated ontology file -> '{}' in admin workspace.".format(self.ONTOLOGY_FILE_NAME),
+                description=f"Updated ontology file -> '{self.ONTOLOGY_FILE_NAME}' in admin workspace.",
             )
         else:
             response = self._otcs.upload_file_to_parent(
@@ -1046,7 +1020,6 @@ class OTCS:
 
         return False
 
-    # end method definition
 
     def load_workspace_ontology(self) -> bool:
         """Load the workspace ontology from a JSON file in the Admin personal workspace.
@@ -1089,7 +1062,7 @@ class OTCS:
                     "Cannot load ontology from JSON document -> %s (%s)", self.ONTOLOGY_FILE_NAME, document_id
                 )
                 return False
-        except Exception as json_error:
+        except (json.JSONDecodeError, KeyError, TypeError, ValueError) as json_error:
             self.logger.error(
                 "Invalid JSON input in document -> %s (%s); error -> %s",
                 self.ONTOLOGY_FILE_NAME,
@@ -1103,9 +1076,8 @@ class OTCS:
         )
         return True
 
-    # end method definition
 
-    def request_form_header(self) -> dict:
+    def request_form_header(self) -> dict[str, Any]:
         """Deliver the request header used for the CRUD REST API calls.
 
         Consists of Cookie + Form Headers (see global variable).
@@ -1124,9 +1096,8 @@ class OTCS:
 
         return request_header
 
-    # end method definition
 
-    def request_json_header(self) -> dict:
+    def request_json_header(self) -> dict[str, Any]:
         """Deliver the request header for REST calls that require content type application/json.
 
         Consists of Cookie + Json Headers (see global variable).
@@ -1145,9 +1116,8 @@ class OTCS:
 
         return request_header
 
-    # end method definition
 
-    def request_download_header(self) -> dict:
+    def request_download_header(self) -> dict[str, Any]:
         """Deliver the request header used for the CRUD REST API calls.
 
         Consists Form Headers (see global variable).
@@ -1166,7 +1136,6 @@ class OTCS:
 
         return request_header
 
-    # end method definition
 
     def do_request(
         self,
@@ -1187,7 +1156,7 @@ class OTCS:
         parse_request_response: bool = True,
         stream: bool = False,
         parse_error_response: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Call an OTCS REST API in a safe way.
 
         Args:
@@ -1315,14 +1284,10 @@ class OTCS:
                     self.logger.warning(
                         (
                             warning_message
-                            + " (it already exists); details -> {}".format(
-                                response.text,
-                            )
+                            + f" (it already exists); details -> {response.text}"
                             if warning_message
                             else failure_message
-                            + " (it already exists); details -> {}".format(
-                                response.text,
-                            )
+                            + f" (it already exists); details -> {response.text}"
                         ),
                     )
                     if parse_error_response:
@@ -1374,7 +1339,6 @@ class OTCS:
                         return self.parse_error_response(response_object=response)
                     else:
                         return None
-            # end try:
             except (
                 requests.exceptions.Timeout,
                 requests.exceptions.ConnectTimeout,
@@ -1398,7 +1362,6 @@ class OTCS:
                         timeout = None
                     else:
                         return None
-            # end except Timeout
             except requests.exceptions.ConnectionError as connection_error:
                 if retries <= max_retries:
                     self.logger.warning(
@@ -1434,7 +1397,6 @@ class OTCS:
                         time.sleep(REQUEST_RETRY_DELAY)  # Add a delay before retrying
                     else:
                         return None
-            # end except connection error
             self.logger.debug(
                 "Retrying REST API %s call -> %s... (retry = %s, cookie -> %s)",
                 method,
@@ -1442,16 +1404,14 @@ class OTCS:
                 str(retries),
                 str(self.cookie()),
             )
-        # end while True
 
-    # end method definition
 
     def parse_request_response(
         self,
         response_object: object,
         additional_error_message: str = "",
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Convert the text property of a request response object to a Python dict safely.
 
         Handles exceptions to prevent fatal errors caused by corrupt responses,
@@ -1487,33 +1447,24 @@ class OTCS:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; response object -> {}; error -> {}".format(
-                    additional_error_message,
-                    response_object,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; response object -> {response_object}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; response object -> {}; error -> {}".format(
-                    response_object,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; response object -> {response_object}; error -> {exception}"
             if show_error:
                 # Raise ConnectionError instead of returning None
                 raise requests.exceptions.ConnectionError(message) from exception
             self.logger.warning(message)
             return None
-        # end try-except block
 
         return dict_object
 
-    # end method definition
 
     def parse_error_response(
         self,
         response_object: object,
         additional_error_message: str = "",
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Convert the text property of a request response object to a Python dict safely.
 
         Handles exceptions to prevent fatal errors caused by corrupt responses,
@@ -1546,26 +1497,17 @@ class OTCS:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; response object -> {}; error -> {}".format(
-                    additional_error_message,
-                    response_object,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; response object -> {response_object}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; response object -> {}; error -> {}".format(
-                    response_object,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; response object -> {response_object}; error -> {exception}"
             if show_error:
                 # Raise ConnectionError instead of returning None
                 raise requests.exceptions.ConnectionError(message) from exception
             self.logger.warning(message)
             return None
-        # end try-except block
 
         return dict_object
 
-    # end method definition
 
     def lookup_result_value(
         self,
@@ -1651,7 +1593,6 @@ class OTCS:
             )
             return None
 
-    # end method definition
 
     def exist_result_item(
         self,
@@ -1769,7 +1710,6 @@ class OTCS:
             )
             return False
 
-    # end method definition
 
     def get_result_value(
         self,
@@ -1914,7 +1854,6 @@ class OTCS:
             )
             return None
 
-    # end method definition
 
     def get_result_values(
         self,
@@ -2005,7 +1944,6 @@ class OTCS:
                     str(type(properties)),
                 )
                 return None
-        # end if isinstance(results, dict)
         elif isinstance(results, list):
             return [item[data_name][property_name][key] for item in results]
         else:
@@ -2015,7 +1953,6 @@ class OTCS:
             )
             return None
 
-    # end method definition
 
     def get_result_values_iterator(
         self,
@@ -2059,7 +1996,6 @@ class OTCS:
             if isinstance(item.get(data_name), dict) and (not property_name or property_name in item[data_name])
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="is_configured")
     def is_configured(self) -> bool:
@@ -2103,7 +2039,6 @@ class OTCS:
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="is_ready")
     def is_ready(self) -> bool:
@@ -2151,7 +2086,6 @@ class OTCS:
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="invalidate_authentication_ticket")
     def invalidate_authentication_ticket(self) -> None:
@@ -2159,14 +2093,13 @@ class OTCS:
 
         self._otcs_ticket = None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="otcs_authenticate")
     def authenticate(
         self,
         revalidate: bool = False,
         wait_for_ready: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Authenticate with Content Server and retrieves an OTCS ticket.
 
         This method supports 3 ways of authentication (in this order):
@@ -2278,7 +2211,6 @@ class OTCS:
                     str(exception),
                 )
                 return None
-        # end if self._otds_token
 
         # Alternatively try with OTDS TICKET (if available):
         if not otcs_ticket and self._otds_ticket:  # and not revalidate:
@@ -2312,7 +2244,6 @@ class OTCS:
                     str(exception),
                 )
                 return None
-        # end if self._otds_ticket
 
         # Check if previous authentication was not successful.
         # Then we try the normal username + password authentication:
@@ -2367,7 +2298,6 @@ class OTCS:
                     response.text,
                 )
                 return None
-        # end if not otcs_ticket
 
         # Store authentication ticket:
         self._otcs_ticket = otcs_ticket
@@ -2376,14 +2306,13 @@ class OTCS:
 
         return self.cookie()
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="reauthenticate")
     def reauthenticate(
         self,
         request_cookie: dict,
         thread_safe: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Re-authenticates after a session timeout.
 
         This implementation supports thread-safe reauthentication, ensuring that
@@ -2460,7 +2389,6 @@ class OTCS:
                                 "Reauthentication failed!",
                             )
                             self.invalidate_authentication_ticket()
-                    # end with self._session_lock
                     self.logger.debug("Lift session lock and notify waiting threads...")
                     # Notify all waiting threads that session is renewed:
                     self._authentication_condition.notify_all()
@@ -2475,7 +2403,6 @@ class OTCS:
             self.logger.debug(
                 "Session renewing thread continues with retry of request...",
             )
-        # end if self._authentication_semaphore.acquire(blocking=False)
         else:
             # Other threads wait for session renewal to complete
             self.logger.debug(
@@ -2509,10 +2436,9 @@ class OTCS:
 
         return self.cookie()
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_server_info")
-    def get_server_info(self) -> dict | None:
+    def get_server_info(self) -> dict[str, Any] | None:
         """Retrieve Content Server information.
 
         Fetches detailed server information, including mobile support, server
@@ -2576,7 +2502,6 @@ class OTCS:
             failure_message="Failed to retrieve Content Server information",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_server_version")
     def get_server_version(self) -> str | None:
@@ -2613,10 +2538,9 @@ class OTCS:
 
         return server_info.get("version")
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="apply_config")
-    def apply_config(self, xml_file_path: str) -> dict | None:
+    def apply_config(self, xml_file_path: str) -> dict[str, Any] | None:
         """Apply Content Server administration settings from XML file.
 
         Args:
@@ -2631,13 +2555,13 @@ class OTCS:
 
         """
 
-        filename = os.path.basename(xml_file_path)
+        filename = Path(xml_file_path).name
 
-        if not os.path.exists(xml_file_path):
+        if not Path(xml_file_path).exists():
             self.logger.error(
                 "The admin settings file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(xml_file_path),
+                str(Path(xml_file_path).parent),
             )
             return None
 
@@ -2650,7 +2574,7 @@ class OTCS:
             request_url,
         )
 
-        with open(xml_file_path, encoding="utf-8") as xml_file:
+        with Path(xml_file_path).open(encoding="utf-8") as xml_file:
             llconfig_file = {
                 "file": (filename, xml_file, "text/xml"),
             }
@@ -2661,15 +2585,10 @@ class OTCS:
                 headers=request_header,
                 files=llconfig_file,
                 timeout=None,
-                success_message="Admin settings in file -> '{}' have been applied.".format(
-                    xml_file_path,
-                ),
-                failure_message="Failed to import settings file -> '{}'".format(
-                    xml_file_path,
-                ),
+                success_message=f"Admin settings in file -> '{xml_file_path}' have been applied.",
+                failure_message=f"Failed to import settings file -> '{xml_file_path}'",
             )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_users")
     def get_users(
@@ -2684,7 +2603,7 @@ class OTCS:
         limit: int = 20,
         page: int = 1,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a Content Server users based on different criterias.
 
         The criterias can be combined.
@@ -2826,19 +2745,19 @@ class OTCS:
         query["where_type"] = where_type
         if where_name:
             query["where_name"] = where_name
-            filter_string += " login name -> '{}'".format(where_name) if where_name else ""
+            filter_string += f" login name -> '{where_name}'" if where_name else ""
         if where_first_name:
             query["where_first_name"] = where_first_name
-            filter_string += " first name -> '{}'".format(where_first_name) if where_first_name else ""
+            filter_string += f" first name -> '{where_first_name}'" if where_first_name else ""
         if where_last_name:
             query["where_last_name"] = where_last_name
-            filter_string += " last name -> '{}'".format(where_last_name) if where_last_name else ""
+            filter_string += f" last name -> '{where_last_name}'" if where_last_name else ""
         if where_business_email:
             query["where_business_email"] = where_business_email
-            filter_string += " business email -> '{}'".format(where_business_email) if where_business_email else ""
+            filter_string += f" business email -> '{where_business_email}'" if where_business_email else ""
         if query_string:
             query["query"] = query_string
-            filter_string += " query -> '{}'".format(query_string) if where_business_email else ""
+            filter_string += f" query -> '{query_string}'" if where_business_email else ""
         if sort:
             query["sort"] = sort
         if limit:
@@ -2851,13 +2770,13 @@ class OTCS:
         if page:
             query["page"] = page
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-        request_url = self.config()["membersUrlv2"] + "?{}".format(encoded_query)
+        request_url = self.config()["membersUrlv2"] + f"?{encoded_query}"
 
         request_header = self.request_form_header()
 
         self.logger.debug(
             "Get users%s; calling -> %s",
-            " with{}".format(filter_string) if filter_string else "",
+            f" with{filter_string}" if filter_string else "",
             request_url,
         )
 
@@ -2866,12 +2785,11 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get users{}".format(" with{}".format(filter_string) if filter_string else ""),
-            warning_message="Couldn't find users{}".format(" with{}".format(filter_string) if filter_string else ""),
+            failure_message="Failed to get users{}".format(f" with{filter_string}" if filter_string else ""),
+            warning_message="Couldn't find users{}".format(f" with{filter_string}" if filter_string else ""),
             show_error=show_error,
         )
 
-    # end method definition
 
     def get_users_iterator(
         self,
@@ -3000,15 +2918,13 @@ class OTCS:
             # Yield nodes one at a time:
             yield from response["results"]
 
-        # end for page in range(1, total_pages + 1)
 
-    # end method definition
 
     @cache
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user")
     def get_user(
         self, name: str | None = None, user_id: int | None = None, user_type: int = 0, show_error: bool = False
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a Content Server user based on the login name and type.
 
         Args:
@@ -3127,7 +3043,7 @@ class OTCS:
             # Using type = 0 for OTCS groups or type = 17 for service user:
             query = {"where_type": user_type, "where_name": name}
             encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-            request_url = self.config()["membersUrlv2"] + "?{}".format(encoded_query)
+            request_url = self.config()["membersUrlv2"] + f"?{encoded_query}"
         else:
             request_url = self.config()["membersUrlv2"] + "/" + str(user_id)
 
@@ -3135,7 +3051,7 @@ class OTCS:
 
         self.logger.debug(
             "Get user with %s%s; calling -> %s",
-            "login name -> '{}'".format(name) if name is not None else "user ID -> '{}'".format(user_id),
+            f"login name -> '{name}'" if name is not None else f"user ID -> '{user_id}'",
             ", type -> 'service user'" if user_type == 17 else "",
             request_url,
         )
@@ -3146,17 +3062,16 @@ class OTCS:
             headers=request_header,
             timeout=None,
             failure_message="Failed to get user with {} and type -> {}".format(
-                "login name -> '{}'".format(name) if name is not None else "user ID -> {}".format(user_id),
+                f"login name -> '{name}'" if name is not None else f"user ID -> {user_id}",
                 user_type,
             ),
             warning_message="Couldn't find user with {} and type -> {}".format(
-                "login name -> '{}'".format(name) if name is not None else "user ID -> {}".format(user_id),
+                f"login name -> '{name}'" if name is not None else f"user ID -> {user_id}",
                 user_type,
             ),
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="search_user")
     def search_user(
@@ -3167,7 +3082,7 @@ class OTCS:
         query_string: str | None = None,
         limit: int = 20,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Find a user based on search criteria.
 
         This method is just a wrapper for get_users() for more simple use cases.
@@ -3231,10 +3146,9 @@ class OTCS:
             show_error=False,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_current_user")
-    def get_current_user(self) -> dict | None:
+    def get_current_user(self) -> dict[str, Any] | None:
         """Get the current authenticated user.
 
         Returns:
@@ -3260,7 +3174,6 @@ class OTCS:
             failure_message="Failed to get current user",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_user")
     def add_user(
@@ -3275,7 +3188,7 @@ class OTCS:
         phone: str = "",
         privileges: list | None = None,
         user_type: int = 0,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add Content Server user.
 
         Args:
@@ -3346,13 +3259,12 @@ class OTCS:
             headers=request_header,
             data=user_post_body,
             timeout=None,
-            failure_message="Failed to add user -> '{}'".format(name),
+            failure_message=f"Failed to add user -> '{name}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_user")
-    def update_user(self, user_id: int, field: str, value: str) -> dict | None:
+    def update_user(self, user_id: int, field: str, value: str) -> dict[str, Any] | None:
         """Update a defined field for a user.
 
         Args:
@@ -3392,13 +3304,12 @@ class OTCS:
             headers=request_header,
             data=user_put_body,
             timeout=None,
-            failure_message="Failed to update user with ID -> {}".format(user_id),
+            failure_message=f"Failed to update user with ID -> {user_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user_profile")
-    def get_user_profile(self) -> dict | None:
+    def get_user_profile(self) -> dict[str, Any] | None:
         """Get the user profile.
 
         IMPORTANT: this method needs to be called by the authenticated user
@@ -3429,7 +3340,6 @@ class OTCS:
             failure_message="Failed to get profile of current user",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_user_profile")
     def update_user_profile(
@@ -3437,7 +3347,7 @@ class OTCS:
         field: str,
         value: str,
         config_section: str = "SmartUI",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update a defined field for a user profile.
 
         IMPORTANT: This method must be called by the authenticated user.
@@ -3492,10 +3402,9 @@ class OTCS:
             failure_message="Failed to update profile of current user",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user_photo")
-    def get_user_photo(self, user_id: int) -> dict | None:
+    def get_user_photo(self, user_id: int) -> dict[str, Any] | None:
         """Get the profile photo of a user.
 
         Args:
@@ -3522,13 +3431,12 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get photo of user with ID -> {}".format(user_id),
+            failure_message=f"Failed to get photo of user with ID -> {user_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_user_photo")
-    def update_user_photo(self, user_id: int, photo_id: int) -> dict | None:
+    def update_user_photo(self, user_id: int, photo_id: int) -> dict[str, Any] | None:
         """Update a user with a profile photo (which must be an existing node).
 
         Args:
@@ -3561,10 +3469,9 @@ class OTCS:
             headers=request_header,
             data=update_user_put_body,
             timeout=None,
-            failure_message="Failed to update user with ID -> {}".format(user_id),
+            failure_message=f"Failed to update user with ID -> {user_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="is_proxy")
     def is_proxy(self, user_name: str) -> bool:
@@ -3611,10 +3518,9 @@ class OTCS:
 
             return any(proxy["name"] == user_name for proxy in proxies)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user_proxies")
-    def get_user_proxies(self, use_v2: bool = False) -> dict | None:
+    def get_user_proxies(self, use_v2: bool = False) -> dict[str, Any] | None:
         """Get list of user proxies for the current user.
 
         This method needs to be called as the user the proxy is acting for.
@@ -3646,7 +3552,6 @@ class OTCS:
             failure_message="Failed to get proxy users for current user",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_user_proxy")
     def add_user_proxy(
@@ -3654,7 +3559,7 @@ class OTCS:
         proxy_user_id: int,
         from_date: str | None = None,
         to_date: str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a user as a proxy to the current user.
 
         IMPORTANT: This method must be called as the user the proxy is acting for.
@@ -3737,12 +3642,9 @@ class OTCS:
             headers=request_header,
             data=post_data,
             timeout=None,
-            failure_message="Failed to assign proxy user with ID -> {} to current user".format(
-                proxy_user_id,
-            ),
+            failure_message=f"Failed to assign proxy user with ID -> {proxy_user_id} to current user",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_favorites")
     def get_user_favorites(
@@ -3754,7 +3656,7 @@ class OTCS:
         sort: str | None = None,
         limit: int = 20,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the favorites for the current (authenticated) user.
 
         Args:
@@ -3836,9 +3738,8 @@ class OTCS:
             failure_message="Failed to get favorites for current user",
         )
 
-    # end method definition
 
-    def add_favorite(self, node_id: int) -> dict | None:
+    def add_favorite(self, node_id: int) -> dict[str, Any] | None:
         """Add a favorite for the current (authenticated) user.
 
         Deprecated: use add_user_favorite() instead.
@@ -3851,10 +3752,9 @@ class OTCS:
         )
         return self.add_user_favorite(node_id=node_id)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_favorite")
-    def add_user_favorite(self, node_id: int) -> dict | None:
+    def add_user_favorite(self, node_id: int) -> dict[str, Any] | None:
         """Add a favorite for the current (authenticated) user.
 
         Args:
@@ -3881,12 +3781,11 @@ class OTCS:
             method="POST",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to add favorite for node ID -> {}".format(node_id),
+            failure_message=f"Failed to add favorite for node ID -> {node_id}",
         )
 
-    # end method definition
 
-    def add_favorite_tab(self, tab_name: str, order: int) -> dict | None:
+    def add_favorite_tab(self, tab_name: str, order: int) -> dict[str, Any] | None:
         """Add a favorite for the current (authenticated) user.
 
         Deprecated: use add_user_favorite_tab() instead.
@@ -3899,10 +3798,9 @@ class OTCS:
         )
         return self.add_user_favorite_tab(tab_name=tab_name, order=order)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_favorite_tab")
-    def add_user_favorite_tab(self, tab_name: str, order: int) -> dict | None:
+    def add_user_favorite_tab(self, tab_name: str, order: int) -> dict[str, Any] | None:
         """Add a favorite tab for the current (authenticated) user.
 
         Args:
@@ -3934,10 +3832,9 @@ class OTCS:
             headers=request_header,
             data=favorite_tab_post_body,
             timeout=None,
-            failure_message="Failed to add favorite tab -> {}".format(tab_name),
+            failure_message=f"Failed to add favorite tab -> {tab_name}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user_recently_accessed")
     def get_user_recently_accessed(
@@ -3951,7 +3848,7 @@ class OTCS:
         sort: str | None = None,
         limit: int = 20,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the recently accessed items for the current (authenticated) user.
 
         Args:
@@ -4042,7 +3939,6 @@ class OTCS:
             failure_message="Failed to get recently accessed items for current user",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user_mytodo")
     def get_user_mytodo(
@@ -4056,7 +3952,7 @@ class OTCS:
         page: int = 1,
         where_location_name: str | None = None,
         where_name: str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the user's mytodo workflow assignment items.
 
         Args:
@@ -4134,7 +4030,6 @@ class OTCS:
             failure_message="Failed to get mytodo  workflow assignments for current user",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user_reserved_nodes")
     def get_user_reserved_nodes(
@@ -4146,7 +4041,7 @@ class OTCS:
         sort: str | None = None,
         limit: int = 20,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the reserved nodes for the current (authenticated) user.
 
         Args:
@@ -4228,7 +4123,6 @@ class OTCS:
             failure_message="Failed to get reserved nodes for current user",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_favorites")
     def get_user_memberof(
@@ -4238,7 +4132,7 @@ class OTCS:
         metadata: bool = False,
         limit: int = 20,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the groups the current (authenticated) user is a member of.
 
         Args:
@@ -4341,7 +4235,6 @@ class OTCS:
             failure_message="Failed to get groups the current user is a member of",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_groups")
     def get_groups(
@@ -4351,7 +4244,7 @@ class OTCS:
         limit: int = 20,
         page: int = 1,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a list of Content Server groups.
 
         Args:
@@ -4447,13 +4340,13 @@ class OTCS:
         if page:
             query["page"] = page
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-        request_url = self.config()["membersUrlv2"] + "?{}".format(encoded_query)
+        request_url = self.config()["membersUrlv2"] + f"?{encoded_query}"
 
         request_header = self.request_form_header()
 
         self.logger.debug(
             "Get groups%s; calling -> %s",
-            " with name -> '{}'".format(where_name) if where_name else "",
+            f" with name -> '{where_name}'" if where_name else "",
             request_url,
         )
 
@@ -4463,15 +4356,14 @@ class OTCS:
             headers=request_header,
             timeout=None,
             failure_message="Failed to get groups{}".format(
-                " with name -> '{}'".format(where_name) if where_name else ""
+                f" with name -> '{where_name}'" if where_name else ""
             ),
             warning_message="Groups{} do not yet exist!".format(
-                " with name -> '{}'".format(where_name) if where_name else ""
+                f" with name -> '{where_name}'" if where_name else ""
             ),
             show_error=show_error,
         )
 
-    # end method definition
 
     def get_groups_iterator(
         self,
@@ -4562,12 +4454,10 @@ class OTCS:
             # Yield nodes one at a time:
             yield from response["results"]
 
-        # end for page in range(1, total_pages + 1)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_group")
-    def get_group(self, name: str | None = None, group_id: int | None = None, show_error: bool = False) -> dict | None:
+    def get_group(self, name: str | None = None, group_id: int | None = None, show_error: bool = False) -> dict[str, Any] | None:
         """Get the Content Server group with a given name.
 
         Args:
@@ -4650,7 +4540,7 @@ class OTCS:
             query = {"where_type": 1}
             query["where_name"] = name
             encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-            request_url = self.config()["membersUrlv2"] + "?{}".format(encoded_query)
+            request_url = self.config()["membersUrlv2"] + f"?{encoded_query}"
         else:
             # If a group ID is provided, we use the direct URL to that group:
             request_url = self.config()["membersUrlv2"] + "/" + str(group_id)
@@ -4659,7 +4549,7 @@ class OTCS:
 
         self.logger.debug(
             "Get group with%s; calling -> %s",
-            " name -> '{}'".format(name) if name else "ID -> {}".format(group_id),
+            f" name -> '{name}'" if name else f"ID -> {group_id}",
             request_url,
         )
 
@@ -4668,15 +4558,14 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get group -> '{}'".format(name or group_id),
-            warning_message="Group -> '{}' does not yet exist".format(name or group_id),
+            failure_message=f"Failed to get group -> '{name or group_id}'",
+            warning_message=f"Group -> '{name or group_id}' does not yet exist",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_group")
-    def add_group(self, name: str) -> dict | None:
+    def add_group(self, name: str) -> dict[str, Any] | None:
         """Add Content Server group.
 
         Args:
@@ -4703,10 +4592,9 @@ class OTCS:
             headers=request_header,
             data=group_post_body,
             timeout=None,
-            failure_message="Failed to add group -> '{}'".format(name),
+            failure_message=f"Failed to add group -> '{name}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_group_members")
     def get_group_members(
@@ -4719,7 +4607,7 @@ class OTCS:
         where_business_email: str | None = None,
         limit: int = 100,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get Content Server group members.
 
         Args:
@@ -4763,7 +4651,7 @@ class OTCS:
         if page:
             query["page"] = page
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-        request_url = self.config()["membersUrlv2"] + "/" + str(group) + "/members?{}".format(encoded_query)
+        request_url = self.config()["membersUrlv2"] + "/" + str(group) + f"/members?{encoded_query}"
 
         request_header = self.request_form_header()
 
@@ -4778,12 +4666,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get members of group with ID -> {}".format(
-                group,
-            ),
+            failure_message=f"Failed to get members of group with ID -> {group}",
         )
 
-    # end method definition
 
     def get_group_members_iterator(
         self,
@@ -4896,12 +4781,10 @@ class OTCS:
             # Yield nodes one at a time:
             yield from response["results"]
 
-        # end for page in range(1, total_pages + 1)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_group_member")
-    def add_group_member(self, member_id: int, group_id: int) -> dict | None:
+    def add_group_member(self, member_id: int, group_id: int) -> dict[str, Any] | None:
         """Add a user or group to a target group.
 
         Args:
@@ -4934,16 +4817,12 @@ class OTCS:
             headers=request_header,
             data=group_member_post_body,
             timeout=None,
-            failure_message="Failed to add member with ID -> {} to group with ID -> {}".format(
-                member_id,
-                group_id,
-            ),
+            failure_message=f"Failed to add member with ID -> {member_id} to group with ID -> {group_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_privilege")
-    def update_privilege(self, privilege_id: str, restricted: bool) -> dict | None:
+    def update_privilege(self, privilege_id: str, restricted: bool) -> dict[str, Any] | None:
         """Update a usage privilege.
 
         Args:
@@ -4979,7 +4858,7 @@ class OTCS:
             headers=request_header,
             data=request_body,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update privilege {}".format(privilege_id),
+            failure_message=f"Failed to update privilege {privilege_id}",
         )
 
         if response:
@@ -4991,7 +4870,6 @@ class OTCS:
 
         return None
 
-    # end method definition
 
     @cache
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_usage_privileges")
@@ -5042,7 +4920,6 @@ class OTCS:
 
         return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_usage_privilege")
     def get_usage_privilege(
@@ -5050,7 +4927,7 @@ class OTCS:
         usage_id: str | None = None,
         usage_name: str | None = None,
         update_cache: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the usage privilege either based on ID or based on a name.
 
         The returned values are cached, as they will not change for the lifetime of the system.
@@ -5118,10 +4995,9 @@ class OTCS:
 
         return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_usage_privilege")
-    def assign_usage_privilege(self, usage_privilege: str, member_id: int, auto_restrict: bool = True) -> dict | None:
+    def assign_usage_privilege(self, usage_privilege: str, member_id: int, auto_restrict: bool = True) -> dict[str, Any] | None:
         """Assign a usage privilege to a user or group.
 
         Args:
@@ -5195,7 +5071,6 @@ class OTCS:
         )
         return None
 
-    # end method definition
 
     @cache
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_object_privileges")
@@ -5246,14 +5121,13 @@ class OTCS:
 
         return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_object_privilege")
     def get_object_privilege(
         self,
         object_type: int,
         update_cache: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the usage privilege either based on ID or based on a name.
 
         The returned values are cached, as they will not change for the lifetime of the system.
@@ -5301,10 +5175,9 @@ class OTCS:
             None,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_object_privilege")
-    def assign_object_privilege(self, object_type: str, member_id: int, auto_restrict: bool = True) -> dict | None:
+    def assign_object_privilege(self, object_type: str, member_id: int, auto_restrict: bool = True) -> dict[str, Any] | None:
         """Assign a usage privilege to a user or group.
 
         Args:
@@ -5378,7 +5251,6 @@ class OTCS:
         )
         return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node")
     def get_node(
@@ -5388,7 +5260,7 @@ class OTCS:
         expand: str | list = "",
         metadata: bool = False,
         timeout: float = REQUEST_TIMEOUT,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a node based on the node ID.
 
         Args:
@@ -5509,7 +5381,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["nodesUrlv2"] + "/" + str(node_id) + "?{}".format(encoded_query)
+        request_url = self.config()["nodesUrlv2"] + "/" + str(node_id) + f"?{encoded_query}"
         if metadata:
             request_url += "&metadata"
 
@@ -5526,10 +5398,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=timeout,
-            failure_message="Failed to get node with ID -> {}".format(node_id),
+            failure_message=f"Failed to get node with ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_by_parent_and_name")
     def get_node_by_parent_and_name(
@@ -5540,7 +5411,7 @@ class OTCS:
         metadata: bool = False,
         show_error: bool = False,
         exact_match: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a node based on the parent ID and name.
 
         This method queries using "where_name", and the result is returned as a list.
@@ -5593,7 +5464,7 @@ class OTCS:
             query["fields"] = fields
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["nodesUrlv2"] + "/" + str(parent_id) + "/nodes?{}".format(encoded_query)
+        request_url = self.config()["nodesUrlv2"] + "/" + str(parent_id) + f"/nodes?{encoded_query}"
         if metadata:
             request_url += "&metadata"
 
@@ -5611,14 +5482,8 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            warning_message="Node with name -> '{}' and parent ID -> {} does not exist".format(
-                name,
-                parent_id,
-            ),
-            failure_message="Failed to get node with name -> '{}' and parent ID -> {}".format(
-                name,
-                parent_id,
-            ),
+            warning_message=f"Node with name -> '{name}' and parent ID -> {parent_id} does not exist",
+            failure_message=f"Failed to get node with name -> '{name}' and parent ID -> {parent_id}",
             show_error=show_error,
         )
 
@@ -5646,7 +5511,6 @@ class OTCS:
 
         return response
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_by_workspace_and_path")
     def get_node_by_workspace_and_path(
@@ -5657,7 +5521,7 @@ class OTCS:
         fields: str | list = "properties",
         metadata: bool = False,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a node based on the workspace ID (= node ID) and path (list of folder names).
 
         Args:
@@ -5766,7 +5630,6 @@ class OTCS:
                     # now we set current item ID to the new response:
                     current_item_id = self.get_result_value(response=response, key="id")
                     node = response
-                # end if create_path
                 else:
                     if show_error:
                         self.logger.error(
@@ -5788,7 +5651,6 @@ class OTCS:
 
         return node
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_by_volume_and_path")
     def get_node_by_volume_and_path(
@@ -5799,7 +5661,7 @@ class OTCS:
         fields: str | list = "properties",
         metadata: bool = False,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a node based on the volume and path (list of container items).
 
         Args:
@@ -5919,14 +5781,13 @@ class OTCS:
 
         return node
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_from_nickname")
     def get_node_from_nickname(
         self,
         nickname: str,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a node based on the nickname.
 
         Args:
@@ -5955,14 +5816,11 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            warning_message="Node with nickname -> '{}' does not exist".format(
-                nickname,
-            ),
-            failure_message="Failed to get node with nickname -> '{}'".format(nickname),
+            warning_message=f"Node with nickname -> '{nickname}' does not exist",
+            failure_message=f"Failed to get node with nickname -> '{nickname}'",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="set_node_nickname")
     def set_node_nickname(
@@ -5970,7 +5828,7 @@ class OTCS:
         node_id: int,
         nickname: str,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Assign a nickname to an OTCS node (e.g. workspace).
 
         Some naming conventions for the nickname are automatically applied:
@@ -6023,18 +5881,11 @@ class OTCS:
             headers=request_header,
             data=nickname_put_body,
             timeout=None,
-            warning_message="Cannot assign nickname -> '{}' to node ID -> {}. Maybe the nickname is already in use or the node does not exist.".format(
-                nickname,
-                node_id,
-            ),
-            failure_message="Failed to assign nickname -> '{}' to node ID -> {}".format(
-                nickname,
-                node_id,
-            ),
+            warning_message=f"Cannot assign nickname -> '{nickname}' to node ID -> {node_id}. Maybe the nickname is already in use or the node does not exist.",
+            failure_message=f"Failed to assign nickname -> '{nickname}' to node ID -> {node_id}",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_subnodes")
     def get_subnodes(
@@ -6047,7 +5898,7 @@ class OTCS:
         page: int = 1,
         fields: (str | list) = "properties",  # per default we just get the most important information
         metadata: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the subnodes of a given parent node ID.
 
         Args:
@@ -6173,7 +6024,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["nodesUrlv2"] + "/" + str(parent_node_id) + "/nodes" + "?{}".format(encoded_query)
+        request_url = self.config()["nodesUrlv2"] + "/" + str(parent_node_id) + "/nodes" + f"?{encoded_query}"
         if metadata:
             request_url += "&metadata"
 
@@ -6192,12 +6043,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get subnodes for parent node with ID -> {}".format(
-                parent_node_id,
-            ),
+            failure_message=f"Failed to get subnodes for parent node with ID -> {parent_node_id}",
         )
 
-    # end method definition
 
     def get_subnodes_iterator(
         self,
@@ -6354,9 +6202,7 @@ class OTCS:
             # Yield nodes one at a time
             yield from response["results"]
 
-        # end for page in range(1, total_pages + 1)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_nodes_by_parent_and_filters")
     def get_nodes_by_parent_and_filters(
@@ -6367,7 +6213,7 @@ class OTCS:
         sort: str | None = None,
         page_size: int = 100,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the nodes under a given parent node ID with defined facet values.
 
         NOTE: This is a V3 REST API that may not be aviable in older OTCS versions!
@@ -6410,7 +6256,7 @@ class OTCS:
                     continue
                 # Join list values with pipe (this is a facet OR operation). Scalar values are used as string:
                 value = "|".join(str(item) for item in v) if isinstance(v, list) else str(v)
-                where_facet.append("{}:{}".format(k, value))
+                where_facet.append(f"{k}:{value}")
             if where_facet:
                 query["where_facet"] = where_facet
         if sort:
@@ -6422,15 +6268,15 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["facetBrowseUrl"] + "/" + str(parent_id) + "?{}".format(encoded_query)
+        request_url = self.config()["facetBrowseUrl"] + "/" + str(parent_id) + f"?{encoded_query}"
 
         request_header = self.request_form_header()
 
         self.logger.debug(
             "Get nodes of parent with ID -> %d%s%s (page -> %d, item limit -> %d); calling -> %s",
             parent_id,
-            " and name -> '{}'".format(name) if name else "",
-            " and facet values -> {}".format(facet_values) if facet_values else "",
+            f" and name -> '{name}'" if name else "",
+            f" and facet values -> {facet_values}" if facet_values else "",
             page,
             page_size,
             request_url,
@@ -6441,12 +6287,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get nodes for parent with ID -> {}".format(
-                parent_id,
-            ),
+            failure_message=f"Failed to get nodes for parent with ID -> {parent_id}",
         )
 
-    # end method definition
 
     def get_nodes_by_parent_and_filters_iterator(
         self,
@@ -6591,9 +6434,7 @@ class OTCS:
             if total_pages and page >= total_pages:
                 return
             page += 1
-        # end while True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="lookup_node")
     def lookup_nodes(
@@ -6607,7 +6448,7 @@ class OTCS:
         fields: str | list | None = None,
         page_size: int = 25,
         stop_at_first_match: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Lookup nodes under a parent node that have a specified value in a category attribute.
 
         Args:
@@ -6775,7 +6616,6 @@ class OTCS:
                             ):
                                 node_matched = True
                                 break
-                    # end if set_key
                     else:
                         key = prefix + attribute_id
                         attribute_value = cat_data.get(key)
@@ -6790,17 +6630,13 @@ class OTCS:
                             node_matched = True
                     if node_matched:
                         break
-                    # end if set_key ... else
-                # end for cat_data in data:
                 if node_matched:
                     break
-            # end for attribute_key in attribute_keys:
 
             if node_matched:
                 results["results"].append(node)
                 if stop_at_first_match:
                     break
-        # end for node in self.get_subnodes_iterator()
 
         if not results["results"]:
             self.logger.debug(
@@ -6813,14 +6649,13 @@ class OTCS:
 
         return results if results["results"] else None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="lookup_node_by_regex")
     def lookup_node_by_regex(
         self,
         parent_node_id: int,
         regex_list: list,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Lookup the node under a parent node that has a name that matches on of the given regular expressions.
 
         Args:
@@ -6854,8 +6689,6 @@ class OTCS:
                         regex,
                     )
                     return {"results": node}
-            # end for regex in regex_list
-        # end for node in self.get_subnodes_iterator()
 
         self.logger.warning(
             "Couldn't find a node under parent with node ID -> %d that has a name matching any of these regular expressions -> %s",
@@ -6865,10 +6698,9 @@ class OTCS:
 
         return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_columns")
-    def get_node_columns(self, node_id: int) -> dict | None:
+    def get_node_columns(self, node_id: int) -> dict[str, Any] | None:
         """Get custom columns configured / enabled for a node.
 
         Args:
@@ -6987,15 +6819,12 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get columns for node with ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to get columns for node with ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_ancestors")
-    def get_node_ancestors(self, node_id: int) -> dict | None:
+    def get_node_ancestors(self, node_id: int) -> dict[str, Any] | None:
         """Get ancestors of a node.
 
         Args:
@@ -7077,17 +6906,14 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get ancestors for node with ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to get ancestors for node with ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_facets")
     def get_node_facets(
         self, node_id: int, facet_values: dict[int, str] | None = None, facet_values_limit: int | None = None
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get facets configured / enabled for a node.
 
         Args:
@@ -7186,18 +7012,18 @@ class OTCS:
         if facet_values_limit:
             query["top_values_limit"] = facet_values_limit
         if facet_values:
-            query["where_facet"] = ["{}:{}".format(k, v) for k, v in facet_values.items()]
+            query["where_facet"] = [f"{k}:{v}" for k, v in facet_values.items()]
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["facetsUrl"] + "/" + str(node_id) + "?{}".format(encoded_query)
+        request_url = self.config()["facetsUrl"] + "/" + str(node_id) + f"?{encoded_query}"
 
         request_header = self.request_form_header()
 
         self.logger.debug(
             "Get facets for node with ID -> %d%s; calling -> %s",
             node_id,
-            " and preselected facets -> {}".format(facet_values) if facet_values else "",
+            f" and preselected facets -> {facet_values}" if facet_values else "",
             request_url,
         )
 
@@ -7206,19 +7032,16 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get facets for node with ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to get facets for node with ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_actions")
     def get_node_actions(
         self,
         node_id: int | list,
         filter_actions: list | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get allowed actions for a node.
 
         Args:
@@ -7357,12 +7180,9 @@ class OTCS:
             headers=request_header,
             data=actions_post_body,
             timeout=None,
-            failure_message="Failed to get actions for node with ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to get actions for node with ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="rename_node")
     def rename_node(
@@ -7373,7 +7193,7 @@ class OTCS:
         name_multilingual: dict | None = None,
         description_multilingual: dict | None = None,
         parse_error_response: bool | None = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Change the name and description of a node.
 
         Args:
@@ -7422,17 +7242,13 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(rename_node_put_body)},
             timeout=None,
-            failure_message="Failed to rename node with ID -> {} to -> '{}'".format(
-                node_id,
-                name,
-            ),
+            failure_message=f"Failed to rename node with ID -> {node_id} to -> '{name}'",
             parse_error_response=parse_error_response,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="delete_node")
-    def delete_node(self, node_id: int, purge: bool = False) -> dict | None:
+    def delete_node(self, node_id: int, purge: bool = False) -> dict[str, Any] | None:
         """Delete an existing node.
 
         Args:
@@ -7480,7 +7296,7 @@ class OTCS:
             method="DELETE",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to delete node with ID -> {}".format(node_id),
+            failure_message=f"Failed to delete node with ID -> {node_id}",
         )
 
         # Do we want to immediately purge it from the Recycle Bin?
@@ -7489,10 +7305,9 @@ class OTCS:
 
         return response
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="purge_node")
-    def purge_node(self, node_id: int | list) -> dict | None:
+    def purge_node(self, node_id: int | list) -> dict[str, Any] | None:
         """Purge an item in the recycle bin (final destruction).
 
         Args:
@@ -7523,15 +7338,12 @@ class OTCS:
             headers=request_header,
             data=purge_data,
             timeout=None,
-            failure_message="Failed to purge node with ID -> {} from the recycle bin".format(
-                node_id,
-            ),
+            failure_message=f"Failed to purge node with ID -> {node_id} from the recycle bin",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="restore_node")
-    def restore_node(self, node_id: int | list) -> dict | None:
+    def restore_node(self, node_id: int | list) -> dict[str, Any] | None:
         """Restore an item from the recycle bin (undo deletion).
 
         Args:
@@ -7573,12 +7385,9 @@ class OTCS:
             headers=request_header,
             data=restore_data,
             timeout=None,
-            failure_message="Failed to restore node(s) with ID(s) -> {} from the recycle bin".format(
-                node_id,
-            ),
+            failure_message=f"Failed to restore node(s) with ID(s) -> {node_id} from the recycle bin",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_audit")
     def get_node_audit(
@@ -7591,7 +7400,7 @@ class OTCS:
         limit: int = 100,
         page: int = 1,
         sort: str = "desc_audit_date",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the audit information for a given node ID.
 
         Args:
@@ -7713,7 +7522,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["nodesUrlv2"] + "/" + str(node_id) + "/audit" + "?{}".format(encoded_query)
+        request_url = self.config()["nodesUrlv2"] + "/" + str(node_id) + "/audit" + f"?{encoded_query}"
 
         request_header = self.request_form_header()
 
@@ -7730,12 +7539,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get audit for node with ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to get audit for node with ID -> {node_id}",
         )
 
-    # end method definition
 
     def get_node_audit_iterator(
         self,
@@ -7856,12 +7662,10 @@ class OTCS:
                 if isinstance(item.get("data"), dict) and "audit" in item["data"]
             )
 
-        # end for page in range(1, total_pages + 1)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_volumes")
-    def get_volumes(self) -> dict | None:
+    def get_volumes(self) -> dict[str, Any] | None:
         """Get all Volumes.
 
         Args:
@@ -7929,7 +7733,6 @@ class OTCS:
             failure_message="Failed to get volumes",
         )
 
-    # end method definition
 
     @cache
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_volume")
@@ -7937,7 +7740,7 @@ class OTCS:
         self,
         volume_type: int,
         timeout: float = REQUEST_TIMEOUT,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get Volume information based on the volume type ID.
 
         Args:
@@ -7969,13 +7772,12 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=timeout,
-            failure_message="Failed to get volume of type -> {}".format(volume_type),
+            failure_message=f"Failed to get volume of type -> {volume_type}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="check_node_name")
-    def check_node_name(self, parent_id: int, node_name: str) -> dict | None:
+    def check_node_name(self, parent_id: int, node_name: str) -> dict[str, Any] | None:
         """Check if a node with a given name already exists under a specified parent node.
 
         Args:
@@ -8023,13 +7825,9 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(check_node_name_post_data)},
             timeout=None,
-            failure_message="Failed to check if node name -> '{}' can be created in parent with ID -> {}".format(
-                node_name,
-                parent_id,
-            ),
+            failure_message=f"Failed to check if node name -> '{node_name}' can be created in parent with ID -> {parent_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="upload_file_to_volume")
     def upload_file_to_volume(
@@ -8038,7 +7836,7 @@ class OTCS:
         path_or_url: str,
         file_name: str,
         mime_type: str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Fetch a file from a URL or local filesystem and upload it to a Content Server volume.
 
         Args:
@@ -8093,9 +7891,9 @@ class OTCS:
             )
             file_content = package.content
 
-        elif os.path.exists(path_or_url):
+        elif Path(path_or_url).exists():
             self.logger.debug("Uploading local file -> '%s'", path_or_url)
-            file_content = open(file=path_or_url, mode="rb")  # noqa: SIM115
+            file_content = Path(file=path_or_url).open(mode="rb")  # noqa: SIM115
 
         else:
             self.logger.warning("Cannot access file -> '%s'", path_or_url)
@@ -8110,7 +7908,7 @@ class OTCS:
             try:
                 mime = magic.Magic(mime=True)
                 mime_type = mime.from_file(path_or_url)
-            except Exception:
+            except (OSError, ValueError):
                 self.logger.error(
                     "Unknown mime type for document -> '%s' for upload to volume -> %s",
                     file_name,
@@ -8143,16 +7941,12 @@ class OTCS:
             data=upload_post_data,
             files=upload_post_files,
             timeout=None,
-            failure_message="Failed to upload file -> '{}' to volume of type -> {}".format(
-                path_or_url,
-                volume_type,
-            ),
+            failure_message=f"Failed to upload file -> '{path_or_url}' to volume of type -> {volume_type}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="flatten_categories_dict")
-    def flatten_categories_dict(self, categories_dict: dict) -> dict:
+    def flatten_categories_dict(self, categories_dict: dict) -> dict[str, Any]:
         """Return flattened categories dict.
 
         This is a helper method.
@@ -8176,7 +7970,7 @@ class OTCS:
 
         items = {}
 
-        def recurse(current_dict: dict) -> dict:
+        def recurse(current_dict: dict) -> dict[str, Any]:
             for k, v in current_dict.items():
                 # Attribute 1 stands for the category itself
                 # and we don't want to modify it:
@@ -8185,13 +7979,11 @@ class OTCS:
                 else:
                     items[k] = v
 
-        # end def recurse()
 
         recurse(categories_dict)
 
         return items
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="upload_file_to_parent")
     def upload_file_to_parent(
@@ -8210,7 +8002,7 @@ class OTCS:
         extract_zip: bool = False,
         replace_existing: bool = False,
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Fetch a file from a URL or local filesystem and uploads it to a OTCS parent.
 
         The parent should be a container item such as a folder or business workspace.
@@ -8312,7 +8104,7 @@ class OTCS:
             if not file_name:
                 # if path_or_url does not end with a "/"
                 # we may get the missing file name from there:
-                file_name = os.path.basename(file_url)
+                file_name = Path(file_url).name
 
             if not file_name:
                 self.logger.error("Missing file name! Cannot upload file.")
@@ -8351,9 +8143,9 @@ class OTCS:
 
             # If path_or_url specifies a directory or a zip file we want to extract
             # it and then defer the upload to upload_directory_to_parent():
-            elif os.path.exists(file_url) and (
+            elif Path(file_url).exists() and (
                 ((file_url.endswith(".zip") or mime_type == "application/x-zip-compressed") and extract_zip)
-                or os.path.isdir(file_url)
+                or Path(file_url).is_dir()
             ):
                 return self.upload_directory_to_parent(
                     parent_id=parent_id,
@@ -8361,9 +8153,9 @@ class OTCS:
                     replace_existing=replace_existing,
                 )
 
-            elif os.path.exists(file_url):
+            elif Path(file_url).exists():
                 self.logger.debug("Uploading local file -> %s", file_url)
-                file_content = open(file=file_url, mode="rb")  # noqa: SIM115
+                file_content = Path(file=file_url).open(mode="rb")  # noqa: SIM115
 
             else:
                 self.logger.warning("Cannot access file -> '%s'", file_url)
@@ -8401,7 +8193,7 @@ class OTCS:
             try:
                 mime = magic.Magic(mime=True)
                 mime_type = mime.from_file(file_url)
-            except Exception:
+            except (OSError, ValueError):
                 self.logger.error(
                     "Unknown mime type for upload of document -> '%s' to parent ID -> %d",
                     file_name,
@@ -8437,12 +8229,12 @@ class OTCS:
             timeout=None,
             warning_message="Cannot upload file -> '{}'{} to parent with ID -> {}".format(
                 file_name,
-                " from -> '{}' ".format(file_url) if file_url is not None else "",
+                f" from -> '{file_url}' " if file_url is not None else "",
                 parent_id,
             ),
             failure_message="Failed to upload file -> '{}'{}to parent with ID -> {}".format(
                 file_name,
-                " from -> '{}' ".format(file_url) if file_url is not None else "",
+                f" from -> '{file_url}' " if file_url is not None else "",
                 parent_id,
             ),
             show_error=show_error,
@@ -8451,10 +8243,9 @@ class OTCS:
 
         return response
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="upload_directory_to_parent")
-    def upload_directory_to_parent(self, parent_id: int, file_path: str, replace_existing: bool = True) -> dict | None:
+    def upload_directory_to_parent(self, parent_id: int, file_path: str, replace_existing: bool = True) -> dict[str, Any] | None:
         """Upload a directory or an uncompressed zip file to Content Server.
 
         IMPORTANT: if the path ends in a file then we assume it is a ZIP file!
@@ -8475,14 +8266,14 @@ class OTCS:
         """
 
         # Unzip if the path is ending in a file (then we assume it is a zip file)
-        if os.path.isfile(file_path):
+        if Path(file_path).is_file():
             try:
                 # If the ".zip" file extension is missing we add
                 # it and rename the file to avoid conflicts with
                 # extracted zips that may have a top level directory
                 # with the same name:
                 if not file_path.endswith(".zip"):
-                    os.rename(file_path, file_path + ".zip")
+                    Path(file_path).rename(file_path + ".zip")
                     file_path = file_path + ".zip"
                 with zipfile.ZipFile(file_path, "r") as zip_ref:
                     extract_path = file_path[:-4]  # Remove .zip extension
@@ -8505,7 +8296,6 @@ class OTCS:
                     file_path,
                 )
                 return None
-        # end os.path.isfile(file_path)
         else:
             # In this case we don't have a ZIP file but an existing directory.
             # Make sure to set this to None to not delete it after we are finished.
@@ -8548,16 +8338,15 @@ class OTCS:
                         current_parent_id,
                         new_parent_id,
                     )
-                    parent_id_map[os.path.join(root, dir_name)] = new_parent_id
+                    parent_id_map[Path(root) / dir_name] = new_parent_id
                     # Remember the first item created
                     if not first_response:
                         first_response = response.copy()
-            # end for dir_name in dirs:
 
             # 2. Traverse files in the current directory and
             #    upload the files into the OTCS folder:
             for file_name in files:
-                full_file_path = os.path.join(root, file_name)
+                full_file_path = Path(root) / file_name
                 if full_file_path.endswith(".zip"):
                     # Recursive call for zip files in zip files:
                     response = self.upload_directory_to_parent(
@@ -8593,11 +8382,9 @@ class OTCS:
                     )
                 if response and not first_response:
                     first_response = response.copy()
-            # end for file_name in files:
-        # end for root, dirs, files in os.walk(...)
 
         # Cleanup: remove extracted directory:
-        if extract_path and os.path.exists(extract_path) and os.path.isdir(extract_path):
+        if extract_path and Path(extract_path).exists() and Path(extract_path).is_dir():
             self.logger.debug(
                 "Delete temporary directory -> '%s' created from ZIP file...",
                 extract_path,
@@ -8622,7 +8409,6 @@ class OTCS:
 
         return first_response
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_document_version")
     def add_document_version(
@@ -8634,7 +8420,7 @@ class OTCS:
         file_content: str | bytes | None = None,
         encoding: str = "utf-8",
         description: str = "",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Fetch file from URL or local filesystem and upload it as a document version.
 
         The version data can be provided in one of three ways:
@@ -8710,7 +8496,7 @@ class OTCS:
             if not file_name:
                 # if path_or_url does not end with a "/"
                 # we may get the missing file name from there:
-                file_name = os.path.basename(file_url)
+                file_name = Path(file_url).name
 
             if not file_name:
                 self.logger.error("Missing file name! Cannot upload document version.")
@@ -8751,9 +8537,9 @@ class OTCS:
                 )
                 file_content = response.content
 
-            elif os.path.exists(file_url):
+            elif Path(file_url).exists():
                 self.logger.debug("Upload local file -> '%s' as new version.", file_url)
-                file_content = open(file=file_url, mode="rb")  # noqa: SIM115
+                file_content = Path(file=file_url).open(mode="rb")  # noqa: SIM115
 
             else:
                 self.logger.warning("Cannot access file -> '%s'", file_url)
@@ -8769,7 +8555,7 @@ class OTCS:
             try:
                 mime = magic.Magic(mime=True)
                 mime_type = mime.from_file(file_url)
-            except Exception:
+            except (OSError, ValueError):
                 self.logger.error(
                     "Unknown mime type for new version of document -> '%s' (%d)",
                     file_name,
@@ -8803,13 +8589,9 @@ class OTCS:
             data=upload_post_data,
             files=upload_post_files,
             timeout=None,
-            failure_message="Failed to add file -> '{}' as new version to document with ID -> {}".format(
-                file_url,
-                node_id,
-            ),
+            failure_message=f"Failed to add file -> '{file_url}' as new version to document with ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_document_versions")
     def get_document_versions(self, node_id: str) -> list | None:
@@ -8879,15 +8661,12 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get list of versions of document with node ID -> {}".format(
-                str(node_id),
-            ),
+            failure_message=f"Failed to get list of versions of document with node ID -> {str(node_id)}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_document_version")
-    def get_document_version(self, node_id: str, version_number: int) -> dict | None:
+    def get_document_version(self, node_id: str, version_number: int) -> dict[str, Any] | None:
         """Get a particular version of a document based on the version number.
 
         The first version (oldest) typically has the number 1.
@@ -8957,16 +8736,12 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get version -> {} of document with node ID -> {}".format(
-                version_number,
-                node_id,
-            ),
+            failure_message=f"Failed to get version -> {version_number} of document with node ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_latest_document_version")
-    def get_latest_document_version(self, node_id: int) -> dict | None:
+    def get_latest_document_version(self, node_id: int) -> dict[str, Any] | None:
         """Get latest version of a document node based on the node ID.
 
         Args:
@@ -8994,15 +8769,12 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get latest version of document with node ID -> {}".format(
-                str(node_id),
-            ),
+            failure_message=f"Failed to get latest version of document with node ID -> {str(node_id)}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="purge_document_versions")
-    def purge_document_versions(self, node_id: int, versions_to_keep: int = 1) -> dict | None:
+    def purge_document_versions(self, node_id: int, versions_to_keep: int = 1) -> dict[str, Any] | None:
         """Purge versions of a document based on the node ID of the document.
 
         Args:
@@ -9039,7 +8811,7 @@ class OTCS:
 
         self.logger.debug(
             "Purge document versions down to the newest%s version%s of document with node ID -> %d; calling -> %s",
-            " {}".format(versions_to_keep) if versions_to_keep > 1 else "",
+            f" {versions_to_keep}" if versions_to_keep > 1 else "",
             "s" if versions_to_keep > 1 else "",
             node_id,
             request_url,
@@ -9051,13 +8823,9 @@ class OTCS:
             headers=request_header,
             data=purge_delete_body,
             timeout=None,
-            failure_message="Failed to purge to {} versions of document with node ID -> {}".format(
-                versions_to_keep,
-                str(node_id),
-            ),
+            failure_message=f"Failed to purge to {versions_to_keep} versions of document with node ID -> {str(node_id)}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_document_content")
     def get_document_content(
@@ -9111,9 +8879,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get content of document with node ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to get content of document with node ID -> {node_id}",
             parse_request_response=parse_request_response,
         )
 
@@ -9128,7 +8894,6 @@ class OTCS:
 
         return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_json_document")
     def get_json_document(
@@ -9158,7 +8923,6 @@ class OTCS:
             parse_request_response=True,  # try to parse as JSON
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="download_document")
     def download_document(
@@ -9219,9 +8983,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to download document with node ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to download document with node ID -> {node_id}",
             parse_request_response=False,
             stream=True,  # as we may download large documents we better enable streaming here
         )
@@ -9242,30 +9004,30 @@ class OTCS:
             content_encoding,
         )
 
-        if os.path.exists(file_path) and not overwrite:
+        if Path(file_path).exists() and not overwrite:
             self.logger.warning(
                 "File -> '%s' already exists and overwrite is set to False, not downloading document.",
                 file_path,
             )
             return False
 
-        directory = os.path.dirname(file_path)
-        if not os.path.exists(directory):
+        directory = str(Path(file_path).parent)
+        if not Path(directory).exists():
             self.logger.debug(
                 "Download directory -> '%s' does not exist, creating it.",
                 directory,
             )
-            os.makedirs(directory)
+            Path(directory).mkdir(parents=True, exist_ok=True)
 
         bytes_downloaded = 0
         try:
-            with open(file_path, "wb") as download_file:
+            with Path(file_path).open("wb") as download_file:
                 for chunk in response.iter_content(chunk_size=chunk_size):
                     if chunk:
                         download_file.write(chunk)
                         bytes_downloaded += len(chunk)
 
-        except Exception as e:
+        except OSError as e:
             self.logger.error(
                 "Error while writing content to file -> %s after %d bytes downloaded; error -> %s",
                 file_path,
@@ -9288,7 +9050,6 @@ class OTCS:
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="download_config_file")
     def download_config_file(
@@ -9357,7 +9118,7 @@ class OTCS:
             content = content.replace(search.encode("utf-8"), replace.encode("utf-8"))
 
         # Open file in write binary mode
-        with open(file=file_path, mode="wb") as file:
+        with Path(file=file_path).open(mode="wb") as file:
             # Write the content to the file
             file.write(content)
 
@@ -9370,7 +9131,6 @@ class OTCS:
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="search")
     def search(
@@ -9385,7 +9145,7 @@ class OTCS:
         location_id: int | list[int] | None = None,
         limit: int = 100,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Search for a search term using Content Server Search.
 
         Args:
@@ -9640,10 +9400,9 @@ class OTCS:
             headers=request_header,
             data=search_post_body,
             timeout=None,
-            failure_message="Failed to search for term -> '{}'".format(search_term),
+            failure_message=f"Failed to search for term -> '{search_term}'",
         )
 
-    # end method definition
 
     def search_iterator(
         self,
@@ -9753,15 +9512,13 @@ class OTCS:
             if total_pages and page >= total_pages:
                 return
             page += 1
-        # end while True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_external_system_connection")
     def get_external_system_connections(
         self,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get all external system connections.
 
         NOTE: This method only delivers all details of an external system connection with OTCM 26.1 and newer.
@@ -9809,7 +9566,6 @@ class OTCS:
         # providing a connection name or type to retrieve all connections:
         return self.get_external_system_connection(connection_name=None, connection_types=None, show_error=show_error)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_external_system_connection")
     def get_external_system_connection(
@@ -9817,7 +9573,7 @@ class OTCS:
         connection_name: str | list | None = None,
         connection_types: str | list | None = None,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get external system connection (e.g. SAP, Salesforce, SuccessFactors).
 
         This method supports the legacy (pre 26.1 "/externalsystems/<name>/config" endpoint) and the new
@@ -9968,16 +9724,11 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            warning_message="External system connection -> '{}' does not yet exist".format(
-                connection_name,
-            ),
-            failure_message="Failed to get external system connection -> '{}'".format(
-                connection_name,
-            ),
+            warning_message=f"External system connection -> '{connection_name}' does not yet exist",
+            failure_message=f"Failed to get external system connection -> '{connection_name}'",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_external_system_connection")
     def add_external_system_connection(
@@ -9993,7 +9744,7 @@ class OTCS:
         client_secret: str | None = None,
         comment: str | None = None,
         display_names: dict | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add an external system connection (e.g. SAP, Salesforce, SuccessFactors).
 
         Args:
@@ -10093,15 +9844,12 @@ class OTCS:
             headers=request_header,
             data=external_system_post_body,
             timeout=None,
-            failure_message="Failed to create external system connection -> '{}'".format(
-                connection_name,
-            ),
+            failure_message=f"Failed to create external system connection -> '{connection_name}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="create_transport_workbench")
-    def create_transport_workbench(self, workbench_name: str) -> dict | None:
+    def create_transport_workbench(self, workbench_name: str) -> dict[str, Any] | None:
         """Create a Workbench in the Transport Volume.
 
         Args:
@@ -10134,19 +9882,16 @@ class OTCS:
             headers=request_header,
             data=create_worbench_post_data,
             timeout=None,
-            failure_message="Failed to create transport workbench -> {}".format(
-                workbench_name,
-            ),
+            failure_message=f"Failed to create transport workbench -> {workbench_name}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="unpack_transport_package")
     def unpack_transport_package(
         self,
         package_id: int,
         workbench_id: int,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Unpack an existing Transport Package into an existing Workbench.
 
         Args:
@@ -10179,13 +9924,9 @@ class OTCS:
             headers=request_header,
             data=unpack_package_post_data,
             timeout=None,
-            failure_message="Failed to unpack package with ID -> {} to workbench with ID -> {}".format(
-                package_id,
-                workbench_id,
-            ),
+            failure_message=f"Failed to unpack package with ID -> {package_id} to workbench with ID -> {workbench_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="deploy_workbench")
     def deploy_workbench(self, workbench_id: int, max_retries: int = 1) -> tuple[dict | None, int]:
@@ -10250,9 +9991,7 @@ class OTCS:
                 method="POST",
                 headers=request_header,
                 timeout=None,
-                failure_message="Failed to deploy workbench with ID -> {}".format(
-                    workbench_id,
-                ),
+                failure_message=f"Failed to deploy workbench with ID -> {workbench_id}",
             )
 
             # Transport packages can also partly fail to deploy.
@@ -10307,11 +10046,9 @@ class OTCS:
             except Exception as e:
                 self.logger.debug(str(e))
                 break
-        # end while retries <= 1
 
         return (response, error_count)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="deploy_transport")
     def deploy_transport(
@@ -10321,7 +10058,7 @@ class OTCS:
         package_description: str = "",
         replacements: list | None = None,
         extractions: list | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Deploy a transport.
 
         This uses subfunctions to upload, unpackage and deploy the transport,
@@ -10576,7 +10313,6 @@ class OTCS:
 
         return response
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="replace_transport_placeholders")
     def replace_transport_placeholders(
@@ -10601,12 +10337,12 @@ class OTCS:
 
         """
 
-        if not os.path.isfile(zip_file_path):
+        if not Path(zip_file_path).is_file():
             self.logger.error("Zip file -> '%s' not found.", zip_file_path)
             return False
 
         # Extract the zip file to a temporary directory
-        zip_file_folder = os.path.splitext(zip_file_path)[0]
+        zip_file_folder = Path(zip_file_path).stem
         with zipfile.ZipFile(zip_file_path, "r") as zfile:
             zfile.extractall(zip_file_folder)
 
@@ -10664,7 +10400,6 @@ class OTCS:
                     replacement["value"],
                     zip_file_folder,
                 )
-            # end if "xpath" in replacement
 
             found = XML.replace_in_xml_files(
                 directory=zip_file_folder,
@@ -10698,7 +10433,7 @@ class OTCS:
             return False
 
         # Create the new zip file and add all files from the directory to it
-        new_zip_file_path = os.path.dirname(zip_file_path) + "/new_" + os.path.basename(zip_file_path)
+        new_zip_file_path = str(Path(zip_file_path).parent) + "/new_" + Path(zip_file_path).name
         self.logger.debug(
             "Content of transport -> '%s' has been modified - repacking to new zip file -> '%s'...",
             zip_file_folder,
@@ -10709,30 +10444,29 @@ class OTCS:
                 zip_file_folder,
             ):  # 2nd parameter is not used, thus using _ instead of dirs
                 for file in files:
-                    file_path = os.path.join(subdir, file)
+                    file_path = Path(subdir) / file
                     rel_path = os.path.relpath(file_path, zip_file_folder)
                     zip_ref.write(file_path, arcname=rel_path)
 
         # Close the new zip file and delete the temporary directory
         zip_ref.close()
-        old_zip_file_path = os.path.dirname(zip_file_path) + "/old_" + os.path.basename(zip_file_path)
+        old_zip_file_path = str(Path(zip_file_path).parent) + "/old_" + Path(zip_file_path).name
         self.logger.debug(
             "Rename orginal transport zip file -> '%s' to -> '%s'...",
             zip_file_path,
             old_zip_file_path,
         )
-        os.rename(zip_file_path, old_zip_file_path)
+        Path(zip_file_path).rename(old_zip_file_path)
         self.logger.debug(
             "Rename new transport zip file -> '%s' to -> '%s'...",
             new_zip_file_path,
             zip_file_path,
         )
-        os.rename(new_zip_file_path, zip_file_path)
+        Path(new_zip_file_path).rename(zip_file_path)
 
         # Return success
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="extract_transport_data")
     def extract_transport_data(self, zip_file_path: str, extractions: list) -> bool:
@@ -10755,12 +10489,12 @@ class OTCS:
 
         """
 
-        if not os.path.isfile(zip_file_path):
+        if not Path(zip_file_path).is_file():
             self.logger.error("Zip file -> '%s' not found!", zip_file_path)
             return False
 
         # Extract the zip file to a temporary directory
-        zip_file_folder = os.path.splitext(zip_file_path)[0]
+        zip_file_folder = Path(zip_file_path).stem
         with zipfile.ZipFile(zip_file_path, "r") as zfile:
             zfile.extractall(zip_file_folder)
 
@@ -10810,10 +10544,9 @@ class OTCS:
         # Return the path to the new zip file
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_business_object_types")
-    def get_business_object_types(self) -> dict | None:
+    def get_business_object_types(self) -> dict[str, Any] | None:
         """Get information for all configured business object types.
 
         Args:
@@ -10872,7 +10605,6 @@ class OTCS:
             failure_message="Failed to get business object types",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_business_object_types_iterator")
     def get_business_object_types_iterator(self) -> iter:
@@ -10922,7 +10654,6 @@ class OTCS:
 
         yield from response["results"]
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_business_object_type_old")
     def get_business_object_type_old(
@@ -10931,7 +10662,7 @@ class OTCS:
         type_name: str,
         expand_workspace_type: bool = True,
         expand_external_system: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get business object type information.
 
         This REST API is pretty much limited.
@@ -11024,7 +10755,7 @@ class OTCS:
             + external_system_id
             + "/botypes/"
             + encoded_type_name
-            + "?{}".format(encoded_query)
+            + f"?{encoded_query}"
         )
         request_header = self.request_form_header()
 
@@ -11040,16 +10771,12 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get business object type -> '{}' for external system -> {}".format(
-                type_name,
-                external_system_id,
-            ),
+            failure_message=f"Failed to get business object type -> '{type_name}' for external system -> {external_system_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_business_object_type")
-    def get_business_object_type(self, type_id: int) -> dict | None:
+    def get_business_object_type(self, type_id: int) -> dict[str, Any] | None:
         """Get information for all configured business object types.
 
         This method uses an REST endpoint that was only introduced in OTCS 25.3.
@@ -11164,10 +10891,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get business object type -> {}".format(type_id),
+            failure_message=f"Failed to get business object type -> {type_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_business_objects")
     def get_business_objects(
@@ -11178,7 +10904,7 @@ class OTCS:
         where_clauses: dict | None = None,
         limit: int | None = None,
         page: int | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get all business objects for an external system and a business object type.
 
         Args:
@@ -11281,7 +11007,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["businessObjectsUrl"] + "?{}".format(encoded_query)
+        request_url = self.config()["businessObjectsUrl"] + f"?{encoded_query}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -11304,7 +11030,6 @@ class OTCS:
             ),
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_business_objects_search")
     def get_business_objects_search(
@@ -11312,7 +11037,7 @@ class OTCS:
         external_system_id: str,
         type_name: str | None = None,
         type_id: int | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get information about search fields for a business objects of a given type.
 
         This information can be used to fill the where_clauses parameter of the
@@ -11509,9 +11234,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["businessObjectsSearchUrl"] + "?{}".format(
-            encoded_query,
-        )
+        request_url = self.config()["businessObjectsSearchUrl"] + f"?{encoded_query}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -11534,7 +11257,6 @@ class OTCS:
             ),
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_types")
     def get_workspace_types(
@@ -11542,7 +11264,7 @@ class OTCS:
         expand_workspace_info: bool = True,
         expand_templates: bool = True,
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get all workspace types configured in OTCS.
 
         This REST API is very limited. It does not return all workspace type properties
@@ -11603,7 +11325,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["businessWorkspaceTypesUrlv2"] + "?{}".format(encoded_query)
+        request_url = self.config()["businessWorkspaceTypesUrlv2"] + f"?{encoded_query}"
         request_header = self.request_form_header()
 
         self.logger.debug("Get workspace types; calling -> %s", request_url)
@@ -11613,11 +11335,10 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get workspace types with URL -> {}".format(request_url),
+            failure_message=f"Failed to get workspace types with URL -> {request_url}",
             show_error=show_error,
         )
 
-    # end method definition
 
     def get_workspace_types_iterator(
         self, expand_workspace_info: bool = True, expand_templates: bool = True, show_error: bool = True
@@ -11655,10 +11376,9 @@ class OTCS:
 
         yield from response["results"]
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_type_by_name")
-    def get_workspace_type_by_name(self, type_name: str) -> dict | None:
+    def get_workspace_type_by_name(self, type_name: str) -> dict[str, Any] | None:
         """Get information for a given workspace type.
 
         This is a convinience method. It's implementation is potentially
@@ -11683,14 +11403,13 @@ class OTCS:
 
         return None
 
-    # end method definition
 
     @cache
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_type")
     def get_workspace_type(
         self,
         type_id: int,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get workspace type configured in OTCS.
 
         This REST API is very basic. It mainly delivers the type name for the type ID.
@@ -11725,10 +11444,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get workspace type with ID -> {}".format(type_id),
+            failure_message=f"Failed to get workspace type with ID -> {type_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_type_name")
     def get_workspace_type_name(self, type_id: int) -> str | None:
@@ -11766,7 +11484,6 @@ class OTCS:
 
         return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_type_by_name")
     def get_workspace_type_names(self, lower_case: bool = False, renew: bool = False) -> list[str] | None:
@@ -11803,14 +11520,13 @@ class OTCS:
 
         return workspace_type_names
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_workspace_type_relations")
     def update_workspace_type_relations(
         self,
         type_id: int,
         relations: list[dict],
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update workspace type configured in OTCS.
 
         Currently its main purpose is to update the ontology relations
@@ -11849,10 +11565,9 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(workspace_type_put_body)},
             timeout=None,
-            failure_message="Failed to update workspace type with ID -> {}".format(type_id),
+            failure_message=f"Failed to update workspace type with ID -> {type_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_templates")
     def get_workspace_templates(
@@ -11897,7 +11612,6 @@ class OTCS:
 
         return (None, None)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_create_form")
     def get_workspace_create_form(
@@ -11907,7 +11621,7 @@ class OTCS:
         bo_type: str | None = None,
         bo_id: str | None = None,
         parent_id: int | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the Workspace create form.
 
         Args:
@@ -11930,15 +11644,15 @@ class OTCS:
 
         """
 
-        request_url = self.config()["businessworkspacecreateform"] + "?template_id={}".format(template_id)
+        request_url = self.config()["businessworkspacecreateform"] + f"?template_id={template_id}"
         # Is a parent ID specifified? Then we need to add it to the request URL
         if parent_id is not None:
-            request_url += "&parent_id={}".format(parent_id)
+            request_url += f"&parent_id={parent_id}"
         # Is this workspace connected to a business application / external system?
         if external_system_id and bo_type and bo_id:
-            request_url += "&ext_system_id={}".format(external_system_id)
-            request_url += "&bo_type={}".format(bo_type)
-            request_url += "&bo_id={}".format(bo_id)
+            request_url += f"&ext_system_id={external_system_id}"
+            request_url += f"&bo_type={bo_type}"
+            request_url += f"&bo_id={bo_id}"
             self.logger.debug(
                 "Include business object connection -> (%s, %s, %s) in workspace create form...",
                 external_system_id,
@@ -11954,15 +11668,10 @@ class OTCS:
         )
 
         if parent_id:
-            failure_message = "Failed to get workspace create form for template -> {} and parent ID -> {}".format(
-                template_id,
-                parent_id,
-            )
+            failure_message = f"Failed to get workspace create form for template -> {template_id} and parent ID -> {parent_id}"
         else:
             failure_message = (
-                "Failed to get workspace create form for template with ID -> {} (called without parent ID)".format(
-                    template_id,
-                )
+                f"Failed to get workspace create form for template with ID -> {template_id} (called without parent ID)"
             )
 
         return self.do_request(
@@ -11973,7 +11682,6 @@ class OTCS:
             failure_message=failure_message,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace")
     def get_workspace(
@@ -11981,7 +11689,7 @@ class OTCS:
         node_id: int,
         fields: str | list = "properties",  # per default we just get the most important information
         metadata: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a workspace based on the node ID.
 
         Args:
@@ -12171,10 +11879,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get workspace with ID -> {}".format(node_id),
+            failure_message=f"Failed to get workspace with ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_instances")
     def get_workspace_instances(
@@ -12189,7 +11896,7 @@ class OTCS:
         limit: int | None = None,
         fields: str | list = "properties",  # per default we just get the most important information
         metadata: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get all workspace instances of a given type.
 
         This is a convenience wrapper method for get_workspace_by_type_and_name()
@@ -12276,7 +11983,6 @@ class OTCS:
             metadata=metadata,
         )
 
-    # end method definition
 
     def get_workspace_instances_iterator(
         self,
@@ -12404,9 +12110,7 @@ class OTCS:
             if total_pages and page >= total_pages:
                 return
             page += 1
-        # end while True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_by_type_and_name")
     def get_workspace_by_type_and_name(
@@ -12422,7 +12126,7 @@ class OTCS:
         fields: str | list = "properties",  # per default we just get the most important information
         metadata: bool = False,
         timeout: float = REQUEST_TIMEOUT,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Lookup workspaces based on workspace type and workspace name.
 
         There can be multiple workspaces in the result. This depends on
@@ -12608,9 +12312,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["businessWorkspacesUrl"] + "?{}".format(
-            encoded_query,
-        )
+        request_url = self.config()["businessWorkspacesUrl"] + f"?{encoded_query}"
         if metadata:
             request_url += "&metadata"
 
@@ -12624,10 +12326,7 @@ class OTCS:
                     type_name,
                     request_url,
                 )
-                failure_message = "Failed to get workspace with name -> '{}' and type -> '{}'".format(
-                    name,
-                    type_name,
-                )
+                failure_message = f"Failed to get workspace with name -> '{name}' and type -> '{type_name}'"
             else:
                 self.logger.debug(
                     "Get workspace with name -> '%s' and type ID -> %d; calling -> %s",
@@ -12635,10 +12334,7 @@ class OTCS:
                     type_id,
                     request_url,
                 )
-                failure_message = "Failed to get workspace with name -> '{}' and type ID -> '{}'".format(
-                    name,
-                    type_id,
-                )
+                failure_message = f"Failed to get workspace with name -> '{name}' and type ID -> '{type_id}'"
         elif type_name:
             self.logger.debug(
                 "Get %s workspace instances of type -> '%s'; calling -> %s",
@@ -12670,7 +12366,6 @@ class OTCS:
             failure_message=failure_message,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_type_location")
     def get_workspace_type_location(
@@ -12712,7 +12407,6 @@ class OTCS:
 
         return self.get_result_value(response=response, key="parent_id")
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_by_business_object")
     def get_workspace_by_business_object(
@@ -12722,7 +12416,7 @@ class OTCS:
         business_object_id: str,
         metadata: bool = False,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a workspace based on the business object of an external system.
 
         Args:
@@ -12832,20 +12526,11 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            warning_message="Cannot get workspace via external system -> '{}', Business Object Type -> '{}', and Business Object ID -> {}. It does not exist.".format(
-                external_system_name,
-                business_object_type,
-                business_object_id,
-            ),
-            failure_message="Failed to get workspace via external system -> '{}', Business Object Type -> '{}', and Business Object ID -> {}".format(
-                external_system_name,
-                business_object_type,
-                business_object_id,
-            ),
+            warning_message=f"Cannot get workspace via external system -> '{external_system_name}', Business Object Type -> '{business_object_type}', and Business Object ID -> {business_object_id}. It does not exist.",
+            failure_message=f"Failed to get workspace via external system -> '{external_system_name}', Business Object Type -> '{business_object_type}', and Business Object ID -> {business_object_id}",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="lookup_workspace")
     def lookup_workspaces(
@@ -12859,7 +12544,7 @@ class OTCS:
         fields: str | list | None = None,
         page_size: int = 25,
         stop_at_first_match: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Lookup workspaces that have a specified value in a category attribute.
 
         Args:
@@ -12929,7 +12614,6 @@ class OTCS:
             stop_at_first_match=stop_at_first_match,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace")
     def get_workspace_references(
@@ -12974,7 +12658,6 @@ class OTCS:
 
         return workspace_references
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="set_workspace_reference")
     def set_workspace_reference(
@@ -12984,7 +12667,7 @@ class OTCS:
         bo_type: str | None = None,
         bo_id: str | None = None,
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Set reference of workspace to a business object in an external system.
 
         Args:
@@ -13034,22 +12717,11 @@ class OTCS:
             headers=request_header,
             data=workspace_put_data,
             timeout=None,
-            warning_message="Cannot update reference for workspace ID -> {} with business object connection -> ('{}', '{}', {})".format(
-                workspace_id,
-                external_system_id,
-                bo_type,
-                bo_id,
-            ),
-            failure_message="Failed to update reference for workspace ID -> {} with business object connection -> ('{}', '{}', {})".format(
-                workspace_id,
-                external_system_id,
-                bo_type,
-                bo_id,
-            ),
+            warning_message=f"Cannot update reference for workspace ID -> {workspace_id} with business object connection -> ('{external_system_id}', '{bo_type}', {bo_id})",
+            failure_message=f"Failed to update reference for workspace ID -> {workspace_id} with business object connection -> ('{external_system_id}', '{bo_type}', {bo_id})",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="delete_workspace_reference")
     def delete_workspace_reference(
@@ -13059,7 +12731,7 @@ class OTCS:
         bo_type: str | None = None,
         bo_id: str | None = None,
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Delete reference of workspace to a business object in an external system.
 
         Args:
@@ -13109,22 +12781,11 @@ class OTCS:
             headers=request_header,
             data=workspace_put_data,
             timeout=None,
-            warning_message="Cannot delete reference for workspace ID -> {} with business object connection -> ({}, {}, {})".format(
-                workspace_id,
-                external_system_id,
-                bo_type,
-                bo_id,
-            ),
-            failure_message="Failed to delete reference for workspace ID -> {} with business object connection -> ({}, {}, {})".format(
-                workspace_id,
-                external_system_id,
-                bo_type,
-                bo_id,
-            ),
+            warning_message=f"Cannot delete reference for workspace ID -> {workspace_id} with business object connection -> ({external_system_id}, {bo_type}, {bo_id})",
+            failure_message=f"Failed to delete reference for workspace ID -> {workspace_id} with business object connection -> ({external_system_id}, {bo_type}, {bo_id})",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(
         attributes=OTEL_TRACING_ATTRIBUTES, name="create_workspace", kind=trace.SpanKind.CLIENT
@@ -13145,7 +12806,7 @@ class OTCS:
         external_modify_date: str | None = None,
         external_create_date: str | None = None,
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a new business workspace.
 
         This method creates a new workspace based on the provided
@@ -13301,14 +12962,8 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(create_workspace_post_data)},
             timeout=None,
-            warning_message="Failed to create workspace -> '{}' from template with ID -> {}".format(
-                workspace_name,
-                workspace_template_id,
-            ),
-            failure_message="Failed to create workspace -> '{}' from template with ID -> {}".format(
-                workspace_name,
-                workspace_template_id,
-            ),
+            warning_message=f"Failed to create workspace -> '{workspace_name}' from template with ID -> {workspace_template_id}",
+            failure_message=f"Failed to create workspace -> '{workspace_name}' from template with ID -> {workspace_template_id}",
             show_error=show_error,
             show_warning=(not show_error),
         )
@@ -13322,7 +12977,6 @@ class OTCS:
 
         return response
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_workspace")
     def update_workspace(
@@ -13405,7 +13059,6 @@ class OTCS:
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="create_workspace_relationship")
     def create_workspace_relationship(
@@ -13414,7 +13067,7 @@ class OTCS:
         related_workspace_id: int,
         relationship_type: str = "child",
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a relationship between two workspaces.
 
         A workspace relationship always works two ways: if the relationship
@@ -13458,7 +13111,7 @@ class OTCS:
             "rel_type": relationship_type,
         }
 
-        request_url = self.config()["businessWorkspacesUrl"] + "/{}/relateditems".format(workspace_id)
+        request_url = self.config()["businessWorkspacesUrl"] + f"/{workspace_id}/relateditems"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -13475,20 +13128,11 @@ class OTCS:
             headers=request_header,
             data=create_workspace_relationship_post_data,
             timeout=None,
-            warning_message="Cannot create workspace relationship between -> {} and -> {} of type -> {}. It may already exist.".format(
-                workspace_id,
-                related_workspace_id,
-                relationship_type,
-            ),
-            failure_message="Failed to create workspace relationship between -> {} and -> {} or type -> '{}'".format(
-                workspace_id,
-                related_workspace_id,
-                relationship_type,
-            ),
+            warning_message=f"Cannot create workspace relationship between -> {workspace_id} and -> {related_workspace_id} of type -> {relationship_type}. It may already exist.",
+            failure_message=f"Failed to create workspace relationship between -> {workspace_id} and -> {related_workspace_id} or type -> '{relationship_type}'",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_relationships")
     def get_workspace_relationships(
@@ -13501,7 +13145,7 @@ class OTCS:
         page: int | None = None,
         fields: str | list = "properties",  # per default we just get the most important information
         metadata: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the Workspace relationships to other workspaces.
 
         Optionally, filter criterias can be provided
@@ -13680,7 +13324,7 @@ class OTCS:
             query["action"] = "properties-"
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=False)
-        request_url += "?{}".format(encoded_query)
+        request_url += f"?{encoded_query}"
         if metadata:
             request_url += "&metadata"
 
@@ -13697,12 +13341,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get related workspaces of workspace with ID -> {}".format(
-                workspace_id,
-            ),
+            failure_message=f"Failed to get related workspaces of workspace with ID -> {workspace_id}",
         )
 
-    # end method definition
 
     def get_workspace_relationships_iterator(
         self,
@@ -13810,9 +13451,7 @@ class OTCS:
             if total_pages and page >= total_pages:
                 return
             page += 1
-        # end while True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="delete_workspace_relationship")
     def delete_workspace_relationship(
@@ -13821,7 +13460,7 @@ class OTCS:
         related_workspace_id: int,
         relationship_type: str = "child",
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Delete a relationship between two workspaces.
 
         Args:
@@ -13841,11 +13480,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["businessWorkspacesUrl"] + "/{}/relateditems/{}?rel_type={}".format(
-            workspace_id,
-            related_workspace_id,
-            relationship_type,
-        )
+        request_url = self.config()["businessWorkspacesUrl"] + f"/{workspace_id}/relateditems/{related_workspace_id}?rel_type={relationship_type}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -13860,18 +13495,11 @@ class OTCS:
             method="DELETE",
             headers=request_header,
             timeout=None,
-            warning_message="Cannot delete workspace relationship between -> {} and -> {}. It may already exist.".format(
-                workspace_id,
-                related_workspace_id,
-            ),
-            failure_message="Failed to delete workspace relationship between -> {} and -> {}".format(
-                workspace_id,
-                related_workspace_id,
-            ),
+            warning_message=f"Cannot delete workspace relationship between -> {workspace_id} and -> {related_workspace_id}. It may already exist.",
+            failure_message=f"Failed to delete workspace relationship between -> {workspace_id} and -> {related_workspace_id}",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="delete_workspace_relationships")
     def delete_workspace_relationships(
@@ -13930,10 +13558,9 @@ class OTCS:
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_roles")
-    def get_workspace_roles(self, workspace_id: int) -> dict | None:
+    def get_workspace_roles(self, workspace_id: int) -> dict[str, Any] | None:
         """Get the Workspace roles.
 
         Args:
@@ -13960,15 +13587,12 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get roles of workspace with ID -> {}".format(
-                workspace_id,
-            ),
+            failure_message=f"Failed to get roles of workspace with ID -> {workspace_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_members")
-    def get_workspace_members(self, workspace_id: int, role_id: int) -> dict | None:
+    def get_workspace_members(self, workspace_id: int, role_id: int) -> dict[str, Any] | None:
         """Get the Workspace members of a given role.
 
         Args:
@@ -13983,7 +13607,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["businessWorkspacesUrl"] + "/{}/roles/{}/members".format(workspace_id, role_id)
+        request_url = self.config()["businessWorkspacesUrl"] + f"/{workspace_id}/roles/{role_id}/members"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -13998,12 +13622,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get workspace members for workspace with ID -> {} and role with ID -> {}".format(
-                workspace_id, role_id
-            ),
+            failure_message=f"Failed to get workspace members for workspace with ID -> {workspace_id} and role with ID -> {role_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_workspace_member")
     def add_workspace_member(
@@ -14012,7 +13633,7 @@ class OTCS:
         role_id: int,
         member_id: int,
         show_warning: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add member to a workspace role. Check that the user/group is not yet a member.
 
         Args:
@@ -14099,7 +13720,7 @@ class OTCS:
 
         add_workspace_member_post_data = {"id": str(member_id)}
 
-        request_url = self.config()["businessWorkspacesUrl"] + "/{}/roles/{}/members".format(workspace_id, role_id)
+        request_url = self.config()["businessWorkspacesUrl"] + f"/{workspace_id}/roles/{role_id}/members"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -14116,14 +13737,9 @@ class OTCS:
             headers=request_header,
             data=add_workspace_member_post_data,
             timeout=None,
-            failure_message="Failed to add user/group with ID -> {} to role with ID -> {} of workspace with ID -> {}".format(
-                member_id,
-                role_id,
-                workspace_id,
-            ),
+            failure_message=f"Failed to add user/group with ID -> {member_id} to role with ID -> {role_id} of workspace with ID -> {workspace_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="remove_workspace_member")
     def remove_workspace_member(
@@ -14132,7 +13748,7 @@ class OTCS:
         role_id: int,
         member_id: int,
         show_warning: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Remove a member from a workspace role. Check that the user is currently a member.
 
         Args:
@@ -14177,11 +13793,7 @@ class OTCS:
                 )
             return None
 
-        request_url = self.config()["businessWorkspacesUrl"] + "/{}/roles/{}/members/{}".format(
-            workspace_id,
-            role_id,
-            member_id,
-        )
+        request_url = self.config()["businessWorkspacesUrl"] + f"/{workspace_id}/roles/{role_id}/members/{member_id}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -14197,14 +13809,9 @@ class OTCS:
             method="DELETE",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to remove user/group with ID -> {} from role with ID -> {} of workspace with ID -> {}".format(
-                member_id,
-                role_id,
-                workspace_id,
-            ),
+            failure_message=f"Failed to remove user/group with ID -> {member_id} from role with ID -> {role_id} of workspace with ID -> {workspace_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="remove_workspace_members")
     def remove_workspace_members(
@@ -14252,7 +13859,6 @@ class OTCS:
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_workspace_permissions")
     def assign_workspace_permissions(
@@ -14261,7 +13867,7 @@ class OTCS:
         role_id: int,
         permissions: list,
         apply_to: int = 2,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update the permissions for a specific role within a workspace.
 
         This method assigns specified permissions to a role for a given workspace. It also allows
@@ -14301,10 +13907,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["businessWorkspacesUrl"] + "/{}/roles/{}".format(
-            workspace_id,
-            role_id,
-        )
+        request_url = self.config()["businessWorkspacesUrl"] + f"/{workspace_id}/roles/{role_id}"
 
         request_header = self.request_form_header()
 
@@ -14327,13 +13930,9 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(permission_put_data)},
             timeout=None,
-            failure_message="Failed to update permissions for role with ID -> {} of workspace with ID -> {}".format(
-                role_id,
-                workspace_id,
-            ),
+            failure_message=f"Failed to update permissions for role with ID -> {role_id} of workspace with ID -> {workspace_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_workspace_icon")
     def update_workspace_icon(
@@ -14341,7 +13940,7 @@ class OTCS:
         workspace_id: int,
         file_path: str,
         file_mimetype: str = "image/*",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update a workspace with a with a new icon (which is uploaded).
 
         Args:
@@ -14358,13 +13957,13 @@ class OTCS:
 
         """
 
-        if not os.path.exists(file_path):
+        if not Path(file_path).exists():
             self.logger.error("Workspace icon file does not exist -> %s", file_path)
             return None
 
         update_workspace_icon_post_body = {
             "file_content_type": file_mimetype,
-            "file_filename": os.path.basename(file_path),
+            "file_filename": Path(file_path).name,
         }
 
         request_url = self.config()["businessWorkspacesUrl"] + "/" + str(workspace_id) + "/icons"
@@ -14378,12 +13977,12 @@ class OTCS:
             request_url,
         )
 
-        with open(file_path, "rb") as icon_file:
+        with Path(file_path).open("rb") as icon_file:
             upload_workspace_icon_post_files = [
                 (
                     "file",
                     (
-                        os.path.basename(file_path),
+                        Path(file_path).name,
                         icon_file,
                         file_mimetype,
                     ),
@@ -14397,16 +13996,12 @@ class OTCS:
                 data=update_workspace_icon_post_body,
                 files=upload_workspace_icon_post_files,
                 timeout=None,
-                failure_message="Failed to update workspace ID -> {} with new icon -> '{}'".format(
-                    workspace_id,
-                    file_path,
-                ),
+                failure_message=f"Failed to update workspace ID -> {workspace_id} with new icon -> '{file_path}'",
             )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_unique_names")
-    def get_unique_names(self, names: list, subtype: int | None = None) -> dict | None:
+    def get_unique_names(self, names: list, subtype: int | None = None) -> dict[str, Any] | None:
         """Get definition information for Unique Names.
 
         Args:
@@ -14453,7 +14048,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["uniqueNamesUrl"] + "?{}".format(encoded_query)
+        request_url = self.config()["uniqueNamesUrl"] + f"?{encoded_query}"
         request_header = self.request_form_header()
 
         if subtype:
@@ -14463,17 +14058,14 @@ class OTCS:
                 str(subtype),
                 request_url,
             )
-            warning_message = "Failed to get unique names -> {} of subtype -> {}".format(
-                names,
-                subtype,
-            )
+            warning_message = f"Failed to get unique names -> {names} of subtype -> {subtype}"
         else:
             self.logger.debug(
                 "Get unique names -> %s; calling -> %s",
                 str(names),
                 request_url,
             )
-            warning_message = "Failed to get unique names -> {}".format(names)
+            warning_message = f"Failed to get unique names -> {names}"
 
         return self.do_request(
             url=request_url,
@@ -14484,7 +14076,6 @@ class OTCS:
             show_error=False,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="create_item")
     def create_item(
@@ -14501,7 +14092,7 @@ class OTCS:
         show_error: bool = True,
         parse_error_response: bool | None = False,
         **kwargs: dict,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a Content Server item.
 
         This REST call is somewhat limited. It cannot set featured item or hidden item.
@@ -14648,18 +14239,17 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(create_item_post_data)} if body else create_item_post_data,
             timeout=None,
-            warning_message="Cannot create item -> '{}'".format(item_name),
-            failure_message="Failed to create item -> '{}'".format(item_name),
+            warning_message=f"Cannot create item -> '{item_name}'",
+            failure_message=f"Failed to create item -> '{item_name}'",
             show_error=show_error,
             parse_error_response=parse_error_response,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="copy_node")
     def copy_node(
         self, node_id: int, parent_id: int, new_name: str, parse_error_response: bool | None = False
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a copy of a node based on an existing, specified node to a specified destination, optionally with as a new name.
 
         Args:
@@ -14699,10 +14289,9 @@ class OTCS:
             data={"body": json.dumps(create_document_post_data)},
             timeout=None,
             parse_error_response=parse_error_response,
-            failure_message="Failed to create item -> '{}' ({})".format(new_name, node_id),
+            failure_message=f"Failed to create item -> '{new_name}' ({node_id})",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_item")
     def update_item(
@@ -14716,7 +14305,7 @@ class OTCS:
         classifications: list | None = None,
         body: bool = True,
         **kwargs: dict | None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update a Content Server item (parent, name, description, metadata).
 
         Changing the parent ID is a move operation. If parent ID = 0 or None the item will not be moved.
@@ -14775,7 +14364,7 @@ class OTCS:
         if update_item_put_data:
             self.logger.debug(
                 "Update item %s with new data -> %s; calling -> %s",
-                "-> '{}' ({})".format(item_name, node_id) if item_name else "with ID -> {}".format(node_id),
+                f"-> '{item_name}' ({node_id})" if item_name else f"with ID -> {node_id}",
                 str(update_item_put_data),
                 request_url,
             )
@@ -14787,7 +14376,7 @@ class OTCS:
                 data={"body": json.dumps(update_item_put_data)} if body else update_item_put_data,
                 timeout=None,
                 failure_message="Failed to update item {}".format(
-                    "-> '{}' ({})".format(item_name, node_id) if item_name else "with ID -> {}".format(node_id),
+                    f"-> '{item_name}' ({node_id})" if item_name else f"with ID -> {node_id}",
                 ),
             )
         else:
@@ -14800,7 +14389,7 @@ class OTCS:
             for category_id in category_data:
                 self.logger.debug(
                     "Update item %s, category ID -> %s with new category data -> %s",
-                    "-> '{}' ({})".format(item_name, node_id) if item_name else "with ID -> {}".format(node_id),
+                    f"-> '{item_name}' ({node_id})" if item_name else f"with ID -> {node_id}",
                     str(category_id),
                     str(category_data[category_id]),
                 )
@@ -14816,7 +14405,6 @@ class OTCS:
 
         return response
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_create_form")
     def get_node_create_form(
@@ -14824,7 +14412,7 @@ class OTCS:
         parent_id: int,
         subtype: int = ITEM_TYPE_DOCUMENT,
         category_ids: int | list[int] | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the node create form.
 
         Args:
@@ -14852,25 +14440,21 @@ class OTCS:
             str(category_ids),
         )
 
-        request_url = self.config()["nodesFormUrl"] + "/create?parent_id={}&type={}".format(parent_id, subtype)
+        request_url = self.config()["nodesFormUrl"] + f"/create?parent_id={parent_id}&type={subtype}"
 
         for cat_id in category_ids:
-            request_url += "&category_id={}".format(cat_id)
+            request_url += f"&category_id={cat_id}"
 
         response = self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Cannot get create form for parent ID -> {} and category IDs -> {}".format(
-                parent_id,
-                category_ids,
-            ),
+            failure_message=f"Cannot get create form for parent ID -> {parent_id} and category IDs -> {category_ids}",
         )
 
         return response
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_category_update_form")
     def get_node_category_form(
@@ -14878,7 +14462,7 @@ class OTCS:
         node_id: int,
         category_id: int | None = None,
         operation: str = "update",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the node category update form.
 
         Args:
@@ -14997,32 +14581,25 @@ class OTCS:
             str(category_id),
         )
 
-        request_url = self.config()["nodesFormUrl"] + "/categories/{}?id={}&category_id={}".format(
-            operation, node_id, category_id
-        )
+        request_url = self.config()["nodesFormUrl"] + f"/categories/{operation}?id={node_id}&category_id={category_id}"
 
         response = self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Cannot get category {} form for node ID -> {} and category ID -> {}".format(
-                operation,
-                node_id,
-                category_id,
-            ),
+            failure_message=f"Cannot get category {operation} form for node ID -> {node_id} and category ID -> {category_id}",
         )
 
         return response
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="set_system_attributes")
     def set_system_attributes(
         self,
         node_id: int,
         system_attributes: dict,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Change custom system attributes of a node.
 
         These are NOT the normal node attributres like name or create date! In a standard
@@ -15048,15 +14625,12 @@ class OTCS:
             method="PUT",
             headers=request_header,
             data=system_attributes,
-            failure_message="Failed to update system attributes of item -> '{}' with values -> %s".format(
-                node_id,
-            ),
+            failure_message=f"Failed to update system attributes of item -> '{node_id}' with values -> %s",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_document_templates")
-    def get_document_templates(self, parent_id: int) -> dict | None:
+    def get_document_templates(self, parent_id: int) -> dict[str, Any] | None:
         """Get all document templates for a given target location.
 
         Args:
@@ -15104,10 +14678,7 @@ class OTCS:
             self.config()["nodesUrlv2"]
             + "/"
             + str(parent_id)
-            + "/doctemplates?subtypes={}&sidepanel_subtypes={}".format(
-                self.ITEM_TYPE_DOCUMENT,
-                self.ITEM_TYPE_DOCUMENT,
-            )
+            + f"/doctemplates?subtypes={self.ITEM_TYPE_DOCUMENT}&sidepanel_subtypes={self.ITEM_TYPE_DOCUMENT}"
         )
         request_header = self.request_form_header()
 
@@ -15122,12 +14693,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get document templates for parent folder with ID -> {}".format(
-                parent_id,
-            ),
+            failure_message=f"Failed to get document templates for parent folder with ID -> {parent_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="create_document_from_template")
     def create_document_from_template(
@@ -15138,7 +14706,7 @@ class OTCS:
         category_data: dict | None,
         doc_name: str,
         doc_description: str = "",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a document based on a document template.
 
         Args:
@@ -15209,10 +14777,9 @@ class OTCS:
             # form the documentation on developer.opentext.com
             data={"body": json.dumps(create_document_post_data)},
             timeout=None,
-            failure_message="Failed to create document -> '{}'".format(doc_name),
+            failure_message=f"Failed to create document -> '{doc_name}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="create_wiki")
     def create_wiki(
@@ -15221,7 +14788,7 @@ class OTCS:
         name: str,
         description: str = "",
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a Content Server wiki.
 
         Args:
@@ -15266,12 +14833,11 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(create_wiki_post_data)},
             timeout=None,
-            warning_message="Cannot create wiki -> '{}'".format(name),
-            failure_message="Failed to create wiki -> '{}'".format(name),
+            warning_message=f"Cannot create wiki -> '{name}'",
+            failure_message=f"Failed to create wiki -> '{name}'",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="create_wiki_page")
     def create_wiki_page(
@@ -15281,7 +14847,7 @@ class OTCS:
         content: str = "",
         description: str = "",
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create an OTCS wiki page.
 
         Args:
@@ -15328,12 +14894,11 @@ class OTCS:
             headers=request_header,
             data=create_wiki_page_post_data,
             timeout=None,
-            warning_message="Cannot create wiki page -> '{}'".format(name),
-            failure_message="Failed to create wiki page -> '{}'".format(name),
+            warning_message=f"Cannot create wiki page -> '{name}'",
+            failure_message=f"Failed to create wiki page -> '{name}'",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_web_report_parameters")
     def get_web_report_parameters(self, nickname: str) -> list | None:
@@ -15377,9 +14942,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get parameters of Web Report with nickname -> '{}'".format(
-                nickname,
-            ),
+            failure_message=f"Failed to get parameters of Web Report with nickname -> '{nickname}'",
         )
 
         if response and "data" in response:
@@ -15387,14 +14950,13 @@ class OTCS:
 
         return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="run_web_report")
     def run_web_report(
         self,
         nickname: str,
         web_report_parameters: dict | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Run a Web Report that is identified by its nickname.
 
         Args:
@@ -15428,15 +14990,12 @@ class OTCS:
             headers=request_header,
             data=web_report_parameters,
             timeout=None,
-            failure_message="Failed to run web report with nickname -> '{}'".format(
-                nickname,
-            ),
+            failure_message=f"Failed to run web report with nickname -> '{nickname}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="install_cs_application")
-    def install_cs_application(self, application_name: str) -> dict | None:
+    def install_cs_application(self, application_name: str) -> dict[str, Any] | None:
         """Install a CS Application (based on WebReports).
 
         Args:
@@ -15466,12 +15025,9 @@ class OTCS:
             headers=request_header,
             data=install_cs_application_post_data,
             timeout=None,
-            failure_message="Failed to install OTCS application -> '{}'".format(
-                application_name,
-            ),
+            failure_message=f"Failed to install OTCS application -> '{application_name}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_item_to_user_group")
     def assign_item_to_user_group(
@@ -15480,7 +15036,7 @@ class OTCS:
         subject: str,
         instruction: str,
         assignees: list,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Assign an Content Server item to users and groups.
 
         This is a function used by OT Content Management for Government.
@@ -15525,14 +15081,9 @@ class OTCS:
             headers=request_header,
             data={"add_assignment": json.dumps(assignment_post_data)},
             timeout=None,
-            failure_message="Failed to assign item with ID -> {} to assignees -> {} (subject -> '{}')".format(
-                node_id,
-                assignees,
-                subject,
-            ),
+            failure_message=f"Failed to assign item with ID -> {node_id} to assignees -> {assignees} (subject -> '{subject}')",
         )
 
-    # end method definition
 
     def convert_permission_string_to_permission_value(self, permissions: list) -> int:
         """Convert a list of permission names (strongs) to a bit-mask.
@@ -15570,7 +15121,6 @@ class OTCS:
 
         return permission_value
 
-    # end method definition
 
     def convert_permission_value_to_permission_string(
         self,
@@ -15609,7 +15159,6 @@ class OTCS:
 
         return permissions
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_permission")
     def assign_permission(
@@ -15619,7 +15168,7 @@ class OTCS:
         assignee_type: str,
         assignee: int = 0,
         apply_to: int = 0,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Assign permissions to a user or group for an Content Server item.
 
         This method allows you to assign specified permissions to a user or group for a given
@@ -15716,9 +15265,7 @@ class OTCS:
                 headers=request_header,
                 data={"body": json.dumps(permission_post_data)},
                 timeout=None,
-                failure_message="Failed to assign 'custom' permissions -> {} to item with ID -> {} (apply to -> {})".format(
-                    permissions, node_id, apply_to
-                ),
+                failure_message=f"Failed to assign 'custom' permissions -> {permissions} to item with ID -> {node_id} (apply to -> {apply_to})",
             )
         else:
             # Owner, Owner Group and Public require REST PUT:
@@ -15728,15 +15275,12 @@ class OTCS:
                 headers=request_header,
                 data={"body": json.dumps(permission_post_data)},
                 timeout=None,
-                failure_message="Failed to assign -> '{}' permissions -> {} to item with ID -> {} (apply to -> {})".format(
-                    assignee_type, permissions, node_id, apply_to
-                ),
+                failure_message=f"Failed to assign -> '{assignee_type}' permissions -> {permissions} to item with ID -> {node_id} (apply to -> {apply_to})",
             )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="check_user_node_permissions")
-    def check_user_node_permissions(self, node_ids: list[int], user_id: int | None = None) -> dict | None:
+    def check_user_node_permissions(self, node_ids: list[int], user_id: int | None = None) -> dict[str, Any] | None:
         """Check if the current user (or a specified user) has permissions to access a given list of Content Server nodes.
 
         This is using the AI endpoint as this method is typically used in Aviator use cases.
@@ -15806,10 +15350,9 @@ class OTCS:
             ),
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_context")
-    def get_node_context(self, node_ids: list[int], attributes: int = -1, environment: bool = True) -> dict | None:
+    def get_node_context(self, node_ids: list[int], attributes: int = -1, environment: bool = True) -> dict[str, Any] | None:
         """Retrieve metadata for the IDs passed in to provide context for Aviator.
 
         Args:
@@ -15861,13 +15404,12 @@ class OTCS:
             method="POST",
             headers=request_header,
             data=post_data,
-            failure_message="Failed to get node context for nodes -> {}".format(node_ids),
+            failure_message=f"Failed to get node context for nodes -> {node_ids}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_categories")
-    def get_node_categories(self, node_id: int, metadata: bool = True) -> dict | None:
+    def get_node_categories(self, node_id: int, metadata: bool = True) -> dict[str, Any] | None:
         """Get categories assigned to a node.
 
         Args:
@@ -16003,12 +15545,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get categories for node ID -> {}".format(
-                str(node_id),
-            ),
+            failure_message=f"Failed to get categories for node ID -> {str(node_id)}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_category")
     def get_node_category(
@@ -16016,7 +15555,7 @@ class OTCS:
         node_id: int,
         category_id: int,
         metadata: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a specific category assigned to a node.
 
         Args:
@@ -16050,13 +15589,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get category with ID -> {} for node ID -> {}".format(
-                category_id,
-                node_id,
-            ),
+            failure_message=f"Failed to get category with ID -> {category_id} for node ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_category_ids")
     def get_node_category_ids(
@@ -16097,7 +15632,6 @@ class OTCS:
 
         return category_id_list
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_category_names")
     def get_node_category_names(
@@ -16137,7 +15671,6 @@ class OTCS:
             for category in node_categories["results"]
         ]
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_category_definition")
     def get_node_category_definition(
@@ -16298,7 +15831,6 @@ class OTCS:
 
         return -1, {}
 
-    # end method definition
 
     def _get_soap_docman_client(self) -> Client | None:
         """Get or create the SOAP DocumentManagement client.
@@ -16325,7 +15857,6 @@ class OTCS:
         else:
             return self._soap_docman_client
 
-    # end method definition
 
     def _get_soap_auth_header(self) -> xsd.Element | None:
         """Build SOAP authentication header from the current OTCS ticket.
@@ -16354,7 +15885,6 @@ class OTCS:
         )
         return header(AuthenticationToken=auth_token)
 
-    # end method definition
 
     def _build_soap_category_attributes(self, attributes: list[dict[str, object]] | None) -> list[object] | None:
         """Convert simple attribute definitions to SOAP CreateCategory attributes.
@@ -16389,15 +15919,15 @@ class OTCS:
             soap_type = type_map.get(raw_type, "StringAttribute")
 
             try:
-                attr_cls = soap_client.get_type("ns1:{}".format(soap_type))
-            except Exception:
-                attr_cls = soap_client.get_type("ns0:{}".format(soap_type))
+                attr_cls = soap_client.get_type(f"ns1:{soap_type}")
+            except Exception:  # Zeep type lookup can fail with various errors
+                attr_cls = soap_client.get_type(f"ns0:{soap_type}")
 
             soap_attributes.append(
                 attr_cls(
                     DisplayName=attribute.get("name"),
                     ID=int(attribute.get("ID") or attribute.get("id") or index),
-                    Key="attr_{}".format(index),
+                    Key=f"attr_{index}",
                     MaxValues=int(attribute.get("maxvalues", 1)),
                     MinValues=int(attribute.get("minvalues", 0)),
                     Required=bool(attribute.get("required", False)),
@@ -16407,7 +15937,6 @@ class OTCS:
 
         return soap_attributes
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="create_category")
     def create_category(
@@ -16480,7 +16009,6 @@ class OTCS:
 
         return result
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_category_definition")
     def get_category_definition(self, category_id: int) -> dict[str, object]:
@@ -16526,7 +16054,6 @@ class OTCS:
 
         return result
 
-    # end method definition
 
     def get_category_id_by_name(self, node_id: int, category_name: str) -> int | None:
         """Get the category ID by its name.
@@ -16552,12 +16079,11 @@ class OTCS:
                 return first_key
         return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_category_as_dictionary")
     def get_node_category_as_dictionary(
         self, node_id: int, category_id: int | None = None, category_name: str | None = None
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a specific category assigned to a node in a streamlined Python dictionary form.
 
         * The whole category data of a node is embedded into a python dict.
@@ -16646,7 +16172,6 @@ class OTCS:
                             break
         return result
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_category")
     def assign_category(
@@ -16731,10 +16256,7 @@ class OTCS:
                 headers=request_header,
                 data=category_post_data,
                 timeout=None,
-                failure_message="Failed to assign category with ID -> {} to node with ID -> {}".format(
-                    category_id,
-                    node_id,
-                ),
+                failure_message=f"Failed to assign category with ID -> {category_id} to node with ID -> {node_id}",
                 parse_request_response=False,
             )
 
@@ -16778,10 +16300,7 @@ class OTCS:
                 headers=request_header,
                 data={"body": json.dumps(category_post_data)},
                 timeout=None,
-                failure_message="Failed to apply category with ID -> {} to sub-items of node with ID -> {}".format(
-                    category_id,
-                    node_id,
-                ),
+                failure_message=f"Failed to apply category with ID -> {category_id} to sub-items of node with ID -> {node_id}",
                 parse_request_response=False,
             )
 
@@ -16790,7 +16309,6 @@ class OTCS:
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_category_value_by_name")
     def get_category_value_by_name(
@@ -16875,7 +16393,6 @@ class OTCS:
 
         return value
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_category_value")
     def get_category_value(
@@ -16927,7 +16444,6 @@ class OTCS:
 
         return value
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="set_category_value")
     def set_category_value(
@@ -16938,7 +16454,7 @@ class OTCS:
         attribute_id: int,
         set_id: int = 0,
         set_row: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Set a value to a specific attribute in a category.
 
         Categories and have sets (groupings), multi-line sets (matrix),
@@ -16982,16 +16498,9 @@ class OTCS:
             )
             category_put_data = {
                 "category_id": category_id,
-                "{}_{}_{}_{}".format(category_id, set_id, set_row, attribute_id): value,
+                f"{category_id}_{set_id}_{set_row}_{attribute_id}": value,
             }
-            failure_message = "Failed to set value -> '{}' for category with ID -> {}, set ID -> {}, set row -> {}, attribute ID -> {} on node ID -> {}".format(
-                value,
-                category_id,
-                set_id,
-                set_row,
-                attribute_id,
-                node_id,
-            )
+            failure_message = f"Failed to set value -> '{value}' for category with ID -> {category_id}, set ID -> {set_id}, set row -> {set_row}, attribute ID -> {attribute_id} on node ID -> {node_id}"
         else:
             self.logger.debug(
                 "Assign value -> '%s' to category ID -> %d, attribute ID -> %s on node with ID -> %d; calling -> %s",
@@ -17003,15 +16512,10 @@ class OTCS:
             )
             category_put_data = {
                 "category_id": category_id,
-                "{}_{}".format(category_id, attribute_id): value,
+                f"{category_id}_{attribute_id}": value,
             }
             failure_message = (
-                "Failed to set value -> '{}' for category with ID -> {}, attribute ID -> {} on node ID -> {}".format(
-                    value,
-                    category_id,
-                    attribute_id,
-                    node_id,
-                )
+                f"Failed to set value -> '{value}' for category with ID -> {category_id}, attribute ID -> {attribute_id} on node ID -> {node_id}"
             )
 
         return self.do_request(
@@ -17023,7 +16527,6 @@ class OTCS:
             failure_message=failure_message,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="set_category_values")
     def set_category_values(
@@ -17032,7 +16535,7 @@ class OTCS:
         category_id: int,
         category_data: dict,
         inheritance: bool | None = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Set values of a category.
 
         Categories can have sets (groupings), multi-line sets (matrix), and
@@ -17063,16 +16566,8 @@ class OTCS:
                 headers=request_header,
                 data=category_data,
                 timeout=None,
-                failure_message="Failed to set values -> {} for category with ID -> {}, on node ID -> {}".format(
-                    category_data,
-                    category_id,
-                    node_id,
-                ),
-                warning_message="Couldn't set values -> {} for category with ID -> {}, on node ID -> {}".format(
-                    category_data,
-                    category_id,
-                    node_id,
-                ),
+                failure_message=f"Failed to set values -> {category_data} for category with ID -> {category_id}, on node ID -> {node_id}",
+                warning_message=f"Couldn't set values -> {category_data} for category with ID -> {category_id}, on node ID -> {node_id}",
                 show_error=show_error,
                 show_warning=not show_error,
             )
@@ -17109,7 +16604,6 @@ class OTCS:
 
         return response
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="set_category_inheritance")
     def set_category_inheritance(
@@ -17117,7 +16611,7 @@ class OTCS:
         node_id: int,
         category_id: int,
         enable: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Set category inheritance of a container item (e.g. a folder or workspace) to sub-items.
 
         Args:
@@ -17157,10 +16651,7 @@ class OTCS:
                 method="POST",
                 headers=request_header,
                 timeout=None,
-                failure_message="Failed to enable categories inheritance for node ID -> {} and category ID -> {}".format(
-                    node_id,
-                    category_id,
-                ),
+                failure_message=f"Failed to enable categories inheritance for node ID -> {node_id} and category ID -> {category_id}",
             )
         else:
             self.logger.debug(
@@ -17174,16 +16665,12 @@ class OTCS:
                 method="DELETE",
                 headers=request_header,
                 timeout=None,
-                failure_message="Failed to disable categories inheritance for node ID -> {} and category ID -> {}".format(
-                    node_id,
-                    category_id,
-                ),
+                failure_message=f"Failed to disable categories inheritance for node ID -> {node_id} and category ID -> {category_id}",
             )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="extract_category_data")
-    def extract_category_data(self, node: dict) -> dict | None:
+    def extract_category_data(self, node: dict) -> dict[str, Any] | None:
         """Extract category information into a clean python data structure.
 
         * The whole category data of a node is embedded into a python dict.
@@ -17426,10 +16913,6 @@ class OTCS:
                                     current_dict[attribute_name] = False
                             case _:
                                 self.logger.error("Type -> '%s' not handled yet!", attribute_type)
-                        # end match attribute_type
-                    # end if persona == "category":
-                # end for attribute_key, attribute_schema in category_schema.items():
-            # end for category_key, category_schema in category_schemas.items():
         except Exception as e:
             self.logger.error("Something went wrong with getting the data schema! Error -> %s", str(e))
             return None
@@ -17482,15 +16965,12 @@ class OTCS:
                         # of the category:
                         current_dict = category_lookup[truncate_before_underscore(attribute_key=attribute_key, n=1)]
                     current_dict[attribute_name] = value if value is not None else ""
-                # end for attribute_key, value in category_data.items():
-            # end for for category_data in category_datas.values():
         except Exception as e:
             self.logger.error("Something went wrong while filling the data! Error -> %s", str(e))
             return None
 
         return result_dict
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="collection_operation")
     def collection_operation(
@@ -17498,7 +16978,7 @@ class OTCS:
         collection_id: int,
         node_ids: list | int,
         operation: str = "add",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Apply a collection operation (add or remove) to a list of node(s).
 
         Args:
@@ -17537,21 +17017,16 @@ class OTCS:
             headers=request_header,
             data=collection_put_data,
             timeout=None,
-            failure_message="Failed to {} nodes with IDs -> {} to collection with ID -> {}".format(
-                operation,
-                node_ids,
-                collection_id,
-            ),
+            failure_message=f"Failed to {operation} nodes with IDs -> {node_ids} to collection with ID -> {collection_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_node_to_collection")
     def add_node_to_collection(
         self,
         collection_id: int,
         node_ids: int | list,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add node(s) to a collection.
 
         Args:
@@ -17572,14 +17047,13 @@ class OTCS:
             operation="add",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="remove_node_from_collection")
     def remove_node_from_collection(
         self,
         collection_id: int,
         node_ids: int | list,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Remove node(s) from a collection.
 
         Args:
@@ -17600,10 +17074,9 @@ class OTCS:
             operation="remove",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_classifications")
-    def get_node_classifications(self, node_id: int) -> dict | None:
+    def get_node_classifications(self, node_id: int) -> dict[str, Any] | None:
         """Assign one or multiple classifications to a Content Server item.
 
         Args:
@@ -17719,12 +17192,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get classifications of node ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to get classifications of node ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(
         attributes=OTEL_TRACING_ATTRIBUTES, name="createassign_classifications_document_from_template"
@@ -17735,7 +17205,7 @@ class OTCS:
         classifications: list,
         apply_to_sub_items: bool = False,
         remove_existing: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Assign one or multiple classifications to a Content Server item.
 
         The method supports the removal of existing classification
@@ -17802,13 +17272,9 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(classification_post_data)},
             timeout=None,
-            failure_message="Failed to assign classifications with IDs -> {} to item with ID -> {}".format(
-                classifications,
-                node_id,
-            ),
+            failure_message=f"Failed to assign classifications with IDs -> {classifications} to item with ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_rm_classification")
     def assign_rm_classification(
@@ -17817,7 +17283,7 @@ class OTCS:
         rm_classification: int,
         apply_to_sub_items: bool = False,
         metadata_token: str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Assign a RM classification to a Content Server item.
 
         Args:
@@ -17863,16 +17329,12 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(rm_classification_post_data)},
             timeout=None,
-            failure_message="Failed to assign RM classifications with ID -> {} to item with ID -> {}".format(
-                rm_classification,
-                node_id,
-            ),
+            failure_message=f"Failed to assign RM classifications with ID -> {rm_classification} to item with ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_hold_by_name")
-    def get_hold_by_name(self, holdname: str) -> dict | None:
+    def get_hold_by_name(self, holdname: str) -> dict[str, Any] | None:
         """Get information about a hold by its name.
 
         Args:
@@ -17925,15 +17387,12 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get hold with name -> {}".format(
-                holdname,
-            ),
+            failure_message=f"Failed to get hold with name -> {holdname}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_hold")
-    def assign_hold(self, node_id: int, hold_id: int) -> dict | None:
+    def assign_hold(self, node_id: int, hold_id: int) -> dict[str, Any] | None:
         """Assign a hold to a Content Server item.
 
         Args:
@@ -17967,13 +17426,9 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(assign_hold_post_data)},
             timeout=None,
-            failure_message="Failed to assign hold with ID -> {} to item with ID -> {}".format(
-                hold_id,
-                node_id,
-            ),
+            failure_message=f"Failed to assign hold with ID -> {hold_id} to item with ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_records_management_rsis")
     def get_records_management_rsis(self, limit: int = 100) -> list | None:
@@ -18052,7 +17507,6 @@ class OTCS:
 
         return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="search_records_management_rsis")
     def search_records_management_rsis(self, querystring: str = "") -> list | None:
@@ -18091,10 +17545,9 @@ class OTCS:
 
         return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_records_management_codes")
-    def get_records_management_codes(self) -> dict | None:
+    def get_records_management_codes(self) -> dict[str, Any] | None:
         """Get Records Management Codes.
 
         These are the most basic data types of the Records Management configuration
@@ -18130,11 +17583,10 @@ class OTCS:
 
         return None
 
-    # end method definition
 
     # This is not yet working. REST API endpoint seems not to be in 22.4. Retest with 23.1
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_records_management_codes")
-    def update_records_management_codes(self, rm_codes: dict) -> dict | None:
+    def update_records_management_codes(self, rm_codes: dict) -> dict[str, Any] | None:
         """Update Records Management Codes.
 
         These are the most basic data types of the Records Management configuration
@@ -18169,9 +17621,7 @@ class OTCS:
             headers=request_header,
             data=update_rm_codes_post_data,
             timeout=None,
-            failure_message="Failed to update Records Management codes with -> {}".format(
-                rm_codes,
-            ),
+            failure_message=f"Failed to update Records Management codes with -> {rm_codes}",
         )
 
         if response and "results" in response and response["results"]:
@@ -18179,7 +17629,6 @@ class OTCS:
 
         return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="create_records_management_rsi")
     def create_records_management_rsi(
@@ -18191,7 +17640,7 @@ class OTCS:
         subject: str,
         title: str,
         dispcontrol: bool,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a new Records Management RSI.
 
         Args:
@@ -18246,12 +17695,9 @@ class OTCS:
             headers=request_header,
             data=create_rsi_post_data,
             timeout=None,
-            failure_message="Failed to create Records Management RSI -> '{}'".format(
-                name,
-            ),
+            failure_message=f"Failed to create Records Management RSI -> '{name}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="create_records_management_rsi_schedule")
     def create_records_management_rsi_schedule(
@@ -18283,7 +17729,7 @@ class OTCS:
         purge_superseded: bool = False,
         purge_majors: bool = False,
         mark_official_rendition: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a new Records Management RSI Schedule for an existing RSI.
 
         Args:
@@ -18411,13 +17857,9 @@ class OTCS:
             headers=request_header,
             data=create_rsi_schedule_post_data,
             timeout=None,
-            failure_message="Failed to create Records Management RSI Schedule -> '{}' for RSI -> {}".format(
-                stage,
-                rsi_id,
-            ),
+            failure_message=f"Failed to create Records Management RSI Schedule -> '{stage}' for RSI -> {rsi_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="create_records_management_hold")
     def create_records_management_hold(
@@ -18429,7 +17871,7 @@ class OTCS:
         parent_id: int = 0,
         date_applied: str = "",
         date_to_remove: str = "",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a new Records Management Hold.
 
         Args:
@@ -18487,15 +17929,12 @@ class OTCS:
             headers=request_header,
             data=create_hold_post_data,
             timeout=None,
-            failure_message="Failed to create Records Management Hold -> '{}'".format(
-                name,
-            ),
+            failure_message=f"Failed to create Records Management Hold -> '{name}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_records_management_holds")
-    def get_records_management_holds(self) -> dict | None:
+    def get_records_management_holds(self) -> dict[str, Any] | None:
         """Get a list of all Records Management holds in the system.
 
         Even though there are folders in the holds management area in RM these
@@ -18558,7 +17997,6 @@ class OTCS:
             failure_message="Failed to get list of Records Management Holds",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="import_records_management_settings")
     def import_records_management_settings(self, file_path: str) -> bool:
@@ -18590,16 +18028,16 @@ class OTCS:
             request_url,
         )
 
-        filename = os.path.basename(file_path)
-        if not os.path.exists(file_path):
+        filename = Path(file_path).name
+        if not Path(file_path).exists():
             self.logger.error(
                 "The file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(file_path),
+                str(Path(file_path).parent),
             )
             return False
 
-        with open(file=file_path, encoding="utf-8") as settings_file:
+        with Path(file=file_path).open(encoding="utf-8") as settings_file:
             settings_post_file = {
                 "file": (filename, settings_file, "text/xml"),
             }
@@ -18610,15 +18048,12 @@ class OTCS:
                 headers=request_header,
                 files=settings_post_file,
                 timeout=None,
-                failure_message="Failed to import Records Management settings from file -> '{}'".format(
-                    file_path,
-                ),
+                failure_message=f"Failed to import Records Management settings from file -> '{file_path}'",
                 parse_request_response=False,
             )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="import_records_management_codes")
     def import_records_management_codes(
@@ -18659,16 +18094,16 @@ class OTCS:
 
         codes_post_data = {"updateExistingCodes": update_existing_codes}
 
-        filename = os.path.basename(file_path)
-        if not os.path.exists(file_path):
+        filename = Path(file_path).name
+        if not Path(file_path).exists():
             self.logger.error(
                 "The file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(file_path),
+                str(Path(file_path).parent),
             )
             return False
 
-        with open(file=file_path, encoding="utf-8") as codes_file:
+        with Path(file=file_path).open(encoding="utf-8") as codes_file:
             codes_post_file = {
                 "file": (filename, codes_file, "text/xml"),
             }
@@ -18680,15 +18115,12 @@ class OTCS:
                 data=codes_post_data,
                 files=codes_post_file,
                 timeout=None,
-                failure_message="Failed to import Records Management codes from file -> '{}'".format(
-                    file_path,
-                ),
+                failure_message=f"Failed to import Records Management codes from file -> '{file_path}'",
                 parse_request_response=False,
             )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="import_records_management_rsis")
     def import_records_management_rsis(
@@ -18734,16 +18166,16 @@ class OTCS:
             "deleteSchedules": delete_schedules,
         }
 
-        filename = os.path.basename(file_path)
-        if not os.path.exists(file_path):
+        filename = Path(file_path).name
+        if not Path(file_path).exists():
             self.logger.error(
                 "The file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(file_path),
+                str(Path(file_path).parent),
             )
             return False
 
-        with open(file=file_path, encoding="utf-8") as rsis_file:
+        with Path(file=file_path).open(encoding="utf-8") as rsis_file:
             rsis_post_file = {
                 "file": (filename, rsis_file, "text/xml"),
             }
@@ -18755,15 +18187,12 @@ class OTCS:
                 data=rsis_post_data,
                 files=rsis_post_file,
                 timeout=None,
-                failure_message="Failed to import Records Management RSIs from file -> '{}'".format(
-                    file_path,
-                ),
+                failure_message=f"Failed to import Records Management RSIs from file -> '{file_path}'",
                 parse_request_response=False,
             )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="import_physical_objects_settings")
     def import_physical_objects_settings(self, file_path: str) -> bool:
@@ -18795,16 +18224,16 @@ class OTCS:
             request_url,
         )
 
-        filename = os.path.basename(file_path)
-        if not os.path.exists(file_path):
+        filename = Path(file_path).name
+        if not Path(file_path).exists():
             self.logger.error(
                 "The file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(file_path),
+                str(Path(file_path).parent),
             )
             return False
 
-        with open(file=file_path, encoding="utf-8") as settings_file:
+        with Path(file=file_path).open(encoding="utf-8") as settings_file:
             settings_post_file = {
                 "file": (filename, settings_file, "text/xml"),
             }
@@ -18815,15 +18244,12 @@ class OTCS:
                 headers=request_header,
                 files=settings_post_file,
                 timeout=None,
-                failure_message="Failed to import Physical Objects settings from file -> '{}'".format(
-                    file_path,
-                ),
+                failure_message=f"Failed to import Physical Objects settings from file -> '{file_path}'",
                 parse_request_response=False,
             )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="import_physical_objects_codes")
     def import_physical_objects_codes(
@@ -18863,16 +18289,16 @@ class OTCS:
 
         codes_post_data = {"updateExistingCodes": update_existing_codes}
 
-        filename = os.path.basename(file_path)
-        if not os.path.exists(file_path):
+        filename = Path(file_path).name
+        if not Path(file_path).exists():
             self.logger.error(
                 "The file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(file_path),
+                str(Path(file_path).parent),
             )
             return False
 
-        with open(file=file_path, encoding="utf-8") as codes_file:
+        with Path(file=file_path).open(encoding="utf-8") as codes_file:
             codes_post_file = {
                 "file": (filename, codes_file, "text/xml"),
             }
@@ -18884,15 +18310,12 @@ class OTCS:
                 data=codes_post_data,
                 files=codes_post_file,
                 timeout=None,
-                failure_message="Failed to import Physical Objects codes from file -> '{}'".format(
-                    file_path,
-                ),
+                failure_message=f"Failed to import Physical Objects codes from file -> '{file_path}'",
                 parse_request_response=False,
             )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="import_physical_objects_locators")
     def import_physical_objects_locators(self, file_path: str) -> bool:
@@ -18924,16 +18347,16 @@ class OTCS:
             request_url,
         )
 
-        filename = os.path.basename(file_path)
-        if not os.path.exists(file_path):
+        filename = Path(file_path).name
+        if not Path(file_path).exists():
             self.logger.error(
                 "The file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(file_path),
+                str(Path(file_path).parent),
             )
             return False
 
-        with open(file=file_path, encoding="utf-8") as locators_file:
+        with Path(file=file_path).open(encoding="utf-8") as locators_file:
             locators_post_file = {
                 "file": (filename, locators_file, "text/xml"),
             }
@@ -18944,15 +18367,12 @@ class OTCS:
                 headers=request_header,
                 files=locators_post_file,
                 timeout=None,
-                failure_message="Failed to import Physical Objects locators from file -> '{}'".format(
-                    file_path,
-                ),
+                failure_message=f"Failed to import Physical Objects locators from file -> '{file_path}'",
                 parse_request_response=False,
             )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="import_security_clearance_codes")
     def import_security_clearance_codes(
@@ -18992,16 +18412,16 @@ class OTCS:
 
         codes_post_data = {"includeusers": include_users}
 
-        filename = os.path.basename(file_path)
-        if not os.path.exists(file_path):
+        filename = Path(file_path).name
+        if not Path(file_path).exists():
             self.logger.error(
                 "The file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(file_path),
+                str(Path(file_path).parent),
             )
             return False
 
-        with open(file=file_path, encoding="utf-8") as codes_file:
+        with Path(file=file_path).open(encoding="utf-8") as codes_file:
             codes_post_file = {
                 "file": (filename, codes_file, "text/xml"),
             }
@@ -19013,21 +18433,18 @@ class OTCS:
                 data=codes_post_data,
                 files=codes_post_file,
                 timeout=None,
-                failure_message="Failed to import Security Clearance codes from file -> '{}'".format(
-                    file_path,
-                ),
+                failure_message=f"Failed to import Security Clearance codes from file -> '{file_path}'",
                 parse_request_response=False,
             )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_records_details")
     def get_node_records_details(
         self,
         node_id: int,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the records details for the node with the given ID.
 
         Args:
@@ -19124,7 +18541,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["nodesUrl"] + "/{}/rmclassifications".format(node_id)
+        request_url = self.config()["nodesUrl"] + f"/{node_id}/rmclassifications"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -19138,10 +18555,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get records details of the node with ID -> {}".format(node_id),
+            failure_message=f"Failed to get records details of the node with ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="set_node_records_details")
     def set_node_records_details(
@@ -19153,7 +18569,7 @@ class OTCS:
         essential: str | None = None,
         storage: str | None = None,
         official: bool | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Set records details for the node with the given ID.
 
         Args:
@@ -19207,16 +18623,15 @@ class OTCS:
             data={"body": json.dumps(put_records_detail_data)},
             headers=request_header,
             timeout=None,
-            failure_message="Failed to set records details of the node with ID -> {}".format(node_id),
+            failure_message=f"Failed to set records details of the node with ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_security_clearance")
     def get_node_security_clearance(
         self,
         node_id: int,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the Security Clearance Level and Supplemental Markings for the node with the given ID.
 
         Args:
@@ -19229,7 +18644,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["nodesUrl"] + "/{}/securityclearances".format(node_id)
+        request_url = self.config()["nodesUrl"] + f"/{node_id}/securityclearances"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -19243,10 +18658,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get security clearances of the node with ID -> {}".format(node_id),
+            failure_message=f"Failed to get security clearances of the node with ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="set_node_security_clearance")
     def set_node_security_clearance(
@@ -19254,7 +18668,7 @@ class OTCS:
         node_id: int,
         clearance_level: int,
         supplemental_markings: list[str],
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Set Security Clearance Level and Supplemental Markings for the node with the given ID.
 
         Args:
@@ -19271,7 +18685,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["nodesUrl"] + "/{}/securityclearances".format(node_id)
+        request_url = self.config()["nodesUrl"] + f"/{node_id}/securityclearances"
         request_header = self.request_form_header()
 
         put_security_clearance_data = {}
@@ -19294,17 +18708,14 @@ class OTCS:
             data={"body": json.dumps(put_security_clearance_data)},
             headers=request_header,
             timeout=None,
-            failure_message="Failed to set security clearances and supplemental markings of the node with ID -> {}".format(
-                node_id
-            ),
+            failure_message=f"Failed to set security clearances and supplemental markings of the node with ID -> {node_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user_security_clearance")
     def get_user_security_clearance(
         self,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the Security Clearance level of the current (authenticated) Content Server user.
 
         Returns:
@@ -19329,14 +18740,13 @@ class OTCS:
             failure_message="Failed to get security clearances of the current user",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_user_security_clearance")
     def assign_user_security_clearance(
         self,
         user_id: int,
         security_clearance: int,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Assign a Security Clearance level to a Content Server user.
 
         Args:
@@ -19355,7 +18765,7 @@ class OTCS:
             "securityLevel": security_clearance,
         }
 
-        request_url = self.config()["userSecurityUrl"] + "/{}/securityclearancelevel".format(user_id)
+        request_url = self.config()["userSecurityUrl"] + f"/{user_id}/securityclearancelevel"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -19371,20 +18781,16 @@ class OTCS:
             headers=request_header,
             data=assign_user_security_clearance_post_data,
             timeout=None,
-            failure_message="Failed to assign security clearance -> {} to user with ID -> {}".format(
-                security_clearance,
-                user_id,
-            ),
+            failure_message=f"Failed to assign security clearance -> {security_clearance} to user with ID -> {user_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_user_supplemental_markings")
     def assign_user_supplemental_markings(
         self,
         user_id: int,
         supplemental_markings: list,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Assign a list of Supplemental Markings to a Content Server user.
 
         Args:
@@ -19403,7 +18809,7 @@ class OTCS:
             "suppMarks": supplemental_markings,
         }
 
-        request_url = self.config()["userSecurityUrl"] + "/{}/supplementalmarkings".format(user_id)
+        request_url = self.config()["userSecurityUrl"] + f"/{user_id}/supplementalmarkings"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -19419,16 +18825,12 @@ class OTCS:
             headers=request_header,
             data=assign_user_supplemental_markings_post_data,
             timeout=None,
-            failure_message="Failed to assign supplemental markings -> {} to user with ID -> {}".format(
-                supplemental_markings,
-                user_id,
-            ),
+            failure_message=f"Failed to assign supplemental markings -> {supplemental_markings} to user with ID -> {user_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="create_viewx_transform")
-    def create_viewx_transform(self, transform: dict) -> dict | None:
+    def create_viewx_transform(self, transform: dict) -> dict[str, Any] | None:
         """Create and queue a viewx Transformation (POST /v1/viewx/transform).
 
         Args:
@@ -19721,7 +19123,7 @@ class OTCS:
         )
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workflow_definition")
-    def get_workflow_definition(self, workflow_id: int) -> dict | None:
+    def get_workflow_definition(self, workflow_id: int) -> dict[str, Any] | None:
         """Get the workflow definition.
 
         Args:
@@ -19824,19 +19226,16 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get definition of workflow with ID -> {}".format(
-                workflow_id,
-            ),
+            failure_message=f"Failed to get definition of workflow with ID -> {workflow_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workflow_attributes")
     def get_workflow_attributes(
         self,
         workflow_id: int,
         form_prefix: str = "WorkflowForm",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get workflow attribute definition.
 
         It returns a dictionary to allow looking up attribute IDs based on the attribute names.
@@ -19929,7 +19328,6 @@ class OTCS:
 
         return result
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_document_workflows")
     def get_document_workflows(self, node_id: int, parent_id: int, node_ids: list[int] | None = None) -> list:
@@ -19982,7 +19380,7 @@ class OTCS:
             query = {"doc_id": node_id, "parent_id": parent_id}
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["docWorkflowUrl"] + "?{}".format(encoded_query)
+        request_url = self.config()["docWorkflowUrl"] + f"?{encoded_query}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -19997,13 +19395,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get workflows for node ID -> {} and parent ID -> {}".format(
-                node_ids if node_ids is not None else node_id,
-                parent_id,
-            ),
+            failure_message=f"Failed to get workflows for node ID -> {node_ids if node_ids is not None else node_id} and parent ID -> {parent_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workflows_by_kind_and_status")
     def get_workflows_by_kind_and_status(
@@ -20265,7 +19659,7 @@ class OTCS:
             query["sort"] = sort
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["workflowUrl"] + "/status?{}".format(encoded_query)
+        request_url = self.config()["workflowUrl"] + f"/status?{encoded_query}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -20280,16 +19674,12 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get workflows of kind -> {} and status -> {}".format(
-                kind,
-                str(status),
-            ),
+            failure_message=f"Failed to get workflows of kind -> {kind} and status -> {str(status)}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workflow_status")
-    def get_workflow_status(self, process_id: int) -> dict | None:
+    def get_workflow_status(self, process_id: int) -> dict[str, Any] | None:
         """Get the status (task list) of a workflow instance (process).
 
         Args:
@@ -20394,9 +19784,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["workflowUrl"] + "/status/processes/{}".format(
-            process_id,
-        )
+        request_url = self.config()["workflowUrl"] + f"/status/processes/{process_id}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -20410,15 +19798,12 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get workflow status for process ID -> {}".format(
-                process_id,
-            ),
+            failure_message=f"Failed to get workflow status for process ID -> {process_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="create_draft_process")
-    def create_draft_process(self, workflow_id: int, documents: list | None = None) -> dict | None:
+    def create_draft_process(self, workflow_id: int, documents: list | None = None) -> dict[str, Any] | None:
         """Initiate a draft process. This is the first step to start a process (workflow instance).
 
         Args:
@@ -20467,15 +19852,12 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(draft_process_body_post_data)},
             timeout=None,
-            failure_message="Failed to create draft process from workflow with ID -> {}".format(
-                workflow_id,
-            ),
+            failure_message=f"Failed to create draft process from workflow with ID -> {workflow_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="initiate_workflow")
-    def initiate_workflow(self, workflow_id: int, documents: list | None = None) -> dict | None:
+    def initiate_workflow(self, workflow_id: int, documents: list | None = None) -> dict[str, Any] | None:
         """Initiate a workflow with skip start step.
 
         Args:
@@ -20511,15 +19893,12 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(initiate_process_body_post_data)},
             timeout=None,
-            failure_message="Failed to initiate a workflow with skip start step from workflow with ID -> {}".format(
-                workflow_id,
-            ),
+            failure_message=f"Failed to initiate a workflow with skip start step from workflow with ID -> {workflow_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_draft_process")
-    def get_draft_process(self, draftprocess_id: int) -> dict | None:
+    def get_draft_process(self, draftprocess_id: int) -> dict[str, Any] | None:
         r"""Get draft process data.
 
         Args:
@@ -20574,12 +19953,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get draft process with ID -> {}".format(
-                draftprocess_id,
-            ),
+            failure_message=f"Failed to get draft process with ID -> {draftprocess_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_draft_process")
     def update_draft_process(
@@ -20588,7 +19964,7 @@ class OTCS:
         title: str = "",
         due_date: str = "",
         values: dict | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update a draft process with values.
 
         These can either be given via dedicated parameters
@@ -20641,16 +20017,12 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(update_draft_process_body_put_data)},
             timeout=None,
-            failure_message="Failed to update draft process with ID -> {} with these values -> {}".format(
-                draftprocess_id,
-                values,
-            ),
+            failure_message=f"Failed to update draft process with ID -> {draftprocess_id} with these values -> {values}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="initiate_draft_process")
-    def initiate_draft_process(self, draftprocess_id: int) -> dict | None:
+    def initiate_draft_process(self, draftprocess_id: int) -> dict[str, Any] | None:
         """Initiate a process (workflow instance) from a draft process.
 
         Args:
@@ -20705,12 +20077,9 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(initiate_process_body_put_data)},
             timeout=None,
-            failure_message="Failed to initiate draft process with ID -> {}".format(
-                draftprocess_id,
-            ),
+            failure_message=f"Failed to initiate draft process with ID -> {draftprocess_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_process_task")
     def get_process_task(
@@ -20718,7 +20087,7 @@ class OTCS:
         process_id: int,
         subprocess_id: int | None = None,
         task_id: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         r"""Get the task information of a workflow assignment.
 
         This method must be called with the user authenticated
@@ -20810,12 +20179,9 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get task for process with ID -> {}".format(
-                process_id,
-            ),
+            failure_message=f"Failed to get task for process with ID -> {process_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_process_task")
     def update_process_task(
@@ -20828,7 +20194,7 @@ class OTCS:
         assignee: int | None = None,
         custom_action: str = "",
         comment: str = "",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update a process with values in a task.
 
         This method needs to be called with the user that has the task in its inbox
@@ -20927,17 +20293,12 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(update_process_task_body_put_data)},
             timeout=None,
-            failure_message="Failed to update task with ID -> {} of process with ID -> {} with these values -> {}".format(
-                task_id,
-                process_id,
-                values,
-            ),
+            failure_message=f"Failed to update task with ID -> {task_id} of process with ID -> {process_id} with these values -> {values}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="register_workspace_template")
-    def register_workspace_template(self, node_id: int) -> dict | None:
+    def register_workspace_template(self, node_id: int) -> dict[str, Any] | None:
         """Register a workspace template as project template for Extended ECM for Engineering.
 
         Args:
@@ -20950,7 +20311,7 @@ class OTCS:
 
         """
 
-        registration_post_data = {"ids": "{{ {} }}".format(node_id)}
+        registration_post_data = {"ids": f"{{ {node_id} }}"}
 
         request_url = self.config()["xEngProjectTemplateUrl"]
 
@@ -20968,12 +20329,9 @@ class OTCS:
             headers=request_header,
             data=registration_post_data,
             timeout=None,
-            failure_message="Failed to register Workspace Template with ID -> {} for Extended ECM for Engineering".format(
-                node_id,
-            ),
+            failure_message=f"Failed to register Workspace Template with ID -> {node_id} for Extended ECM for Engineering",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="check_workspace_aviator")
     def check_workspace_aviator(
@@ -21016,14 +20374,13 @@ class OTCS:
 
         return False
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_workspace_aviator")
     def update_workspace_aviator(
         self,
         workspace_id: int,
         status: bool,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Enable or disable the Content Aviator for a workspace.
 
         Args:
@@ -21041,7 +20398,7 @@ class OTCS:
             "enabled": status,
         }
 
-        request_url = self.config()["aiNodesUrl"] + "/{}".format(workspace_id)
+        request_url = self.config()["aiNodesUrl"] + f"/{workspace_id}"
         request_header = self.request_form_header()
 
         if status is True:
@@ -21063,12 +20420,9 @@ class OTCS:
             headers=request_header,
             data=aviator_status_put_data,
             timeout=None,
-            failure_message="Failed to change status for Content Aviator on workspace with ID -> {}".format(
-                workspace_id,
-            ),
+            failure_message=f"Failed to change status for Content Aviator on workspace with ID -> {workspace_id}",
         )
 
-    # end method definition
 
     def aviator_chat(
         self,
@@ -21188,11 +20542,10 @@ class OTCS:
             parse_request_response=parse_request_response,
         )
 
-    # end method definition
 
     def aviator_context(
         self, query: str, threshold: float = 0.5, limit: int = 10, data: list | None = None
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get context based on the query text from Aviator's vector database.
 
         Results are text-chunks and they will be permission-checked for the authenticated user.
@@ -21249,7 +20602,6 @@ class OTCS:
             failure_message="Failed to retrieve context from Content Aviator",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="traverse_node")
     def traverse_node(
@@ -21258,7 +20610,7 @@ class OTCS:
         executables: list[callable],
         current_depth: int = 0,
         **kwargs: dict,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Recursively traverse the node an its subnodes.
 
         This method is preferred for CPU intensive traversals.
@@ -21346,7 +20698,6 @@ class OTCS:
 
         return {"processed": processed, "traversed": traversed}
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="traverse_node_parallel")
     def traverse_node_parallel(
@@ -21358,7 +20709,7 @@ class OTCS:
         strategy: str = "BFS",
         timeout: float = 1.0,
         **kwargs: dict,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Traverse nodes using a queue and thread pool (BFS-style).
 
         This method is preferred for I/O or API intensive traversals.
@@ -21505,9 +20856,7 @@ class OTCS:
                 finally:
                     # Guarantee task_done() is called even if exceptions occur:
                     task_queue.task_done()
-            # end while True
 
-        # end method traverse_node_worker()
 
         # Start thread pool with limited concurrency
         with ThreadPoolExecutor(max_workers=workers, thread_name_prefix=workers_name) as executor:
@@ -21520,7 +20869,6 @@ class OTCS:
 
         return results
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="translate_node")
     def translate_node(self, node: dict | int, **kwargs: dict) -> bool:
@@ -21629,7 +20977,6 @@ class OTCS:
 
         return True
 
-    # end method definition
 
     def _check_filter(
         self,
@@ -21703,7 +21050,7 @@ class OTCS:
         fields: str | list = "properties",  # per default we just get the most important information
         metadata: bool = False,
         **kwargs: dict,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Traverse all workspaces of a given type and execute executables.
 
         Args:
@@ -21789,12 +21136,9 @@ class OTCS:
                 )
                 results["traversed"] += result["traversed"]
                 results["processed"] += result["processed"]
-            # end for workspace_instance in workspace_instances:
-        # end for workspace_type in workspace_types:
 
         return results
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="traverse_workspace")
     def traverse_workspace(
@@ -21812,7 +21156,7 @@ class OTCS:
         fields: str | list = "properties",  # per default we just get the most important information
         metadata: bool = False,
         **kwargs: dict,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Recursively traverse all workspaces and relationships.
 
         This method is preferred for CPU intensive traversals.
@@ -21901,9 +21245,9 @@ class OTCS:
                 "Stop at workspace -> '%s' (%d) of type %s as it has been processed before.",
                 workspace_name,
                 workspace_node_id,
-                "-> '{}' ({})".format(workspace_type_name, workspace_type_id)
+                f"-> '{workspace_type_name}' ({workspace_type_id})"
                 if workspace_type_name
-                else "ID -> {}".format(workspace_type_id),
+                else f"ID -> {workspace_type_id}",
             )
             return {"processed": processed, "traversed": traversed}
         processed_workspaces[workspace_node_id] = workspace_name
@@ -21964,9 +21308,9 @@ class OTCS:
                         rel_type,
                         related_workspace_name,
                         related_workspace_id,
-                        "-> '{}' ({})".format(related_workspace_type_name, related_workspace_type_id)
+                        f"-> '{related_workspace_type_name}' ({related_workspace_type_id})"
                         if related_workspace_type_name
-                        else "ID -> {}".format(related_workspace_type_id),
+                        else f"ID -> {related_workspace_type_id}",
                     )
                     # Recursive call for related workspace:
                     result = self.traverse_workspace(
@@ -21983,12 +21327,9 @@ class OTCS:
                     processed += result.get("processed", 0)
                     traversed += result.get("traversed", 0)
                 traversed += 1
-            # end for rel_type...
-        # end if traversal
 
         return {"processed": processed, "traversed": traversed}
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="traverse_workspaces_parallel")
     def traverse_workspaces_parallel(
@@ -22008,7 +21349,7 @@ class OTCS:
         metadata: bool = False,
         business_objects: bool = False,
         **kwargs: dict,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Traverse nodes using a queue and thread pool (BFS-style).
 
         This method is preferred for I/O or API intensive traversals.
@@ -22138,8 +21479,6 @@ class OTCS:
                     )
                     task_queue.put((workspace_instance, 0))
                     counter += 1
-                # end for workspace_instances...
-            # end for workspace_type ...
 
             self.logger.debug(
                 "Initialization of traversal queue completed. Added %s workspaces in total to queue. Workers don't have to wait any more if queue is empty.",
@@ -22147,7 +21486,6 @@ class OTCS:
             )
             initialization_done = True
 
-        # end sub-method definition
 
         @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="traverse_workspace_worker")
         def traverse_workspace_worker() -> None:
@@ -22199,9 +21537,9 @@ class OTCS:
                                 "Stop at workspace -> '%s' (%d) of type %s as it has been processed before.",
                                 workspace_name,
                                 workspace_id,
-                                "-> '{}' ({})".format(workspace_type_name, workspace_type_id)
+                                f"-> '{workspace_type_name}' ({workspace_type_id})"
                                 if workspace_type_name
-                                else "ID -> {}".format(workspace_type_id),
+                                else f"ID -> {workspace_type_id}",
                             )
                             continue  # will jump to finally, declare task done and only then continue while loop
                         processed_workspaces[workspace_id] = workspace_name
@@ -22270,9 +21608,9 @@ class OTCS:
                                     self.logger.debug(
                                         "Skipping traversal of related %s workspace as its type %s does not match filter.",
                                         rel_type,
-                                        "-> '{}' ({})".format(related_workspace_type_name, related_workspace_type_id)
+                                        f"-> '{related_workspace_type_name}' ({related_workspace_type_id})"
                                         if related_workspace_type_name
-                                        else "ID -> {}".format(related_workspace_type_id),
+                                        else f"ID -> {related_workspace_type_id}",
                                     )
                                     continue  # the for loop
                                 self.logger.debug(
@@ -22280,9 +21618,9 @@ class OTCS:
                                     rel_type,
                                     related_workspace_name,
                                     related_workspace_id,
-                                    "-> '{}' ({})".format(related_workspace_type_name, related_workspace_type_id)
+                                    f"-> '{related_workspace_type_name}' ({related_workspace_type_id})"
                                     if related_workspace_type_name
-                                    else "ID -> {}".format(related_workspace_type_id),
+                                    else f"ID -> {related_workspace_type_id}",
                                     current_depth,
                                 )
 
@@ -22308,16 +21646,12 @@ class OTCS:
                                             related_workspace_id,
                                             str(e),
                                         )
-                                # end executable in relationship_executables or []
 
                                 # Put related workspace into the queue for traversal:
                                 task_queue.put((related_workspace, current_depth + 1))
 
                                 with lock:
                                     results["traversed"] += 1
-                            # end for related_workspace in workspace_relationships
-                        # end for rel_type in relationship_types:
-                    # end if traverse and "child" in relationship_types:
 
                 except Exception as worker_error:
                     self.logger.error("Worker thread crashed unexpectedly; error -> %s", str(worker_error))
@@ -22327,9 +21661,7 @@ class OTCS:
                     # Also continue statements in the try-block will first jump
                     # to here before continuing the while loop!
                     task_queue.task_done()
-            # end while True
 
-        # end method traverse_node_worker()
 
         # Start thread that populates the task queue
         init_thread = threading.Thread(target=init_traversal_queue, name="TraversalQueueInitializer")
@@ -22352,7 +21684,6 @@ class OTCS:
 
         return results
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="download_document_multi_threading")
     def download_document_multi_threading(
@@ -22379,16 +21710,16 @@ class OTCS:
         with self._semaphore:
             self.download_document(node_id=node_id, file_path=file_path)
 
-        if extract_after_download and os.path.isfile(file_path):
+        if extract_after_download and Path(file_path).is_file():
             self.logger.debug("Extracting Zip file -> %s", file_path)
 
             file_with_ext = file_path + ".zip"
             try:
                 # Rename the node to ID.zip to extract it to
                 # the same name, remove zip if present:
-                if os.path.isfile(file_with_ext):
-                    os.remove(file_with_ext)
-                os.rename(file_path, file_with_ext)
+                if Path(file_with_ext).is_file():
+                    Path(file_with_ext).unlink()
+                Path(file_path).rename(file_with_ext)
             except OSError:
                 self.logger.error(
                     "Failed to rename file -> '%s' to '%s'!",
@@ -22400,14 +21731,14 @@ class OTCS:
             try:
                 with zipfile.ZipFile(file_with_ext, "r") as zfile:
                     zfile.extractall(file_path)
-                    os.remove(file_with_ext)
+                    Path(file_with_ext).unlink()
 
                 self.logger.debug(
                     "File successfully extracted, extracting nested items -> %s",
                     file_path,
                 )
 
-            except Exception:
+            except (OSError, zipfile.BadZipFile):
                 self.logger.error(
                     "Failed to unzip node (%d) -> %s",
                     node_id,
@@ -22417,21 +21748,20 @@ class OTCS:
             for root, _, files in os.walk(file_path):
                 for filename in files:
                     if filename.endswith(".zip"):
-                        file_spec = os.path.join(root, filename)
+                        file_spec = Path(root) / filename
                         try:
                             with zipfile.ZipFile(file_spec, "r") as zip_file:
                                 self.logger.debug(
                                     "Extracting nested ZIP archive -> %s",
                                     filename,
                                 )
-                                zip_file.extractall(os.path.join(root, filename[:-4]))
-                        except Exception:
+                                zip_file.extractall(Path(root) / filename[:-4])
+                        except (OSError, zipfile.BadZipFile):
                             self.logger.error(
                                 "Failed to unzip nested ZIP file -> '%s'!",
                                 filename,
                             )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="apply_filter")
     def apply_filter(
@@ -22677,7 +22007,6 @@ class OTCS:
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_attribute_columns")
     def add_attribute_columns(self, row: dict, categories: dict, prefix: str) -> bool:
@@ -22784,7 +22113,6 @@ class OTCS:
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="load_items")
     def load_items(
@@ -22808,7 +22136,7 @@ class OTCS:
         skip_existing_downloads: bool = True,
         extract_zip: bool = False,
         workers: int = 3,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a Pandas Data Frame by traversing a given Content Server hierarchy.
 
         This method collects workspace and document items.
@@ -22932,7 +22260,6 @@ class OTCS:
                 return (False, False)
             return (True, True)
 
-        # end check_node_exclusions()
 
         def check_node_workspace(node: dict, **kwargs: dict) -> tuple[bool, bool]:
             """Check if the processed node should be recorded as a workspace in the data frame.
@@ -23087,7 +22414,6 @@ class OTCS:
             # keep traversing into the workspace folders.
             return (True, True)
 
-        # end check_node_workspace()
 
         def check_node_item(node: dict, **kwargs: dict) -> tuple[bool, bool]:
             """Check if the processed node should be recorded as an item in the data frame.
@@ -23206,12 +22532,12 @@ class OTCS:
                 # issues with too long or not valid file names.
                 # As the Pandas DataFrame has all information
                 # this is easy to resolve at upload time.
-                file_path = "{}/{}".format(self._download_dir, node_id)
+                file_path = f"{self._download_dir}/{node_id}"
 
                 # We download only if not downloaded before or if downloaded
                 # before but forced to re-download:
                 if control_flags["download_documents"] and (
-                    not os.path.exists(file_path) or not control_flags["skip_existing_downloads"]
+                    not Path(file_path).exists() or not control_flags["skip_existing_downloads"]
                 ):
                     mime_type = self.get_result_value(response=node, key="mime_type")
                     extract_after_download = mime_type == "application/x-zip-compressed" and extract_zip
@@ -23229,7 +22555,7 @@ class OTCS:
                     thread = threading.Thread(
                         target=self.download_document_multi_threading,
                         args=(node_id, file_path, extract_after_download),
-                        name="download_document_node_{}".format(node_id),
+                        name=f"download_document_node_{node_id}",
                     )
                     thread.start()
                     download_threads.append(thread)
@@ -23239,7 +22565,6 @@ class OTCS:
                         node_name,
                         file_path,
                     )
-            # end if document
 
             #
             # Construct a dictionary 'row' that we will add
@@ -23299,15 +22624,14 @@ class OTCS:
             # We have traverse = False because document or URL items have no sub-items.
             return (True, False)
 
-        # end check_node_item()
 
         #
         # Start Main method:
         #
 
         # Create folder if it does not exist
-        if download_documents and not os.path.exists(self._download_dir):
-            os.makedirs(self._download_dir)
+        if download_documents and not Path(self._download_dir).exists():
+            Path(self._download_dir).mkdir(parents=True, exist_ok=True)
 
         # These won't change during processing - stays the same for all nodes:
         filter_workspace_data = {
@@ -23369,7 +22693,6 @@ class OTCS:
 
         return result
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="aviator_embed_metadata")
     def aviator_embed_metadata(
@@ -23510,7 +22833,6 @@ class OTCS:
                         )
                         break
 
-        # end async def _inner()
 
         # Is this method called without the node data?
         # Then we get it with the node_id:
@@ -23587,7 +22909,6 @@ class OTCS:
 
         return success
 
-    # end method definition
 
     def _get_document_template_raw(self, workspace_id: int) -> ET.Element | None:
         """Get the raw template XML payload from a workspace.
@@ -23641,7 +22962,7 @@ class OTCS:
                 headers=request_header,
                 data=data,
                 timeout=None,
-                failure_message="Failed to get document templates for workspace with ID -> {}".format(workspace_id),
+                failure_message=f"Failed to get document templates for workspace with ID -> {workspace_id}",
                 parse_request_response=False,
             )
 
@@ -23665,7 +22986,7 @@ class OTCS:
                 method="GET",
                 headers=request_header,
                 timeout=None,
-                failure_message="Failed to get document templates for workspace with ID -> {}".format(workspace_id),
+                failure_message=f"Failed to get document templates for workspace with ID -> {workspace_id}",
                 parse_request_response=False,
             )
 
@@ -23706,7 +23027,6 @@ class OTCS:
         else:
             return root
 
-    # end method definition
 
     def get_document_template_names(self, workspace_id: int, root: ET.Element | None = None) -> list[str] | None:
         """Get the list of available template names from a workspace.
@@ -23736,7 +23056,6 @@ class OTCS:
 
         return template_names
 
-    # end method definition
 
     def get_document_template(
         self, workspace_id: int, template_name: str, input_values: dict | None = None
@@ -23814,4 +23133,3 @@ class OTCS:
 
         return payload
 
-    # end method definition

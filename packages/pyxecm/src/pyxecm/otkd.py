@@ -17,6 +17,7 @@ import sys
 import time
 from http import HTTPStatus
 from importlib.metadata import version
+from pathlib import Path
 
 import requests
 
@@ -113,7 +114,7 @@ class OTKD:
 
         otkd_base_url = protocol + "://" + otkd_config["hostname"]
         if str(port) not in ["80", "443"]:
-            otkd_base_url += ":{}".format(port)
+            otkd_base_url += f":{port}"
         otkd_config["baseUrl"] = otkd_base_url
         otkd_config["restUrl"] = otkd_config["baseUrl"] + "/nifi-api"
         otkd_config["flowUrl"] = otkd_config["restUrl"] + "/flow"
@@ -122,7 +123,6 @@ class OTKD:
         self._config = otkd_config
         self._otkd_token = None
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -133,7 +133,6 @@ class OTKD:
         """
         return self._config
 
-    # end method definition
 
     def hostname(self) -> str:
         """Return the Knowledge Discovery hostname.
@@ -144,7 +143,6 @@ class OTKD:
         """
         return self.config()["hostname"]
 
-    # end method definition
 
     def set_hostname(self, hostname: str) -> None:
         """Set the Knowledge Discovery hostname.
@@ -156,7 +154,6 @@ class OTKD:
         """
         self.config()["hostname"] = hostname
 
-    # end method definition
 
     def credentials(self, basic_auth: bool = False) -> dict:
         """Get credentials (username + password).
@@ -175,7 +172,6 @@ class OTKD:
             "password": self.config()["password"],
         }
 
-    # end method definition
 
     def set_credentials(
         self,
@@ -195,7 +191,6 @@ class OTKD:
         self.config()["username"] = username or "admin"
         self.config()["password"] = password or ""
 
-    # end method definition
 
     def base_url(self) -> str:
         """Return the Knowledge Discovery base URL.
@@ -207,7 +202,6 @@ class OTKD:
 
         return self.config()["baseUrl"]
 
-    # end method definition
 
     def rest_url(self) -> str:
         """Return the Knowledge Discovery REST URL.
@@ -220,7 +214,6 @@ class OTKD:
 
         return self.config()["restUrl"]
 
-    # end method definition
 
     def request_form_header(self) -> dict:
         """Deliver the FORM request header used for the SOAP calls.
@@ -239,11 +232,10 @@ class OTKD:
         request_header = {}
         request_header.update(REQUEST_FORM_HEADERS)
         if self._otkd_token:
-            request_header.update({"Authorization": "Bearer {}".format(self._otkd_token)})
+            request_header.update({"Authorization": f"Bearer {self._otkd_token}"})
 
         return request_header
 
-    # end method definition
 
     def request_json_header(self) -> dict:
         """Deliver the JSON request header used for the CRUD REST API calls.
@@ -262,11 +254,10 @@ class OTKD:
         request_header = {}
         request_header.update(REQUEST_JSON_HEADERS)
         if self._otkd_token:
-            request_header.update({"Authorization": "Bearer {}".format(self._otkd_token)})
+            request_header.update({"Authorization": f"Bearer {self._otkd_token}"})
 
         return request_header
 
-    # end method definition
 
     def request_upload_header(self) -> dict:
         """Deliver the upload request header used for the upload REST API calls that uses the 'file' parameter.
@@ -287,11 +278,10 @@ class OTKD:
         request_header = {}
         request_header.update(REQUEST_UPLOAD_HEADERS)
         if self._otkd_token:
-            request_header.update({"Authorization": "Bearer {}".format(self._otkd_token)})
+            request_header.update({"Authorization": f"Bearer {self._otkd_token}"})
 
         return request_header
 
-    # end method definition
 
     def do_request(
         self,
@@ -450,16 +440,13 @@ class OTKD:
                         time.sleep(REQUEST_RETRY_DELAY)  # Add a delay before retrying
                     else:
                         return None
-            # end try
             self.logger.warning(
                 "Retrying Nifi REST API %s call -> %s... (retry = %s)",
                 method,
                 url,
                 str(retries),
             )
-        # end while True
 
-    # end method definition
 
     def parse_request_response(
         self,
@@ -492,14 +479,9 @@ class OTKD:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -508,7 +490,6 @@ class OTKD:
         else:
             return dict_object
 
-    # end method definition
 
     def authenticate(self, revalidate: bool = False) -> str | None:
         """Authenticate at Knowledge Discovery and retrieve Ticket.
@@ -573,7 +554,6 @@ class OTKD:
             )
             return None
 
-    # end method definition
 
     def get_root_process_group(self) -> dict | None:
         """Get the root process group in Nifi.
@@ -594,7 +574,6 @@ class OTKD:
             failure_message="Failed to get root process group",
         )
 
-    # end method definition
 
     def get_process_groups(self, parent_process_group_id: str) -> list | None:
         """Get the (root) process groups.
@@ -692,7 +671,6 @@ class OTKD:
 
         return process_groups.get("processGroups")
 
-    # end method definition
 
     def get_process_group_by_parent_and_name(self, name: str, parent_id: str | None = None) -> dict | None:
         """Get a process group based on the parent ID and name.
@@ -796,7 +774,6 @@ class OTKD:
 
         return process_group
 
-    # end method definition
 
     def get_process_group_by_name(self, name: str) -> dict | None:
         """Get a top-level process group based on the name.
@@ -819,7 +796,6 @@ class OTKD:
         # process group in root if it exists with the given name:
         return self.get_process_group_by_parent_and_name(name=name)
 
-    # end method definition
 
     def upload_process_group(
         self, file_path: str, name: str, position_x: float = 0.0, position_y: float = 0.0
@@ -867,7 +843,7 @@ class OTKD:
         request_header = self.request_upload_header()
 
         # Upload the Template JSON file
-        with open(file_path, "rb") as pg_file:
+        with Path(file_path).open("rb") as pg_file:
             response = self.do_request(
                 url=request_url,
                 method="POST",
@@ -895,7 +871,6 @@ class OTKD:
 
         return None
 
-    # end method definition
 
     def get_flow_status(self) -> dict | None:
         """Get the flow status.
@@ -938,7 +913,6 @@ class OTKD:
             failure_message="Cannot get flow status!",
         )
 
-    # end method definition
 
     def get_flow_config(self) -> dict | None:
         """Get the flow configuration.
@@ -972,7 +946,6 @@ class OTKD:
             failure_message="Cannot get flow status!",
         )
 
-    # end method definition
 
     def get_parameter_contexts(self) -> list | None:
         """Get the list of parameter contexts.
@@ -998,7 +971,6 @@ class OTKD:
 
         return parameter_contexts.get("parameterContexts")
 
-    # end method definition
 
     def get_parameter_context_by_name(self, name: str) -> dict | None:
         """Get the parameter context with the given name.
@@ -1024,7 +996,6 @@ class OTKD:
 
         return parameter_context
 
-    # end method definition
 
     def update_parameter(
         self, component: str, parameter: str, value: str | float | bool, sensitive: bool = False, description: str = ""
@@ -1160,7 +1131,6 @@ class OTKD:
 
         return None
 
-    # end method definition
 
     def start_all_processors(self, name: str) -> dict | None:
         """Start all processors in the process group given by its name.
@@ -1200,7 +1170,6 @@ class OTKD:
 
         return None
 
-    # end method definition
 
     def get_controller_services(self, process_group_id: str) -> list | None:
         """Get the list of controller services for a process group.
@@ -1305,7 +1274,7 @@ class OTKD:
             url=request_url,
             method="GET",
             headers=request_header,
-            failure_message="Failed to get controller services for process group -> '{}'".format(process_group_id),
+            failure_message=f"Failed to get controller services for process group -> '{process_group_id}'",
         )
 
         if not controller_services:
@@ -1313,7 +1282,6 @@ class OTKD:
 
         return controller_services.get("controllerServices", [])
 
-    # end method definition
 
     def set_controller_services_state(self, name: str, state: str = "ENABLED", components: dict | None = None) -> bool:
         """Enable or disable Controller Services in the specified Process Group.
@@ -1371,12 +1339,9 @@ class OTKD:
             method="PUT",
             headers=request_header,
             json_data=json_body,
-            failure_message="Unable to set state -> '{}' for controller-services in process-group -> '{}'".format(
-                state, name
-            ),
+            failure_message=f"Unable to set state -> '{state}' for controller-services in process-group -> '{name}'",
             show_error=True,
         )
 
         return response
 
-    # end method definition

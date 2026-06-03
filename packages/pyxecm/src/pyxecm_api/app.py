@@ -12,6 +12,7 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from importlib.metadata import version
+from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI
@@ -43,13 +44,13 @@ tracer = trace.get_tracer(__name__)
 logger = logging.getLogger("CustomizerAPI")
 
 # Check if Logfile and folder exists and is unique
-if os.path.isfile(os.path.join(api_settings.logfolder, api_settings.logfile)):
+if Path(Path(api_settings.logfolder) / api_settings.logfile.is_file()):
     customizer_start_time = datetime.now(UTC).strftime(
         "%Y-%m-%d_%H-%M",
     )
     api_settings.logfile = f"customizer_{customizer_start_time}.log"
-elif not os.path.exists(api_settings.logfolder):
-    os.makedirs(api_settings.logfolder)
+elif not Path(api_settings.logfolder).exists():
+    Path(api_settings.logfolder).mkdir(parents=True, exist_ok=True)
 
 
 @asynccontextmanager
@@ -98,7 +99,6 @@ async def lifespan(
     PAYLOAD_LIST.stop_payload_processing()
 
 
-# end function lifespan
 
 app = FastAPI(
     docs_url="/api",
@@ -164,17 +164,17 @@ def run_api() -> None:
     """Start the FastAPI Webserver."""
 
     # Check if Temp and Log dir exists
-    if not os.path.exists(api_settings.temp_dir):
-        os.makedirs(api_settings.temp_dir)
-    if not os.path.exists(api_settings.logfolder):
-        os.makedirs(api_settings.logfolder)
+    if not Path(api_settings.temp_dir).exists():
+        Path(api_settings.temp_dir).mkdir(parents=True, exist_ok=True)
+    if not Path(api_settings.logfolder).exists():
+        Path(api_settings.logfolder).mkdir(parents=True, exist_ok=True)
 
     # Check if Logfile and exists and is unique
-    if os.path.isfile(os.path.join(api_settings.logfolder, api_settings.logfile)):
+    if Path(Path(api_settings.logfolder) / api_settings.logfile.is_file()):
         customizer_start_time = datetime.now(UTC).strftime(
             "%Y-%m-%d_%H-%M",
         )
-        api_settings.logfile = "customizer_{}.log".format(customizer_start_time)
+        api_settings.logfile = f"customizer_{customizer_start_time}.log"
 
     # Configure Logging for uvicorn
     log_config = uvicorn.config.LOGGING_CONFIG
@@ -208,14 +208,14 @@ def run_api() -> None:
     log_config["handlers"]["file"] = {
         "formatter": "logfile",
         "class": "logging.FileHandler",
-        "filename": os.path.join(api_settings.logfolder, api_settings.logfile),
+        "filename": Path(api_settings.logfolder) / api_settings.logfile,
         "mode": "a",
     }
 
     log_config["handlers"]["accesslog"] = {
         "formatter": "accesslog",
         "class": "logging.FileHandler",
-        "filename": os.path.join(api_settings.logfolder, "access.log"),
+        "filename": Path(api_settings.logfolder) / "access.log",
         "mode": "a",
     }
 

@@ -19,7 +19,6 @@ __email__ = "mdiefenb@opentext.com"
 import base64
 import json
 import logging
-import os
 import platform
 import sys
 import tempfile
@@ -27,6 +26,8 @@ import time
 import urllib.parse
 from http import HTTPStatus
 from importlib.metadata import version
+from pathlib import Path
+from typing import Any
 
 import requests
 from opentelemetry import trace
@@ -150,7 +151,7 @@ class OTDS:
 
         otds_base_url = protocol + "://" + otds_config["hostname"]
         if str(port) not in ["80", "443"]:
-            otds_base_url += ":{}".format(port)
+            otds_base_url += f":{port}"
         otds_base_url += "/otdsws"
         otds_config["baseUrl"] = otds_base_url
 
@@ -178,7 +179,7 @@ class OTDS:
 
         self._config = otds_config
 
-    def config(self) -> dict:
+    def config(self) -> dict[str, Any]:
         """Return the configuration dictionary.
 
         Returns:
@@ -188,9 +189,8 @@ class OTDS:
         """
         return self._config
 
-    # end method definition
 
-    def cookie(self) -> dict:
+    def cookie(self) -> dict[str, Any]:
         """Return the login cookie of OTDS.
 
         This is set by the authenticate() method
@@ -202,9 +202,8 @@ class OTDS:
         """
         return self._cookie
 
-    # end method definition
 
-    def set_cookie(self, ticket: str) -> dict:
+    def set_cookie(self, ticket: str) -> dict[str, Any]:
         """Return the login cookie of OTDS.
 
         This is set by the authenticate() method
@@ -223,7 +222,6 @@ class OTDS:
 
         return self._cookie
 
-    # end method definition
 
     def get_access_token(self) -> str | None:
         """Get the access token for OAuth2 authentication.
@@ -236,7 +234,6 @@ class OTDS:
 
         return self._token
 
-    # end method definition
 
     def set_access_token(self, token: str) -> str | None:
         """Get the access token for OAuth2 authentication.
@@ -255,7 +252,6 @@ class OTDS:
 
         return self._token
 
-    # end method definition
 
     def get_access_token_info(self, resource_id: str | None = None) -> str | None:
         """Get the access token information for OAuth2 authentication.
@@ -274,7 +270,7 @@ class OTDS:
 
         self.logger.debug(
             "Get OAuth token info%s; calling -> %s",
-            " for resource -> '{}'".format(resource_id) if resource_id else "",
+            f" for resource -> '{resource_id}'" if resource_id else "",
             request_url,
         )
 
@@ -284,13 +280,12 @@ class OTDS:
             json_data=token_info_body,
             timeout=None,
             failure_message="Failed to get OAuth token info{}".format(
-                " for resource -> '{}'".format(resource_id) if resource_id else ""
+                f" for resource -> '{resource_id}'" if resource_id else ""
             ),
         )
 
-    # end method definition
 
-    def credentials(self) -> dict:
+    def credentials(self) -> dict[str, Any]:
         """Return the credentials (username + password).
 
         Returns:
@@ -304,11 +299,10 @@ class OTDS:
             "password": self.config()["password"],
         }
 
-    # end method definition
 
     def client_credentials(
         self, grant_type: str = "client_credentials", scope: str | None = None, **kwargs: dict[str, str]
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Return the client credentials (client_id + client_secret).
 
         Args:
@@ -340,7 +334,6 @@ class OTDS:
 
         return cred
 
-    # end method definition
 
     def base_url(self) -> str:
         """Return the base URL of OTDS.
@@ -353,7 +346,6 @@ class OTDS:
 
         return self.config()["baseUrl"]
 
-    # end method definition
 
     def rest_url(self) -> str:
         """Return the REST URL of OTDS.
@@ -366,7 +358,6 @@ class OTDS:
 
         return self.config()["restUrl"]
 
-    # end method definition
 
     def credential_url(self) -> str:
         """Return the Credentials URL of OTDS.
@@ -379,7 +370,6 @@ class OTDS:
 
         return self.config()["credentialUrl"]
 
-    # end method definition
 
     def auth_handler_url(self) -> str:
         """Return the Auth Handler URL of OTDS.
@@ -392,7 +382,6 @@ class OTDS:
 
         return self.config()["authHandlerUrl"]
 
-    # end method definition
     def synchronized_partition_url(self) -> str:
         """Return the Partition URL of OTDS.
 
@@ -404,7 +393,6 @@ class OTDS:
 
         return self.config()["identityproviderprofiles"]
 
-    # end of method definition
 
     def partition_url(self) -> str:
         """Return the partition URL of OTDS.
@@ -417,7 +405,6 @@ class OTDS:
 
         return self.config()["partitionUrl"]
 
-    # end method definition
 
     def access_role_url(self) -> str:
         """Return the access role URL of OTDS.
@@ -430,7 +417,6 @@ class OTDS:
 
         return self.config()["accessRoleUrl"]
 
-    # end method definition
 
     def oauth_client_url(self) -> str:
         """Return the OAuth client URL of OTDS.
@@ -443,7 +429,6 @@ class OTDS:
 
         return self.config()["oauthClientUrl"]
 
-    # end method definition
 
     def resource_url(self) -> str:
         """Return the resource URL of OTDS.
@@ -456,7 +441,6 @@ class OTDS:
 
         return self.config()["resourceUrl"]
 
-    # end method definition
 
     def license_url(self) -> str:
         """Return the License URL of OTDS.
@@ -469,7 +453,6 @@ class OTDS:
 
         return self.config()["licenseUrl"]
 
-    # end method definition
 
     def token_url(self) -> str:
         """Return the token URL of OTDS.
@@ -482,7 +465,6 @@ class OTDS:
 
         return self.config()["oauthTokenUrl"]
 
-    # end method definition
 
     def users_url(self) -> str:
         """Return the users URL of OTDS.
@@ -495,7 +477,6 @@ class OTDS:
 
         return self.config()["usersUrl"]
 
-    # end method definition
 
     def current_user_url(self) -> str:
         """Return the current user URL of OTDS.
@@ -508,7 +489,6 @@ class OTDS:
 
         return self.config()["currentUserUrl"]
 
-    # end method definition
 
     def groups_url(self) -> str:
         """Return the groups URL of OTDS.
@@ -521,7 +501,6 @@ class OTDS:
 
         return self.config()["groupsUrl"]
 
-    # end method definition
 
     def system_config_url(self) -> str:
         """Return the system config URL of OTDS.
@@ -534,7 +513,6 @@ class OTDS:
 
         return self.config()["systemConfigUrl"]
 
-    # end method definition
 
     def consolidation_url(self) -> str:
         """Return the consolidation URL of OTDS.
@@ -547,7 +525,6 @@ class OTDS:
 
         return self.config()["consolidationUrl"]
 
-    # end method definition
 
     def admin_partition_name(self) -> str:
         """Return OTDS admin partition name.
@@ -560,9 +537,8 @@ class OTDS:
 
         return self.config()["adminPartition"]
 
-    # end method definition
 
-    def request_header(self, content_type: str = "application/json") -> dict:
+    def request_header(self, content_type: str = "application/json") -> dict[str, Any]:
         """Return the request header used for requests.
 
         Consists of Bearer access token and Content Type
@@ -591,11 +567,10 @@ class OTDS:
             request_header["Content-Type"] = content_type
 
         if self._token is not None:
-            request_header["Authorization"] = "Bearer {}".format(self._token)
+            request_header["Authorization"] = f"Bearer {self._token}"
 
         return request_header
 
-    # end method definition
 
     def do_request(
         self,
@@ -614,7 +589,7 @@ class OTDS:
         max_retries: int = REQUEST_MAX_RETRIES,
         retry_forever: bool = False,
         parse_request_response: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Call an OTDS REST API in a safe way.
 
         Args:
@@ -775,7 +750,6 @@ class OTDS:
                         time.sleep(REQUEST_RETRY_DELAY)  # Add a delay before retrying
                     else:
                         return None
-            # end try
             self.logger.info(
                 "Retrying REST API %s call -> %s... (retry = %s, cookie -> %s)",
                 method,
@@ -783,16 +757,14 @@ class OTDS:
                 str(retries),
                 str(self.cookie()),
             )
-        # end while True
 
-    # end method definition
 
     def parse_request_response(
         self,
         response_object: object,
         additional_error_message: str = "",
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Convert the request response to a dict in a safe way that also handles exceptions.
 
         Args:
@@ -820,12 +792,9 @@ class OTDS:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as e:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    e,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {e}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(e)
+                message = f"Cannot decode response as JSon; error -> {e}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -834,12 +803,11 @@ class OTDS:
         else:
             return dict_object
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="authenticate")
     def authenticate(
         self, revalidate: bool = False, grant_type: str | None = None, show_error: bool = True
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Authenticate at Directory Services and retrieve OTDS ticket.
 
         Args:
@@ -918,7 +886,7 @@ class OTDS:
             self.logger.warning(
                 "Unable to connect to OTDS authentication endpoint -> %s%s. OTDS service may not be ready yet.",
                 self.credential_url(),
-                "; error -> {}".format(str(exception)) if str(exception) else "",
+                f"; error -> {str(exception)}" if str(exception) else "",
             )
             return None
 
@@ -955,7 +923,6 @@ class OTDS:
 
         return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="impersonate_user")
     def impersonate_user(
@@ -963,7 +930,7 @@ class OTDS:
         user_id: str,
         partition: str = "Content Server Members",
         ticket: str = "",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Impersonate as a user.
 
         Args:
@@ -1025,7 +992,7 @@ class OTDS:
                 headers=REQUEST_FORM_HEADERS,
                 data=impersonate_post_body,
                 timeout=None,
-                failure_message="Failed to impersonate as user -> '{}' with OTDS token".format(user_id),
+                failure_message=f"Failed to impersonate as user -> '{user_id}' with OTDS token",
             )
         else:  # ticket-based authentication
             if not ticket:
@@ -1050,12 +1017,11 @@ class OTDS:
                 method="POST",
                 json_data=impersonate_post_body,
                 timeout=None,
-                failure_message="Failed to impersonate as user -> '{}' with OTDS ticket".format(user_id),
+                failure_message=f"Failed to impersonate as user -> '{user_id}' with OTDS ticket",
             )
 
         return response
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_application_role")
     def add_application_role(
@@ -1065,7 +1031,7 @@ class OTDS:
         description: str = "",
         values: list | None = None,
         custom_attributes: list | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new application role to partition.
 
         Args:
@@ -1111,13 +1077,12 @@ class OTDS:
             method="POST",
             json_data=role_post_body_json,
             timeout=None,
-            failure_message="Failed to add application role -> '{}'".format(name),
+            failure_message=f"Failed to add application role -> '{name}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_application_role")
-    def get_application_role(self, name: str, partition: str = "OAuthClients", show_error: bool = True) -> dict | None:
+    def get_application_role(self, name: str, partition: str = "OAuthClients", show_error: bool = True) -> dict[str, Any] | None:
         """Get an existing application role from OTDS.
 
         Args:
@@ -1148,7 +1113,7 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get application role -> '{}' in partition -> '{}'".format(name, partition),
+            failure_message=f"Failed to get application role -> '{name}' in partition -> '{partition}'",
             show_error=show_error,
         )
 
@@ -1159,7 +1124,6 @@ class OTDS:
 
         return role
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_user_to_application_role")
     def assign_user_to_application_role(
@@ -1228,10 +1192,7 @@ class OTDS:
             method="POST",
             json_data=role_post_body_json,
             timeout=None,
-            failure_message="Failed to assign user -> '{}' to application role -> '{}'!".format(
-                user_id,
-                role_name,
-            ),
+            failure_message=f"Failed to assign user -> '{user_id}' to application role -> '{role_name}'!",
             parse_request_response=False,
         )
 
@@ -1245,7 +1206,6 @@ class OTDS:
 
         return False
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_group_to_application_role")
     def assign_group_to_application_role(
@@ -1311,10 +1271,7 @@ class OTDS:
             method="POST",
             json_data=role_post_body_json,
             timeout=None,
-            failure_message="Failed to assign application role -> '{}' to group -> '{}'".format(
-                role_name,
-                group_id,
-            ),
+            failure_message=f"Failed to assign application role -> '{role_name}' to group -> '{group_id}'",
             parse_request_response=False,
         )
 
@@ -1328,10 +1285,9 @@ class OTDS:
 
         return False
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_partition")
-    def add_partition(self, name: str, description: str) -> dict | None:
+    def add_partition(self, name: str, description: str) -> dict[str, Any] | None:
         """Add a new user partition to OTDS.
 
         Args:
@@ -1362,13 +1318,12 @@ class OTDS:
             method="POST",
             json_data=partition_post_body_json,
             timeout=None,
-            failure_message="Failed to add user partition -> '{}'".format(name),
+            failure_message=f"Failed to add user partition -> '{name}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_partition")
-    def get_partition(self, name: str, show_error: bool = True) -> dict | None:
+    def get_partition(self, name: str, show_error: bool = True) -> dict[str, Any] | None:
         """Get an existing user partition from OTDS.
 
         Args:
@@ -1396,11 +1351,10 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get user partition -> '{}'".format(name),
+            failure_message=f"Failed to get user partition -> '{name}'",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_user")
     def add_user(
@@ -1411,7 +1365,7 @@ class OTDS:
         first_name: str = "",
         last_name: str = "",
         email: str = "",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new user to a user partition in OTDS.
 
         Args:
@@ -1460,12 +1414,11 @@ class OTDS:
             method="POST",
             json_data=user_post_body_json,
             timeout=None,
-            failure_message="Failed to add user -> '{}'".format(name),
+            failure_message=f"Failed to add user -> '{name}'",
         )
 
-    # end method definition
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user")
-    def get_user(self, partition: str, user_id: str) -> dict | None:
+    def get_user(self, partition: str, user_id: str) -> dict[str, Any] | None:
         """Get an existing user by its partition and user ID.
 
         Args:
@@ -1493,10 +1446,9 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get user -> '{}'".format(user_id),
+            failure_message=f"Failed to get user -> '{user_id}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_users")
     def get_users(
@@ -1509,7 +1461,7 @@ class OTDS:
         page_size: int | None = None,
         attributes_as_keys: bool = True,
         next_page_cookie: str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get all users in a partition. Additional filters can be applied.
 
         Args:
@@ -1639,7 +1591,7 @@ class OTDS:
 
         request_url = self.users_url()
         if query:
-            request_url += "?{}".format(encoded_query)
+            request_url += f"?{encoded_query}"
 
         if partition:
             self.logger.debug(
@@ -1648,9 +1600,7 @@ class OTDS:
                 limit,
                 request_url,
             )
-            failure_message = "Failed to get all users in partition -> '{}'".format(
-                partition,
-            )
+            failure_message = f"Failed to get all users in partition -> '{partition}'"
         else:
             self.logger.debug(
                 "Get all users (limit -> %s); calling -> %s",
@@ -1666,7 +1616,6 @@ class OTDS:
             failure_message=failure_message,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_users_iterator")
     def get_users_iterator(
@@ -1741,10 +1690,9 @@ class OTDS:
                 # like an empty iterable when used in a loop or converted to a list:
                 return
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_current_user")
-    def get_current_user(self) -> dict | None:
+    def get_current_user(self) -> dict[str, Any] | None:
         """Get the currently logged in user.
 
         Returns:
@@ -1767,7 +1715,6 @@ class OTDS:
             failure_message="Failed to get current user",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_user")
     def update_user(
@@ -1776,7 +1723,7 @@ class OTDS:
         user_id: str,
         attribute_name: str,
         attribute_value: str,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update a user attribute with a new value.
 
         Args:
@@ -1821,10 +1768,9 @@ class OTDS:
             method="PATCH",
             json_data=user_patch_body_json,
             timeout=None,
-            failure_message="Failed to update user -> '{}'".format(user_id),
+            failure_message=f"Failed to update user -> '{user_id}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="delete_user")
     def delete_user(self, partition: str, user_id: str) -> bool:
@@ -1855,13 +1801,12 @@ class OTDS:
             url=request_url,
             method="DELETE",
             timeout=None,
-            failure_message="Failed to delete user -> '{}'".format(user_id),
+            failure_message=f"Failed to delete user -> '{user_id}'",
             parse_request_response=False,
         )
 
         bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="reset_user_password")
     def reset_user_password(self, user_id: str, password: str) -> bool:
@@ -1881,7 +1826,7 @@ class OTDS:
 
         user_post_body_json = {"newPassword": password}
 
-        request_url = "{}/{}/password".format(self.users_url(), user_id)
+        request_url = f"{self.users_url()}/{user_id}/password"
 
         self.logger.debug(
             "Resetting password for user -> '%s'; calling -> %s",
@@ -1894,16 +1839,15 @@ class OTDS:
             method="PUT",
             json_data=user_post_body_json,
             timeout=None,
-            failure_message="Failed to reset password for user -> '{}'".format(user_id),
+            failure_message=f"Failed to reset password for user -> '{user_id}'",
             parse_request_response=False,
         )
 
         bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_group")
-    def add_group(self, partition: str, name: str, description: str) -> dict | None:
+    def add_group(self, partition: str, name: str, description: str) -> dict[str, Any] | None:
         """Add a new user group to a user partition in OTDS.
 
         Args:
@@ -1941,13 +1885,12 @@ class OTDS:
             method="POST",
             json_data=group_post_body_json,
             timeout=None,
-            failure_message="Failed to reset password for user -> '{}'".format(name),
+            failure_message=f"Failed to reset password for user -> '{name}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_group")
-    def get_group(self, group: str, show_error: bool = True) -> dict | None:
+    def get_group(self, group: str, show_error: bool = True) -> dict[str, Any] | None:
         """Get a OTDS group by its group name.
 
         Args:
@@ -1987,11 +1930,10 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get group -> '{}'".format(group),
+            failure_message=f"Failed to get group -> '{group}'",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_groups")
     def get_groups(
@@ -2003,7 +1945,7 @@ class OTDS:
         page_size: int | None = None,
         attributes_as_keys: bool = True,
         next_page_cookie: str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get all groups in a partition. Additional filters can be applied.
 
         Args:
@@ -2142,7 +2084,7 @@ class OTDS:
 
         request_url = self.groups_url()
         if query:
-            request_url += "?{}".format(encoded_query)
+            request_url += f"?{encoded_query}"
 
         if partition:
             self.logger.debug(
@@ -2152,9 +2094,7 @@ class OTDS:
                 str(page_size),
                 request_url,
             )
-            failure_message = "Failed to get all groups in partition -> '{}'!".format(
-                partition,
-            )
+            failure_message = f"Failed to get all groups in partition -> '{partition}'!"
         else:
             self.logger.debug(
                 "Get all groups (limit -> %s); calling -> %s",
@@ -2170,7 +2110,6 @@ class OTDS:
             failure_message=failure_message,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_groups_iterator")
     def get_groups_iterator(
@@ -2238,7 +2177,6 @@ class OTDS:
                 # like an empty iterable when used in a loop or converted to a list:
                 return
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_user_to_group")
     def add_user_to_group(self, user: str, group: str) -> bool:
@@ -2273,16 +2211,12 @@ class OTDS:
             method="POST",
             json_data=user_to_group_post_body_json,
             timeout=None,
-            failure_message="Failed to add user -> '{}' to group -> '{}'".format(
-                user,
-                group,
-            ),
+            failure_message=f"Failed to add user -> '{user}' to group -> '{group}'",
             parse_request_response=False,
         )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_group_to_parent_group")
     def add_group_to_parent_group(self, group: str, parent_group: str) -> bool:
@@ -2317,16 +2251,12 @@ class OTDS:
             method="POST",
             json_data=group_to_parent_group_post_body_json,
             timeout=None,
-            failure_message="Failed to add group -> '{}' to parent group -> '{}'".format(
-                group,
-                parent_group,
-            ),
+            failure_message=f"Failed to add group -> '{group}' to parent group -> '{parent_group}'",
             parse_request_response=False,
         )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_resource")
     def add_resource(
@@ -2338,7 +2268,7 @@ class OTDS:
         resource_id: str | None = None,
         secret: str | None = None,  # needs to be 16 bytes!
         additional_payload: dict | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add an OTDS resource.
 
         Args:
@@ -2405,13 +2335,12 @@ class OTDS:
             method="POST",
             json_data=resource_post_body,
             timeout=None,
-            failure_message="Failed to add resource -> '{}'".format(name),
+            failure_message=f"Failed to add resource -> '{name}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_resource")
-    def get_resource(self, name: str, show_error: bool = False) -> dict | None:
+    def get_resource(self, name: str, show_error: bool = False) -> dict[str, Any] | None:
         """Get an existing OTDS resource.
 
         Args:
@@ -2464,11 +2393,10 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get resource -> '{}'".format(name),
+            failure_message=f"Failed to get resource -> '{name}'",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_resource")
     def update_resource(
@@ -2476,7 +2404,7 @@ class OTDS:
         name: str,
         resource: object,
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update an existing OTDS resource.
 
         Args:
@@ -2502,14 +2430,13 @@ class OTDS:
             method="PUT",
             json_data=resource,
             timeout=None,
-            failure_message="Failed to update resource -> '{}'".format(name),
+            failure_message=f"Failed to update resource -> '{name}'",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="activate_resource")
-    def activate_resource(self, resource_id: str) -> dict | None:
+    def activate_resource(self, resource_id: str) -> dict[str, Any] | None:
         """Activate an OTDS resource.
 
         Args:
@@ -2537,13 +2464,12 @@ class OTDS:
             method="POST",
             json_data=resource_post_body_json,
             timeout=None,
-            failure_message="Failed to activate resource -> '{}'".format(resource_id),
+            failure_message=f"Failed to activate resource -> '{resource_id}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_access_roles")
-    def get_access_roles(self) -> dict | None:
+    def get_access_roles(self) -> dict[str, Any] | None:
         """Get a list of all OTDS access roles.
 
         Args:
@@ -2566,10 +2492,9 @@ class OTDS:
             failure_message="Failed to get access roles",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_access_role")
-    def get_access_role(self, access_role: str) -> dict | None:
+    def get_access_role(self, access_role: str) -> dict[str, Any] | None:
         """Get an OTDS access role.
 
         Args:
@@ -2594,10 +2519,9 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get access role -> '{}'".format(access_role),
+            failure_message=f"Failed to get access role -> '{access_role}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_partition_to_access_role")
     def add_partition_to_access_role(
@@ -2645,16 +2569,12 @@ class OTDS:
             method="POST",
             json_data=access_role_post_body_json,
             timeout=None,
-            failure_message="Failed to add partition -> '{}' to access role -> '{}'".format(
-                partition,
-                access_role,
-            ),
+            failure_message=f"Failed to add partition -> '{partition}' to access role -> '{access_role}'",
             parse_request_response=False,
         )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_user_to_access_role")
     def add_user_to_access_role(
@@ -2725,16 +2645,12 @@ class OTDS:
             method="POST",
             json_data=access_role_post_body_json,
             timeout=None,
-            failure_message="Failed to add user -> '{}' to access role -> '{}'".format(
-                user_id,
-                access_role,
-            ),
+            failure_message=f"Failed to add user -> '{user_id}' to access role -> '{access_role}'",
             parse_request_response=False,
         )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_group_to_access_role")
     def add_group_to_access_role(
@@ -2803,23 +2719,19 @@ class OTDS:
             method="POST",
             json_data=access_role_post_body_json,
             timeout=None,
-            failure_message="Failed to add group -> '{}' to access role -> '{}'".format(
-                group,
-                access_role,
-            ),
+            failure_message=f"Failed to add group -> '{group}' to access role -> '{access_role}'",
             parse_request_response=False,
         )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_access_role_attributes")
     def update_access_role_attributes(
         self,
         name: str,
         attribute_list: list,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update some attributes of an existing OTDS access role.
 
         Args:
@@ -2868,10 +2780,9 @@ class OTDS:
             method="PUT",
             json_data=access_role_put_body_json,
             timeout=None,
-            failure_message="Failed to update access role -> '{}'".format(access_role),
+            failure_message=f"Failed to update access role -> '{access_role}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_license_to_resource")
     def add_license_to_resource(
@@ -2881,7 +2792,7 @@ class OTDS:
         product_description: str,
         resource_id: str,
         update: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a product license to an OTDS resource.
 
         Args:
@@ -2904,7 +2815,7 @@ class OTDS:
 
         self.logger.debug("Reading license file -> '%s'...", path_to_license_file)
         try:
-            with open(path_to_license_file, encoding="UTF-8") as license_file:
+            with Path(path_to_license_file).open(encoding="UTF-8") as license_file:
                 license_content = license_file.read()
         except OSError:
             self.logger.error(
@@ -2942,7 +2853,7 @@ class OTDS:
             "%s product license -> '%s' for product -> '%s' to resource ->'%s'; calling -> %s",
             "Adding" if not update else "Updating",
             path_to_license_file,
-            "{} ({})".format(product_name, product_description) if product_description else product_name,
+            f"{product_name} ({product_description})" if product_description else product_name,
             resource_id,
             request_url,
         )
@@ -2956,7 +2867,7 @@ class OTDS:
                 timeout=None,
                 failure_message="Failed to update product license -> '{}' for product -> '{}' to resource -> '{}'".format(
                     path_to_license_file,
-                    "{} ({})".format(product_name, product_description) if product_description else product_name,
+                    f"{product_name} ({product_description})" if product_description else product_name,
                     resource_id,
                 ),
             )
@@ -2969,15 +2880,14 @@ class OTDS:
                 timeout=None,
                 failure_message="Failed to add product license -> '{}' for product -> '{}' to resource -> '{}'".format(
                     path_to_license_file,
-                    "{} ({})".format(product_name, product_description) if product_description else product_name,
+                    f"{product_name} ({product_description})" if product_description else product_name,
                     resource_id,
                 ),
             )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_license_for_resource")
-    def get_license_for_resource(self, resource_id: str) -> dict | None:
+    def get_license_for_resource(self, resource_id: str) -> dict[str, Any] | None:
         """Get a product license for a resource in OTDS.
 
         Args:
@@ -3015,9 +2925,7 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get license for resource -> '{}'".format(
-                resource_id,
-            ),
+            failure_message=f"Failed to get license for resource -> '{resource_id}'",
         )
 
         if not response:
@@ -3025,7 +2933,6 @@ class OTDS:
 
         return response["licenseObjects"]["_licenses"]
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="delete_license_from_resource")
     def delete_license_from_resource(self, resource_id: str, license_id: str) -> bool:
@@ -3043,7 +2950,7 @@ class OTDS:
 
         """
 
-        request_url = "{}/{}".format(self.license_url(), license_id)
+        request_url = f"{self.license_url()}/{license_id}"
 
         self.logger.debug(
             "Deleting product license -> '%s' from resource -> '%s'; calling -> %s",
@@ -3056,16 +2963,12 @@ class OTDS:
             url=request_url,
             method="DELETE",
             timeout=None,
-            failure_message="Failed to delete license -> '{}' for resource -> '{}'".format(
-                license_id,
-                resource_id,
-            ),
+            failure_message=f"Failed to delete license -> '{license_id}' for resource -> '{resource_id}'",
             parse_request_response=False,
         )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_user_to_license")
     def assign_user_to_license(
@@ -3162,11 +3065,7 @@ class OTDS:
             method="POST",
             json_data=license_post_body_json,
             timeout=None,
-            failure_message="Failed to add license feature -> '{}' associated with resource ID -> '{}' to user -> '{}'".format(
-                license_feature,
-                resource_id,
-                user_id,
-            ),
+            failure_message=f"Failed to add license feature -> '{license_feature}' associated with resource ID -> '{resource_id}' to user -> '{user_id}'",
             parse_request_response=False,
         )
 
@@ -3180,7 +3079,6 @@ class OTDS:
 
         return False
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_partition_to_license")
     def assign_partition_to_license(
@@ -3267,11 +3165,7 @@ class OTDS:
             method="POST",
             json_data=license_post_body_json,
             timeout=None,
-            failure_message="Failed to add license feature -> '{}' associated with resource ID -> '{}' to partition -> '{}'".format(
-                license_feature,
-                resource_id,
-                partition_name,
-            ),
+            failure_message=f"Failed to add license feature -> '{license_feature}' associated with resource ID -> '{resource_id}' to partition -> '{partition_name}'",
             parse_request_response=False,
         )
 
@@ -3285,7 +3179,6 @@ class OTDS:
 
         return False
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_licensed_objects")
     def get_licensed_objects(
@@ -3293,7 +3186,7 @@ class OTDS:
         resource_id: str,
         license_feature: str,
         license_name: str,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Return the licensed objects for a license + license feature associated with an OTDS resource (like "cs").
 
         Licensed objects can be users, groups, or partitions.
@@ -3387,14 +3280,9 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get licensed objects for license -> '{}' and license feature -> '{}' associated with resource -> '{}'".format(
-                license_name,
-                license_feature,
-                resource_id,
-            ),
+            failure_message=f"Failed to get licensed objects for license -> '{license_name}' and license feature -> '{license_feature}' associated with resource -> '{resource_id}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="is_user_licensed")
     def is_user_licensed(
@@ -3443,7 +3331,6 @@ class OTDS:
 
         return bool(user)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="is_group_licensed")
     def is_group_licensed(
@@ -3492,7 +3379,6 @@ class OTDS:
 
         return bool(group)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="is_partition_licensed")
     def is_partition_licensed(
@@ -3541,7 +3427,6 @@ class OTDS:
 
         return bool(partition)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="import_synchronized_partition_members")
     def import_synchronized_partition_members(self, name: str) -> bool:
@@ -3571,15 +3456,12 @@ class OTDS:
             method="POST",
             json_data=command,
             timeout=None,
-            failure_message="Failed to import users and groups to synchronized partition -> '{}'".format(
-                name,
-            ),
+            failure_message=f"Failed to import users and groups to synchronized partition -> '{name}'",
             parse_request_response=False,
         )
 
         return bool(response and response.ok and response.status_code == 204)
 
-    # end of method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_synchronized_partition")
     def add_synchronized_partition(
@@ -3587,7 +3469,7 @@ class OTDS:
         name: str,
         description: str,
         data: dict,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new synchronized partition to OTDS.
 
         Args:
@@ -3627,10 +3509,9 @@ class OTDS:
             method="POST",
             json_data=synchronized_partition_post_body_json,
             timeout=None,
-            failure_message="Failed to add synchronized partition -> '{}'".format(name),
+            failure_message=f"Failed to add synchronized partition -> '{name}'",
         )
 
-    # end of method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_system_attribute")
     def add_system_attribute(
@@ -3638,7 +3519,7 @@ class OTDS:
         name: str,
         value: str,
         description: str = "",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new system attribute to OTDS.
 
         Args:
@@ -3684,16 +3565,12 @@ class OTDS:
             method="POST",
             json_data=system_attribute_post_body_json,
             timeout=None,
-            failure_message="Failed to add system attribute -> '{}' with value -> '{}'".format(
-                name,
-                value,
-            ),
+            failure_message=f"Failed to add system attribute -> '{name}' with value -> '{value}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_trusted_sites")
-    def get_trusted_sites(self) -> dict | None:
+    def get_trusted_sites(self) -> dict[str, Any] | None:
         """Get all configured OTDS trusted sites.
 
         Args:
@@ -3716,10 +3593,9 @@ class OTDS:
             failure_message="Failed to get trusted sites",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_trusted_site")
-    def add_trusted_site(self, trusted_site: str) -> dict | None:
+    def add_trusted_site(self, trusted_site: str) -> dict[str, Any] | None:
         """Add a new OTDS trusted site.
 
         Args:
@@ -3756,7 +3632,7 @@ class OTDS:
             method="PUT",
             json_data=trusted_site_post_body_json,
             timeout=None,
-            failure_message="Failed to add trusted site -> '{}'".format(trusted_site),
+            failure_message=f"Failed to add trusted site -> '{trusted_site}'",
             parse_request_response=False,  # don't parse it!
         )
 
@@ -3765,7 +3641,6 @@ class OTDS:
 
         return response
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="enable_audit")
     def enable_audit(
@@ -3773,7 +3648,7 @@ class OTDS:
         enable: bool = True,
         days_to_keep: int = 7,
         event_types: list | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Enable the OTDS Audit.
 
         Args:
@@ -3867,7 +3742,6 @@ class OTDS:
             parse_request_response=False,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_oauth_client")
     def add_oauth_client(
@@ -3886,7 +3760,7 @@ class OTDS:
         auth_code_lifetime: int = 20000,
         allow_refresh_token: bool = True,
         use_session_refresh_token_lifetime: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new OAuth client to OTDS.
 
         Args:
@@ -4012,13 +3886,12 @@ class OTDS:
             method="POST",
             json_data=oauth_client_post_body_json,
             timeout=None,
-            failure_message="Failed to add OAuth client -> {}".format(client_id),
+            failure_message=f"Failed to add OAuth client -> {client_id}",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_oauth_client")
-    def get_oauth_client(self, client_id: str, show_error: bool = True) -> dict | None:
+    def get_oauth_client(self, client_id: str, show_error: bool = True) -> dict[str, Any] | None:
         """Get an existing OAuth client from OTDS.
 
         Args:
@@ -4033,7 +3906,7 @@ class OTDS:
 
         """
 
-        request_url = "{}/{}".format(self.oauth_client_url(), client_id)
+        request_url = f"{self.oauth_client_url()}/{client_id}"
 
         self.logger.debug(
             "Get oauth client -> '%s'; calling -> %s",
@@ -4045,14 +3918,13 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get oauth client -> '{}'".format(client_id),
+            failure_message=f"Failed to get oauth client -> '{client_id}'",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_oauth_client")
-    def update_oauth_client(self, client_id: str, updates: dict) -> dict | None:
+    def update_oauth_client(self, client_id: str, updates: dict) -> dict[str, Any] | None:
         """Update an OAuth client with new values.
 
         Args:
@@ -4070,7 +3942,7 @@ class OTDS:
 
         oauth_client_patch_body_json = updates
 
-        request_url = "{}/{}".format(self.oauth_client_url(), client_id)
+        request_url = f"{self.oauth_client_url()}/{client_id}"
 
         self.logger.debug(
             "Update OAuth client -> '%s' with -> %s; calling -> %s",
@@ -4084,13 +3956,12 @@ class OTDS:
             method="PATCH",
             json_data=oauth_client_patch_body_json,
             timeout=None,
-            failure_message="Failed to update OAuth client -> '{}'".format(client_id),
+            failure_message=f"Failed to update OAuth client -> '{client_id}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_oauth_clients_to_access_role")
-    def add_oauth_clients_to_access_role(self, access_role_name: str) -> dict | None:
+    def add_oauth_clients_to_access_role(self, access_role_name: str) -> dict[str, Any] | None:
         """Add OAuth clients (in the "OAuthClients" partition) to an OTDS access role.
 
         Args:
@@ -4115,9 +3986,7 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to retrieve access role -> '{}'".format(
-                access_role_name,
-            ),
+            failure_message=f"Failed to retrieve access role -> '{access_role_name}'",
         )
         if not access_role:
             return None
@@ -4140,9 +4009,7 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get partition info for OAuthClients for role -> '{}'".format(
-                access_role_name,
-            ),
+            failure_message=f"Failed to get partition info for OAuthClients for role -> '{access_role_name}'",
         )
         if not response:
             return None
@@ -4163,18 +4030,15 @@ class OTDS:
             url=request_url,
             method="PUT",
             timeout=None,
-            warning_message="Failed to add OAuthClients to access role -> '{}'".format(
-                access_role_name,
-            ),
+            warning_message=f"Failed to add OAuthClients to access role -> '{access_role_name}'",
             show_error=False,
             show_warning=True,
             parse_request_response=False,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_auth_handler")
-    def get_auth_handler(self, name: str, show_error: bool = True) -> dict | None:
+    def get_auth_handler(self, name: str, show_error: bool = True) -> dict[str, Any] | None:
         """Get the OTDS auth handler with a given name.
 
         Args:
@@ -4223,7 +4087,7 @@ class OTDS:
 
         """
 
-        request_url = "{}/{}".format(self.auth_handler_url(), name)
+        request_url = f"{self.auth_handler_url()}/{name}"
 
         self.logger.debug(
             "Getting authentication handler -> '%s'; calling -> %s",
@@ -4235,11 +4099,10 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get authentication handler -> '{}'".format(name),
+            failure_message=f"Failed to get authentication handler -> '{name}'",
             show_error=show_error,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_auth_handler_saml")
     def add_auth_handler_saml(
@@ -4255,7 +4118,7 @@ class OTDS:
         active_by_default: bool = False,
         auth_principal_attributes: list | None = None,
         nameid_format: str = "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new SAML authentication handler.
 
         Args:
@@ -4589,10 +4452,9 @@ class OTDS:
             method="POST",
             json_data=auth_handler_post_body_json,
             timeout=None,
-            failure_message="Failed to add SAML auth handler -> '{}'".format(name),
+            failure_message=f"Failed to add SAML auth handler -> '{name}'",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_auth_handler_sap")
     def add_auth_handler_sap(
@@ -4605,7 +4467,7 @@ class OTDS:
         enabled: bool = True,
         priority: int = 10,
         auth_principal_attributes: list | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new SAP authentication handler.
 
         Args:
@@ -4653,9 +4515,9 @@ class OTDS:
                     "_fileBased": False,
                     "_fileName": False,
                     "_fileExtensions": None,
-                    "_value": os.path.basename(
+                    "_value": Path(
                         certificate_file,
-                    ),  # "TM6_Sandbox.pse" - file name only
+                    ).name,  # "TM6_Sandbox.pse" - file name only
                     "_allowedValues": None,
                     "_confidential": False,
                     "_keepOriginal": False,
@@ -4704,7 +4566,7 @@ class OTDS:
             method="POST",
             json_data=auth_handler_post_body_json,
             timeout=None,
-            failure_message="Failed to add SAP auth handler -> '{}'".format(name),
+            failure_message=f"Failed to add SAP auth handler -> '{name}'",
             parse_request_response=False,
         )
         if not response or not response.ok:
@@ -4716,7 +4578,7 @@ class OTDS:
         self.logger.debug("Reading certificate file -> '%s'...", certificate_file)
         try:
             # PSE files are binary - so we need to open with "rb":
-            with open(certificate_file, "rb") as cert_file:
+            with Path(certificate_file).open("rb") as cert_file:
                 cert_content = cert_file.read()
                 if not cert_content:
                     self.logger.error(
@@ -4755,14 +4617,14 @@ class OTDS:
             cert_file_encoded = False
 
         if cert_file_encoded:
-            certificate_file = os.path.join(tempfile.gettempdir(), os.path.basename(certificate_file))
+            certificate_file = Path(tempfile.gettempdir()) / Path(certificate_file).name
             self.logger.debug(
                 "Writing decoded certificate file -> %s...",
                 certificate_file,
             )
             try:
                 # PSE files need to be binary - so we need to open with "wb":
-                with open(certificate_file, "wb") as cert_file:
+                with Path(certificate_file).open("wb") as cert_file:
                     cert_file.write(base64.b64decode(cert_content))
             except OSError:
                 self.logger.error(
@@ -4787,10 +4649,10 @@ class OTDS:
 
         # It is important to send the file pointer and not the actual file content
         # otherwise the file is sent base64 encoded, which we don't want:
-        with open(certificate_file, "rb") as file_obj:
+        with Path(certificate_file).open("rb") as file_obj:
             auth_handler_post_files = {
                 "file1": (
-                    os.path.basename(certificate_file),
+                    Path(certificate_file).name,
                     file_obj,
                     "application/octet-stream",
                 ),
@@ -4819,7 +4681,6 @@ class OTDS:
 
         return response
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_auth_handler_oauth")
     def add_auth_handler_oauth(
@@ -4837,7 +4698,7 @@ class OTDS:
         enabled: bool = True,
         priority: int = 10,
         auth_principal_attributes: list | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new OAuth authentication handler.
 
         Args:
@@ -5234,10 +5095,9 @@ class OTDS:
             method="POST",
             json_data=auth_handler_post_body_json,
             timeout=None,
-            failure_message="Failed to add OAuth auth handler -> '{}'".format(name),
+            failure_message=f"Failed to add OAuth auth handler -> '{name}'",
         )
 
-        # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="consolidate")
     def consolidate(self, resource_name: str) -> bool:
@@ -5273,7 +5133,7 @@ class OTDS:
             "objectToConsolidate": resource_dn,
         }
 
-        request_url = "{}".format(self.consolidation_url())
+        request_url = f"{self.consolidation_url()}"
 
         self.logger.debug(
             "Consolidation of resource -> '%s' (%s); calling -> %s",
@@ -5287,15 +5147,12 @@ class OTDS:
             method="POST",
             json_data=consolidation_post_body_json,
             timeout=None,
-            failure_message="Failed to consolidate resource -> '{}'".format(
-                resource_name,
-            ),
+            failure_message=f"Failed to consolidate resource -> '{resource_name}'",
             parse_request_response=False,
         )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="impersonate_resource")
     def impersonate_resource(
@@ -5329,7 +5186,7 @@ class OTDS:
             "impersonateList": impersonation_list,
         }
 
-        request_url = "{}/{}/impersonation".format(self.resource_url(), resource_name)
+        request_url = f"{self.resource_url()}/{resource_name}/impersonation"
 
         self.logger.debug(
             "Impersonation settings for resource -> '%s'; calling -> %s",
@@ -5342,15 +5199,12 @@ class OTDS:
             method="PUT",
             json_data=impersonation_put_body_json,
             timeout=None,
-            failure_message="Failed to set impersonation for resource -> '{}'".format(
-                resource_name,
-            ),
+            failure_message=f"Failed to set impersonation for resource -> '{resource_name}'",
             parse_request_response=False,
         )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="impersonate_oauth_client")
     def impersonate_oauth_client(
@@ -5384,7 +5238,7 @@ class OTDS:
             "impersonateList": impersonation_list,
         }
 
-        request_url = "{}/{}/impersonation".format(self.oauth_client_url(), client_id)
+        request_url = f"{self.oauth_client_url()}/{client_id}/impersonation"
 
         self.logger.debug(
             "Impersonation settings for OAuth Client -> '%s'; calling -> %s",
@@ -5397,18 +5251,15 @@ class OTDS:
             method="PUT",
             json_data=impersonation_put_body_json,
             timeout=None,
-            failure_message="Failed to set impersonation for OAuth Client -> '{}'".format(
-                client_id,
-            ),
+            failure_message=f"Failed to set impersonation for OAuth Client -> '{client_id}'",
             parse_request_response=False,
         )
 
         return bool(response and response.ok)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_password_policy")
-    def get_password_policy(self) -> dict | None:
+    def get_password_policy(self) -> dict[str, Any] | None:
         """Get the global password policy.
 
         Args:
@@ -5451,7 +5302,6 @@ class OTDS:
             failure_message="Failed to get password policy",
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_password_policy")
     def update_password_policy(self, update_values: dict) -> bool:
@@ -5502,12 +5352,9 @@ class OTDS:
             method="PUT",
             json_data=update_values,
             timeout=None,
-            failure_message="Failed to update password policy with values -> {}".format(
-                update_values,
-            ),
+            failure_message=f"Failed to update password policy with values -> {update_values}",
             parse_request_response=False,
         )
 
         return bool(response and response.ok)
 
-    # end method definition

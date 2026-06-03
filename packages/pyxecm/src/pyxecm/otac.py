@@ -9,10 +9,10 @@ __email__ = "mdiefenb@opentext.com"
 import base64
 import json
 import logging
-import os
 import platform
 import sys
 from importlib.metadata import version
+from pathlib import Path
 
 import requests
 from suds import WebFault
@@ -135,7 +135,7 @@ class OTAC:
 
         otac_base_url = protocol + "://" + otac_config["hostname"]
         if str(port) not in ["80", "443"]:
-            otac_base_url += ":{}".format(port)
+            otac_base_url += f":{port}"
         otac_exec_url = otac_base_url + "/archive/admin/exec"
         otac_config["execUrl"] = otac_exec_url
         otac_config["baseUrl"] = otac_base_url
@@ -147,7 +147,6 @@ class OTAC:
         self._otac_ticket = otds_ticket
         self._soap_token: str = ""
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -158,7 +157,6 @@ class OTAC:
         """
         return self._config
 
-    # end method definition
 
     def hostname(self) -> str:
         """Return the Archive Center hostname.
@@ -169,7 +167,6 @@ class OTAC:
         """
         return self.config()["hostname"]
 
-    # end method definition
 
     def set_hostname(self, hostname: str) -> None:
         """Set the Archive Center hostname.
@@ -181,7 +178,6 @@ class OTAC:
         """
         self.config()["hostname"] = hostname
 
-    # end method definition
 
     def credentials(self) -> dict:
         """Get credentials (username + password).
@@ -195,7 +191,6 @@ class OTAC:
             "password": self.config()["admin_password"],
         }
 
-    # end method definition
 
     def set_credentials(
         self,
@@ -233,7 +228,6 @@ class OTAC:
         else:
             self.config()["admin_password"] = ""
 
-    # end method definition
 
     def base_url(self) -> str:
         """Return the Archive Center base URL.
@@ -245,7 +239,6 @@ class OTAC:
 
         return self.config()["baseUrl"]
 
-    # end method definition
 
     def exec_url(self) -> str:
         """Return the Archive Center URL to execute commands.
@@ -256,7 +249,6 @@ class OTAC:
         """
         return self.config()["execUrl"]
 
-    # end method definition
 
     def request_form_header(self) -> dict:
         """Deliver the FORM request header used for the SOAP calls.
@@ -280,7 +272,6 @@ class OTAC:
 
         return request_header
 
-    # end method definition
 
     def request_json_header(self) -> dict:
         """Deliver the JSON request header used for the CRUD REST API calls.
@@ -308,7 +299,6 @@ class OTAC:
 
         return request_header
 
-    # end method definition
 
     def parse_request_response(
         self,
@@ -341,14 +331,9 @@ class OTAC:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -357,7 +342,6 @@ class OTAC:
         else:
             return dict_object
 
-    # end method definition
 
     def authenticate(self, revalidate: bool = False) -> dict | None:
         """Authenticate at Archive Center and retrieve Ticket.
@@ -437,7 +421,6 @@ class OTAC:
 
         return self._otac_ticket
 
-    # end method definition
 
     def authenticate_soap(self) -> str:
         """Authenticate via SOAP with admin User.
@@ -460,7 +443,6 @@ class OTAC:
 
         return self._soap_token
 
-    # end method definition
 
     def exec_command(self, command: str) -> dict:
         """Execute a command on Archive Center.
@@ -503,7 +485,6 @@ class OTAC:
 
         return response
 
-    # end method definition
 
     def put_cert(
         self,
@@ -531,11 +512,11 @@ class OTAC:
         """
 
         # Check if the photo file exists
-        if not os.path.isfile(cert_path):
+        if not Path(cert_path).is_file():
             self.logger.error("Certificate file -> '%s' not found!", cert_path)
             return None
 
-        with open(file=cert_path, encoding="utf-8") as cert_file:
+        with Path(file=cert_path).open(encoding="utf-8") as cert_file:
             cert_content = cert_file.read().strip()
 
         # Check that we have the pem certificate file - this is what OTAC expects.
@@ -593,7 +574,6 @@ class OTAC:
 
         return response
 
-    # end method definition
 
     def enable_cert(
         self,
@@ -635,7 +615,7 @@ class OTAC:
             response = client.service.invokeCommand(
                 command="SetCertificateFlags",
                 parameters=[
-                    {"key": "CERT_TYPE", "data": "@{}".format(logical_archive)},
+                    {"key": "CERT_TYPE", "data": f"@{logical_archive}"},
                     {"key": "CERT_NAME", "data": auth_id},
                     {"key": "CERT_FLAGS", "data": enabled},
                 ],
@@ -660,7 +640,6 @@ class OTAC:
             )
             return False
 
-    # end method definition
 
     def enable_certificate(
         self,
@@ -741,4 +720,3 @@ class OTAC:
                 )
                 return None
 
-    # end method definition

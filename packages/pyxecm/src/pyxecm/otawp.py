@@ -303,7 +303,6 @@ class OTAWP:
 
         return additional_payload
 
-    # end method definition
 
     def __init__(
         self,
@@ -374,7 +373,7 @@ class OTAWP:
 
         server_url = "{}://{}".format(protocol, otawp_config["hostname"])
         if str(port) not in ["80", "443"]:
-            server_url += ":{}".format(port)
+            server_url += f":{port}"
 
         otawp_config["serverUrl"] = server_url
 
@@ -384,7 +383,6 @@ class OTAWP:
 
         self.set_organization(otawp_config["organization"])
 
-    # end method definition
 
     def server_url(self) -> str:
         """Return AppWorks server information.
@@ -397,7 +395,6 @@ class OTAWP:
 
         return self.config()["server"]
 
-    # end method definition
 
     def set_organization(self, organization: str) -> None:
         """Set the AppWorks organization context.
@@ -447,7 +444,6 @@ class OTAWP:
 
         self.logger.info("AppWorks organization set to -> '%s'.", organization)
 
-    # end method definition
 
     def base_url(self) -> str:
         """Return the base URL of AppWorks.
@@ -460,7 +456,6 @@ class OTAWP:
 
         return self.config()["baseUrl"]
 
-    # end method definition
 
     def license_file(self) -> str:
         """Return the AppWorks license file.
@@ -473,7 +468,6 @@ class OTAWP:
 
         return self.config()["licenseFile"]
 
-    # end method definition
 
     def product_name(self) -> str:
         """Return the AppWorks product name as used in the OTDS license.
@@ -486,7 +480,6 @@ class OTAWP:
 
         return self.config()["productName"]
 
-    # end method definition
 
     def product_description(self) -> str:
         """Return the AppWorks product description as used in the OTDS license.
@@ -499,7 +492,6 @@ class OTAWP:
 
         return self.config()["productDescription"]
 
-    # end method definition
 
     def hostname(self) -> str:
         """Return the AppWorks hostname.
@@ -523,7 +515,6 @@ class OTAWP:
 
         return self.config()["username"]
 
-    # end method definition
 
     def password(self) -> str:
         """Return the AppWorks password.
@@ -536,7 +527,6 @@ class OTAWP:
 
         return self.config()["password"]
 
-    # end method definition
 
     def config_map_name(self) -> str:
         """Return AppWorks Kubernetes config map name.
@@ -549,7 +539,6 @@ class OTAWP:
 
         return self.config()["configMapName"]
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -561,7 +550,6 @@ class OTAWP:
 
         return self._config
 
-    # end method definition
 
     def cookie(self) -> dict:
         """Return the login cookie of OTAWP.
@@ -576,7 +564,6 @@ class OTAWP:
 
         return self._cookie
 
-    # end method definition
 
     def credentials(self) -> str:
         """Return the SOAP payload with credentials (username and password).
@@ -617,7 +604,6 @@ class OTAWP:
 
         return soap_payload
 
-    # end method definition
 
     def credential_url(self) -> str:
         """Return the credentials URL of OTAWP.
@@ -630,7 +616,6 @@ class OTAWP:
 
         return self.config()["gatewayAuthenticationUrl"]
 
-    # end method definition
 
     def gateway_url(self) -> str:
         """Return SOAP gateway URL of OTAWP.
@@ -643,7 +628,6 @@ class OTAWP:
 
         return self.config()["soapGatewayUrl"]
 
-    # end method definition
 
     def get_create_priority_url(self) -> str:
         """Return create priority URL of OTAWP.
@@ -656,7 +640,6 @@ class OTAWP:
 
         return self.config()["priorityUrl"] + "?defaultinst_ct=abcd"
 
-    # end method definition
 
     def get_priorities_list_url(self) -> str:
         """Get OTAWP URL to retrieve a list of all priorities.
@@ -669,7 +652,6 @@ class OTAWP:
 
         return self.config()["priorityListUrl"]
 
-    # end method definition
 
     def get_create_customer_url(self) -> str:
         """Return create customer URL of OTAWP.
@@ -682,7 +664,6 @@ class OTAWP:
 
         return self.config()["customerUrl"] + "?defaultinst_ct=abcd"
 
-    # end method definition
 
     def get_customers_list_url(self) -> str:
         """Get OTAWP URL to retrieve a list of all customers.
@@ -695,7 +676,6 @@ class OTAWP:
 
         return self.config()["customerListUrl"]
 
-    # end method definition
 
     def get_create_casetype_url(self) -> str:
         """Return create case type URL of OTAWP.
@@ -708,7 +688,6 @@ class OTAWP:
 
         return self.config()["caseTypeUrl"] + "?defaultinst_ct=abcd"
 
-    # end method definition
 
     def get_casetypes_list_url(self) -> str:
         """Get OTAWP URL to retrieve a list of all case types.
@@ -721,7 +700,6 @@ class OTAWP:
 
         return self.config()["caseTypeListUrl"]
 
-    # end method definition
 
     def get_create_category_url(self) -> str:
         """Get OTAWP URL to create a category.
@@ -734,7 +712,6 @@ class OTAWP:
 
         return self.config()["categoryUrl"] + "?defaultinst_ct=abcd"
 
-    # end method definition
 
     def get_categories_list_url(self) -> str:
         """Get OTAWP URL to retrieve a list of all categories.
@@ -747,7 +724,6 @@ class OTAWP:
 
         return self.config()["categoryListUrl"]
 
-    # end method definition
 
     def get_create_case_url(self) -> str:
         """Get OTAWP URL to create a case (e.g. a loan).
@@ -760,7 +736,6 @@ class OTAWP:
 
         return self.config()["caseUrl"] + "?defaultinst_ct=abcd"
 
-    # end method definition
 
     def get_cases_list_url(self) -> str:
         """Return get all loans URL of OTAWP.
@@ -773,7 +748,6 @@ class OTAWP:
 
         return self.config()["caseListUrl"]
 
-    # end method definition
 
     def parse_xml(self, xml_string: str) -> dict:
         """Parse XML string and return a dictionary without namespaces.
@@ -790,7 +764,6 @@ class OTAWP:
 
         return XML.xml_to_dict(xml_string=xml_string)
 
-    # end method definition
 
     def find_key(self, data: dict | list, target_key: str) -> str | None:
         """Recursively search for a key in a nested dictionary and return its value.
@@ -822,7 +795,6 @@ class OTAWP:
 
         return None
 
-    # end method definition
 
     def get_soap_element(self, soap_response: str, soap_tag: str) -> str | None:
         """Retrieve an element from the XML SOAP response.
@@ -845,7 +817,6 @@ class OTAWP:
 
         return soap_string
 
-    # end method definition
 
     def do_request(
         self,
@@ -971,9 +942,7 @@ class OTAWP:
                     response.text,
                 )
             return None
-        # end while True
 
-    # end method definition
 
     def parse_request_response(
         self,
@@ -1010,14 +979,9 @@ class OTAWP:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -1026,7 +990,6 @@ class OTAWP:
 
         return dict_object
 
-    # end method definition
 
     def get_entity_value(self, entity: dict, key: str, show_error: bool = True) -> str | int | None:
         """Read an entity value from the REST API response.
@@ -1081,7 +1044,6 @@ class OTAWP:
 
         return properties[key]
 
-    # end method definition
 
     def get_result_value(
         self,
@@ -1137,7 +1099,6 @@ class OTAWP:
 
         return self.get_entity_value(entity=entity, key=key, show_error=show_error)
 
-    # end method definition
 
     def get_result_values(
         self,
@@ -1191,7 +1152,6 @@ class OTAWP:
 
         return results
 
-    # end method definition
 
     def get_result_item(
         self,
@@ -1254,7 +1214,6 @@ class OTAWP:
 
         return None
 
-    # end method definition
 
     def authenticate(self, revalidate: bool = False) -> dict | None:
         """Authenticate at AppWorks.
@@ -1345,18 +1304,17 @@ class OTAWP:
                     "Failed to request an OTAWP ticket at authentication URL -> %s with user -> '%s'!%s",
                     self.credential_url(),
                     self.config()["username"],
-                    " Reason -> '{}'".format(response.reason) if response.reason else "",
+                    f" Reason -> '{response.reason}'" if response.reason else "",
                 )
                 return None
 
         self.logger.error(
             "Authentication at AppWorks platform failed after %d retries. %sBailing out.",
             REQUEST_MAX_RETRIES,
-            "{}. ".format(response.text) if response and response.text else "",
+            f"{response.text}. " if response and response.text else "",
         )
         return None
 
-    # end method definition
 
     def create_workspace(
         self, workspace_name: str, workspace_id: str, show_error: bool = True
@@ -1542,7 +1500,6 @@ class OTAWP:
                 time.sleep(REQUEST_RETRY_DELAY)
                 retries += 1
 
-        # end while retries < REQUEST_MAX_RETRIES:
 
         # After max retries, log and return the response or handle as needed
         if show_error:
@@ -1558,7 +1515,6 @@ class OTAWP:
 
         return (None, False)
 
-    # end method definition
 
     def sync_workspace(self, workspace_name: str, workspace_id: str) -> dict | None:
         """Synchronize workspace.
@@ -1578,7 +1534,7 @@ class OTAWP:
         if not workspace_id:
             self.logger.error(
                 "Cannot synchronize workspace%s without a workspace ID!",
-                " -> '{}'".format(workspace_name) if workspace_name else "",
+                f" -> '{workspace_name}'" if workspace_name else "",
             )
             return None
 
@@ -1655,7 +1611,6 @@ class OTAWP:
             time.sleep(REQUEST_RETRY_DELAY)
             retries += 1
 
-        # end while retries < REQUEST_MAX_RETRIES:
 
         self.logger.error(
             "Synchronization failed for workspace -> '%s' after %d retries.",
@@ -1664,7 +1619,6 @@ class OTAWP:
         )
         return None
 
-    # end method definition
 
     def publish_project(
         self,
@@ -1711,7 +1665,7 @@ class OTAWP:
             if not value:
                 self.logger.error(
                     "Cannot publish project%s without a %s!",
-                    " -> '{}'".format(project_name) if project_name else "",
+                    f" -> '{project_name}'" if project_name else "",
                     name,
                 )
                 return None
@@ -1790,7 +1744,6 @@ class OTAWP:
             retries += 1
             time.sleep(REQUEST_RETRY_DELAY)
 
-        # end while retries < REQUEST_MAX_RETRIES:
 
         # After reaching the maximum number of retries, log failure and return False
         self.logger.error(
@@ -1801,7 +1754,6 @@ class OTAWP:
 
         return False
 
-    # end method definition
 
     def create_priority(self, name: str, description: str = "", status: int = 1) -> dict | None:
         """Create Priority entity instance.
@@ -1850,10 +1802,9 @@ class OTAWP:
             cookies=self.cookie(),
             json_data=create_priority_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Request to create priority -> '{}' failed".format(name),
+            failure_message=f"Request to create priority -> '{name}' failed",
         )
 
-    # end method definition
 
     def get_priorities(self) -> dict | None:
         """Get all priorities from entity.
@@ -1924,7 +1875,6 @@ class OTAWP:
             failure_message="Request to get priorities failed",
         )
 
-    # end method definition
 
     def get_priority_by_name(self, name: str) -> dict | None:
         """Get priority entity instance by its name.
@@ -1943,7 +1893,6 @@ class OTAWP:
 
         return self.get_result_item(response=priorities, entity_type="PriorityList", key="Name", value=name)
 
-    # end method definition
 
     def get_priority_ids(self) -> list:
         """Get all priority entity instances IDs.
@@ -1960,7 +1909,6 @@ class OTAWP:
 
         return self.get_result_values(response=priorities, entity_type="PriorityList", key="id") or []
 
-    # end method definition
 
     def create_customer(
         self,
@@ -2006,10 +1954,9 @@ class OTAWP:
             cookies=self.cookie(),
             json_data=create_customer_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Request to create customer -> '{}' failed".format(customer_name),
+            failure_message=f"Request to create customer -> '{customer_name}' failed",
         )
 
-    # end method definition
 
     def get_customers(self) -> dict | None:
         """Get all customer entity instances.
@@ -2071,7 +2018,6 @@ class OTAWP:
             failure_message="Request to get customers failed",
         )
 
-    # end method definition
 
     def get_customer_by_name(self, name: str) -> dict | None:
         """Get customer entity instance by its name.
@@ -2090,7 +2036,6 @@ class OTAWP:
 
         return self.get_result_item(response=customers, entity_type="CustomerList", key="CustomerName", value=name)
 
-    # end method definition
 
     def get_customer_ids(self) -> list:
         """Get all customer entity instances IDs.
@@ -2107,7 +2052,6 @@ class OTAWP:
 
         return self.get_result_values(response=customers, entity_type="CustomerList", key="id") or []
 
-    # end method definition
 
     def create_case_type(self, name: str, description: str = "", status: int = 1) -> dict | None:
         """Create case type entity instances.
@@ -2143,10 +2087,9 @@ class OTAWP:
             cookies=self.cookie(),
             json_data=create_case_type_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Request to create case type -> '{}' failed".format(name),
+            failure_message=f"Request to create case type -> '{name}' failed",
         )
 
-    # end method definition
 
     def get_case_types(self) -> dict | None:
         """Get all case type entity instances.
@@ -2208,7 +2151,6 @@ class OTAWP:
             failure_message="Request to get case types failed",
         )
 
-    # end method definition
 
     def get_case_type_by_name(self, name: str) -> dict | None:
         """Get case type entity instance by its name.
@@ -2227,7 +2169,6 @@ class OTAWP:
 
         return self.get_result_item(response=case_types, entity_type="AllCaseTypes", key="Name", value=name)
 
-    # end method definition
 
     def get_case_type_ids(self) -> list:
         """Get All CaseType entity instances IDs.
@@ -2245,7 +2186,6 @@ class OTAWP:
 
         return self.get_result_values(response=case_types, entity_type="AllCaseTypes", key="id") or []
 
-    # end method definition
 
     def create_category(
         self,
@@ -2307,10 +2247,9 @@ class OTAWP:
             cookies=self.cookie(),
             json_data=create_category_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to create category -> '{}'".format(name),
+            failure_message=f"Failed to create category -> '{name}'",
         )
 
-    # end method definition
 
     def get_categories(self) -> dict | None:
         """Get all categories entity instances.
@@ -2375,7 +2314,6 @@ class OTAWP:
             failure_message="Failed to get categories",
         )
 
-    # end method definition
 
     def get_category_by_name(self, name: str) -> dict | None:
         """Get category entity instance by its name.
@@ -2411,7 +2349,6 @@ class OTAWP:
 
         return self.get_result_item(response=categories, entity_type="CategoryList", key="Name", value=name)
 
-    # end method definition
 
     def get_category_ids(self) -> list:
         """Get All category entity instances IDs.
@@ -2427,7 +2364,6 @@ class OTAWP:
 
         return self.get_result_values(response=categories, entity_type="CategoryList", key="id") or []
 
-    # end method definition
 
     def create_sub_category(
         self,
@@ -2477,12 +2413,9 @@ class OTAWP:
             cookies=self.cookie(),
             json_data=create_sub_category_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to create sub-category -> '{}' with parent category ID -> {}".format(
-                name, parent_id
-            ),
+            failure_message=f"Failed to create sub-category -> '{name}' with parent category ID -> {parent_id}",
         )
 
-    # end method definition
 
     def get_sub_categories(self, parent_id: int) -> dict | None:
         """Get all sub categeries entity instances.
@@ -2538,10 +2471,9 @@ class OTAWP:
             headers=REQUEST_HEADERS_JSON,
             cookies=self.cookie(),
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get sub-categories for parent category with ID -> {}".format(parent_id),
+            failure_message=f"Failed to get sub-categories for parent category with ID -> {parent_id}",
         )
 
-    # end method definition
 
     def get_sub_category_by_parent_and_name(self, parent_id: int, name: str) -> dict | None:
         """Get sub category entity instance by its name.
@@ -2564,7 +2496,6 @@ class OTAWP:
 
         return self.get_result_item(response=sub_categories, entity_type="SubCategory", key="Name", value=name)
 
-    # end method definition
 
     def get_sub_category_id(self, parent_id: int, name: str) -> int | None:
         """Get the sub category entity instance ID.
@@ -2588,7 +2519,6 @@ class OTAWP:
 
         return sub_cat["Identity"].get("Id")
 
-    # end method definition
 
     def create_case(
         self,
@@ -2735,7 +2665,6 @@ class OTAWP:
                 self.logger.debug("SOAP message -> %s", response.text)
                 return None
 
-    # end method definition
 
     def get_cases(self) -> dict | None:
         """Get all case entity instances.
@@ -2760,7 +2689,6 @@ class OTAWP:
             failure_message="Request to get cases failed",
         )
 
-    # end method definition
 
     def get_case_by_name(self, name: str) -> dict | None:
         """Get case instance by its name.
@@ -2779,7 +2707,6 @@ class OTAWP:
 
         return self.get_result_item(response=categories, entity_type="AllCasesList", key="Name", value=name)
 
-    # end method definition
 
     def create_users_from_config_file(self, otawpsection: str, otds_object: OTDS) -> None:
         """Read user information from customizer file and call create user method.
@@ -2828,7 +2755,6 @@ class OTAWP:
                 "OTDS section not in payload for AppWorks users.",
             )
 
-    # end method definition
 
     def create_roles_from_config_file(self, otawpsection: str, otds_object: OTDS) -> None:
         """Read grop information from customizer file and call create grop method.
@@ -2865,7 +2791,6 @@ class OTAWP:
                 "OTDS section not in payload for AppWorks roles/groups.",
             )
 
-    # end method definition
 
     def create_cws_config(
         self,
@@ -3001,13 +2926,11 @@ class OTAWP:
             self.logger.error("Failed to create CWS config; error -> %s", response.text)
             time.sleep(REQUEST_RETRY_DELAY)
             retries += 1
-        # end while retries < REQUEST_MAX_RETRIES:
 
         # Log when retries are exhausted
         self.logger.error("Retry limit exceeded. CWS config creation failed.")
         return None
 
-    # end method definition
 
     def verify_user_having_role(self, organization: str, user_name: str, role_name: str) -> bool:
         """Verify that the user has the specified role.
@@ -3111,7 +3034,6 @@ class OTAWP:
 
         return False  # Return False if the retries limit is exceeded
 
-    # end method definition
 
     def assign_role_to_user(self, organization: str, user_name: str, role_name: str) -> bool:
         """Assign a role to a user and verify the role assignment.
@@ -3256,4 +3178,3 @@ class OTAWP:
         self.logger.error("Retry limit exceeded. Role assignment failed for user '%s'.", user_name)
         return False
 
-        # end method definition

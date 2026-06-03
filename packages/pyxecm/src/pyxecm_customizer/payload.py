@@ -56,6 +56,7 @@ import traceback
 from ast import literal_eval
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import hcl2.api
@@ -98,7 +99,7 @@ except ModuleNotFoundError:
 
 THREAD_NUMBER = 3
 BULK_THREAD_NUMBER = int(os.environ.get("BULK_THREAD_NUMBER", "1"))
-BULK_DOCUMENT_PATH = os.path.join(tempfile.gettempdir(), "bulkDocuments")
+BULK_DOCUMENT_PATH = Path(tempfile.gettempdir()) / "bulkDocuments"
 ENABLE_MULTI_THREADING = THREAD_NUMBER > 1
 OTEL_TRACING_ATTRIBUTES = {"class": "payload"}
 
@@ -126,7 +127,7 @@ def load_payload(
 
     """
 
-    if not os.path.exists(payload_source):
+    if not Path(payload_source).exists():
         logger.error("Cannot access payload file -> '%s'!", payload_source)
         return None
 
@@ -134,7 +135,7 @@ def load_payload(
     if payload_source.endswith(".yaml"):
         logger.info("Open payload from YAML file -> '%s'...", payload_source)
         try:
-            with open(payload_source, encoding="utf-8") as stream:
+            with Path(payload_source).open(encoding="utf-8") as stream:
                 payload_data = stream.read()
             return yaml.safe_load(payload_data)
         except yaml.YAMLError:
@@ -147,7 +148,7 @@ def load_payload(
     elif payload_source.endswith((".tf", ".tfvars")):
         logger.info("Open payload from Terraform file -> '%s'...", payload_source)
         try:
-            with open(payload_source, encoding="utf-8") as stream:
+            with Path(payload_source).open(encoding="utf-8") as stream:
                 payload = hcl2.api.load(stream)
             # If payload is wrapped into "external_payload" we unwrap it:
             if payload.get("external_payload"):
@@ -173,7 +174,7 @@ def load_payload(
     elif payload_source.endswith(".yml.gz.b64"):
         logger.info("Open payload from base64-gz-YAML file -> '%s'...", payload_source)
         try:
-            with open(payload_source, encoding="utf-8") as stream:
+            with Path(payload_source).open(encoding="utf-8") as stream:
                 content = base64.b64decode(stream.read())
                 decoded_data = gzip.decompress(content)
 
@@ -420,7 +421,6 @@ class Payload:
         self._workspace_types: list = []
         self._workspaces: list = []
 
-    # end method definition
 
     def thread_wrapper(self, target: Callable, *args: tuple, **kwargs: dict) -> None:
         """Wrap around threads to catch exceptions during exection.
@@ -445,7 +445,6 @@ class Payload:
             )
             self.logger.error(traceback.format_exc())
 
-    # end method definition
 
     def replace_placeholders(self, content: str) -> str:
         """Replace placeholders in file content.
@@ -491,9 +490,7 @@ class Payload:
             self.logger.error("Regex substitution error!")
             return content
 
-        # end method definition
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="init_payload")
     def init_payload(self) -> dict | None:
@@ -606,7 +603,6 @@ class Payload:
 
         return self._payload
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="init_payload_user_instances")
     def init_payload_user_instances(self) -> None:
@@ -646,7 +642,6 @@ class Payload:
 
         return
 
-    # end method definition
 
     def get_payload_section(self, payload_section_name: str) -> list:
         """Get a specific section of the payload based on its name.
@@ -685,7 +680,6 @@ class Payload:
 
         return self._payload[payload_section_name]
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_appworks_configurations")
     def process_appworks_configurations(self, section_name: str = "appworks") -> bool:
@@ -749,7 +743,7 @@ class Payload:
                 continue
 
             self._log_header_callback(
-                text="Process AppWorks resource configuration for '{}'".format(organization), char="-"
+                text=f"Process AppWorks resource configuration for '{organization}'", char="-"
             )
 
             # Check if user has been explicitly disabled in payload
@@ -776,8 +770,8 @@ class Payload:
                 )
                 awp_resource = self._otds.add_resource(
                     name=organization,
-                    description="AppWorks Platform - {}".format(organization),
-                    display_name="AppWorks Platform - {}".format(organization),
+                    description=f"AppWorks Platform - {organization}",
+                    display_name=f"AppWorks Platform - {organization}",
                     additional_payload=OTAWP.resource_payload(
                         org_name=organization,
                         username=self._otawp.username(),
@@ -910,7 +904,7 @@ class Payload:
             license_name = self._otawp.product_name()
             product_name = self._otawp.product_name() + "_" + organization.upper()
             product_description = self._otawp.product_name() + organization
-            if os.path.isfile(self._otawp.license_file()):
+            if Path(self._otawp.license_file().is_file()):
                 self.logger.info(
                     "Found OTAWP license file -> '%s', assiging it to OTDS resource -> '%s'...",
                     self._otawp.license_file(),
@@ -974,8 +968,6 @@ class Payload:
                                 product_name,
                                 "USERS",
                             )
-                # end for partition_name in ["otds.admin", self._otcs.partition_name()]:
-            # end if os.path.isfile(self._otawp.license_file()):
 
             self.logger.info("Restart AppWorks Kubernetes stateful set -> '%s'...", self._otawp.hostname())
 
@@ -996,7 +988,6 @@ class Payload:
             self._otawp.assign_role_to_user(
                 organization=organization, user_name=self._otawp.username(), role_name="Developer"
             )
-        # end for appworks_configuration in self._appworks_configurations:
 
         #
         # 2: Loop to create the AppWorks workspaces, projects, and entities:
@@ -1018,7 +1009,7 @@ class Payload:
                 continue
 
             self._log_header_callback(
-                text="Process AppWorks workspaces, project, entities for '{}'".format(organization), char="-"
+                text=f"Process AppWorks workspaces, project, entities for '{organization}'", char="-"
             )
 
             self._otawp.set_organization(organization)
@@ -1045,7 +1036,7 @@ class Payload:
                     self.logger.error(
                         "AppWorks workspace configuration for -> '%s'%s requires 'workspace_id', 'name', and 'path' settings! Skipping...",
                         organization,
-                        " (workspace name -> {})".format(workspace_name) if workspace_name else "",
+                        f" (workspace name -> {workspace_name})" if workspace_name else "",
                     )
                     success = False
                     continue
@@ -1116,21 +1107,17 @@ class Payload:
                             )
                             success = False
                             continue
-                    # end for project in workspace["projects"]:
-                # end if "projects" in workspace
-            # end for workspace in value["cws"]["workspaces"]
 
             # Process the entities in the payload:
             entities = appworks_configuration.get("entities", [])
             if entities:
                 self._log_header_callback(
-                    text="Process AppWorks entities for organization -> '{}'".format(organization), char="-"
+                    text=f"Process AppWorks entities for organization -> '{organization}'", char="-"
                 )
                 for entity in entities:
                     if not self.process_appworks_entity(entity=entity):
                         success = False
                 self.logger.info("Entity processing completed for organization -> '%s'.", organization)
-        # end for appworks_configuration in self._appworks_configurations:
 
         self.write_status_file(
             success=success,
@@ -1140,7 +1127,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_appworks_entity")
     def process_appworks_entity(self, entity: dict) -> bool:
@@ -1384,7 +1370,7 @@ class Payload:
                 self.logger.info(
                     "Successfully created case with subject -> '%s'%s.",
                     entity.get("subject"),
-                    " for customer with ID -> '{}'".format(customer_id) if customer_id else "",
+                    f" for customer with ID -> '{customer_id}'" if customer_id else "",
                 )
                 self.logger.debug("Response -> %s", str(response))
                 return True
@@ -1394,7 +1380,6 @@ class Payload:
 
         return False
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_all_group_names")
     def get_all_group_names(self) -> list:
@@ -1408,7 +1393,6 @@ class Payload:
 
         return [group.get("name") for group in self._groups]
 
-    # end method definition
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_status_file_name")
     def get_status_file_name(
         self,
@@ -1439,7 +1423,7 @@ class Payload:
         # Some sections are actually not payload specific like teamsM365Cleanup
         # we don't want external payload runs to re-apply this processing:
         if payload_specific:
-            file_name = os.path.basename(self._payload_source)  # remove directories
+            file_name = Path(self._payload_source).name  # remove directories
             # Split once at the first occurance of a dot
             # as the _payload_source may have multiple suffixes
             # such as .yml.gz.b64:
@@ -1450,7 +1434,6 @@ class Payload:
 
         return file_name
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="check_status_file")
     def check_status_file(
@@ -1539,7 +1522,6 @@ class Payload:
         )
         return False
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="write_status_file")
     def write_status_file(
@@ -1612,11 +1594,11 @@ class Payload:
             prefix=prefix,
         )
 
-        full_path = os.path.join(tempfile.gettempdir(), "customizer", "status_files", file_name)
+        full_path = Path(tempfile.gettempdir()) / "customizer" / "status_files" / file_name
         # Ensure the directory exists
-        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        Path(full_path).parent.mkdir(parents=True, exist_ok=True)
 
-        with open(full_path, mode="w", encoding="utf-8") as localfile:
+        with Path(full_path).open(mode="w", encoding="utf-8") as localfile:
             localfile.write(json.dumps(payload_section, indent=2))
 
         # Check if the status file has been uploaded before.
@@ -1658,7 +1640,6 @@ class Payload:
 
         return False
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_status_file")
     def get_status_file(
@@ -1725,7 +1706,6 @@ class Payload:
 
         return self._otcs.get_json_document(node_id=status_file_id)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_payload")
     def get_payload(self, drop_bulk_datasources_data: bool = False) -> dict:
@@ -1757,7 +1737,6 @@ class Payload:
 
         return self._payload
 
-    # end method definition
 
     def get_users(self) -> list:
         """Get all users in payload."""
@@ -1870,7 +1849,6 @@ class Payload:
 
         return final_password
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="determine_group_id")
     def determine_group_id(self, group: dict) -> int:
@@ -1927,7 +1905,6 @@ class Payload:
             )
             return 0
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="determine_group_id_m365")
     def determine_group_id_m365(self, group: dict) -> str | None:
@@ -1979,7 +1956,6 @@ class Payload:
             )
             return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="determine_group_id_core_share")
     def determine_group_id_core_share(self, group: dict) -> str | None:
@@ -2034,7 +2010,6 @@ class Payload:
             )
             return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="determine_user_id")
     def determine_user_id(self, user: dict) -> int:
@@ -2090,9 +2065,7 @@ class Payload:
             )
             return 0
 
-        # end method definition
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="determine_user_id_m365")
     def determine_user_id_m365(self, user: dict) -> str | None:
@@ -2142,7 +2115,6 @@ class Payload:
             )
             return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="determine_user_id_core_share")
     def determine_user_id_core_share(self, user: dict) -> str | None:
@@ -2211,7 +2183,6 @@ class Payload:
                 )
             return None
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="determine_workspace_id")
     def determine_workspace_id(self, workspace: dict) -> int:
@@ -2296,7 +2267,6 @@ class Payload:
                         str(business_object),
                     )
                     return workspace_id
-            # end for loop
 
         self.logger.info(
             "Workspace of type -> '%s' and name -> '%s'%s%s does not yet exist. Cannot determine its ID.",
@@ -2309,7 +2279,6 @@ class Payload:
         )
         return 0
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="determine_workspace_type_and_template_id")
     def determine_workspace_type_and_template_id(
@@ -2396,7 +2365,6 @@ class Payload:
 
         return (workspace_type_id, workspace_template_id)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_transport_extractions")
     def add_transport_extractions(self, extractions: list) -> int:
@@ -2424,7 +2392,6 @@ class Payload:
 
         return counter
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_payload")
     def process_payload(self) -> None:
@@ -2942,7 +2909,6 @@ class Payload:
                 self._log_header_callback("Process User Security")
                 self.process_user_security()
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_web_hooks")
     def process_web_hooks(self, webhooks: list, section_name: str = "webHooks") -> bool:
@@ -3044,7 +3010,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_resources")
     def process_resources(self, section_name: str = "resources") -> bool:
@@ -3168,7 +3133,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_synchronized_partitions")
     def process_synchronized_partitions(
@@ -3302,7 +3266,6 @@ class Payload:
                         access_role,
                     )
                     success = False
-            # end if access_role
 
             # Partions may have an optional list of licenses in
             # the payload. Assign the partition to all these licenses:
@@ -3386,7 +3349,6 @@ class Payload:
                             license_feature,
                             license_name,
                         )
-            # end if partition_specific_licenses
 
         self.write_status_file(
             success=success,
@@ -3396,7 +3358,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_partitions")
     def process_partitions(self, section_name: str = "partitions") -> bool:
@@ -3481,7 +3442,7 @@ class Payload:
                     self.logger.info(
                         "Added OTDS partition -> '%s'%s.",
                         partition_name,
-                        " ({})".format(partition_description) if partition_description else "",
+                        f" ({partition_description})" if partition_description else "",
                     )
                 else:
                     self.logger.error(
@@ -3510,7 +3471,6 @@ class Payload:
                         access_role,
                     )
                     success = False
-            # end if access_role
 
             # Partions may have an optional list of licenses in
             # the payload. Assign the partition to all these licenses:
@@ -3595,8 +3555,6 @@ class Payload:
                             license_feature,
                             license_name,
                         )
-            # end if partition_specific_licenses:
-        # end for partition in self._partitions:
 
         self.write_status_file(
             success=success,
@@ -3606,7 +3564,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_licenses")
     def process_licenses(self, section_name: str = "licenses") -> bool:
@@ -3705,7 +3662,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_oauth_clients")
     def process_oauth_clients(self, section_name: str = "oauthClients") -> bool:
@@ -3872,7 +3828,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_application_roles")
     def process_application_roles(self, section_name: str = "applicationRoles") -> bool:
@@ -3971,7 +3926,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_auth_handlers")
     def process_auth_handlers(self, section_name: str = "authHandlers") -> bool:
@@ -4283,7 +4237,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_trusted_sites")
     def process_trusted_sites(self, section_name: str = "trustedSites") -> bool:
@@ -4362,7 +4315,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_system_attributes")
     def process_system_attributes(self, section_name: str = "systemAttributes") -> bool:
@@ -4456,7 +4408,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_docgen_settings")
     def process_docgen_settings(self, section_name: str = "docgenSettings") -> bool:
@@ -4538,16 +4489,16 @@ class Payload:
                     "Added OTPD setting -> '%s' with value -> '%s'%s%s.",
                     setting_name,
                     setting_value,
-                    " for tenant -> '{}'".format(tenant_name) if tenant_name else "",
-                    " ({})".format(description) if description else "",
+                    f" for tenant -> '{tenant_name}'" if tenant_name else "",
+                    f" ({description})" if description else "",
                 )
             else:
                 self.logger.error(
                     "Failed to configure OTPD setting -> '%s' with value -> '%s'%s%s!",
                     setting_name,
                     setting_value,
-                    " for tenant -> '{}'".format(tenant_name) if tenant_name else "",
-                    " ({})".format(description) if description else "",
+                    f" for tenant -> '{tenant_name}'" if tenant_name else "",
+                    f" ({description})" if description else "",
                 )
                 success = False
 
@@ -4559,7 +4510,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_group_placeholders")
     def process_group_placeholders(self) -> None:
@@ -4610,7 +4560,6 @@ class Payload:
             self._placeholder_values,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_user_placeholders")
     def process_user_placeholders(self) -> None:
@@ -4661,7 +4610,6 @@ class Payload:
             str(self._placeholder_values),
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_groups")
     def process_groups(self, section_name: str = "groups") -> bool:
@@ -4796,7 +4744,6 @@ class Payload:
                         new_group_id,
                     )
 
-        # end for group in self._groups: (first run)
 
         # Second run through groups: create all group memberships
         # (nested groups) based on the IDs created in first run:
@@ -4872,7 +4819,6 @@ class Payload:
                         member_id=group["id"],
                         group_id=parent_group_id,
                     )
-            # end for parent_group_name in parent_group_names:
 
             # Assign application roles to the new group:
             application_roles = group.get("application_roles", [])
@@ -4918,8 +4864,6 @@ class Payload:
                         group_id,
                         group_partition,
                     )
-            # end for role in application_roles:
-        # end for group in self._groups: (second run)
 
         self.write_status_file(
             success=success,
@@ -4929,7 +4873,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_groups_m365")
     def process_groups_m365(self, section_name: str = "groupsM365") -> bool:
@@ -5028,7 +4971,6 @@ class Payload:
                     # Write M365 group ID back into the payload (for the success file)
                     group["m365_id"] = existing_group["id"]
                     continue
-            # end if existing_groups and existing_groups["value"]
 
             self.logger.info(
                 "Creating a new Microsoft 365 group -> '%s'...",
@@ -5056,7 +4998,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_groups_salesforce")
     def process_groups_salesforce(self, section_name: str = "groupsSalesforce") -> bool:
@@ -5239,7 +5180,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_groups_core_share")
     def process_groups_core_share(self, section_name: str = "groupsCoreShare") -> bool:
@@ -5378,7 +5318,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_users")
     def process_users(self, section_name: str = "users") -> bool:
@@ -5626,7 +5565,6 @@ class Payload:
                 )
                 if not response:
                     success = False
-            # end for user_group in user_groups:
 
             # For some unclear reason the user is not added to its base group in OTDS
             # so we do this explicitly:
@@ -5677,7 +5615,6 @@ class Payload:
                         attribute_name,
                         attribute_value,
                     )
-            # end if "extra_attributes" in user
 
             # Assign application roles to the new user:
             application_roles = user.get("application_roles", [])
@@ -5726,7 +5663,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_users_sap")
     def process_users_sap(self, section_name: str = "usersSAP") -> bool:
@@ -5865,7 +5801,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_users_successfactors")
     def process_users_successfactors(
@@ -6035,7 +5970,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_users_salesforce")
     def process_users_salesforce(
@@ -6301,7 +6235,6 @@ class Payload:
                         "Successfully verified new email address -> '%s'.",
                         user_email,
                     )
-            # end if need_email_verification
 
             #
             # 5: Add users into groups in Salesforce:
@@ -6386,8 +6319,6 @@ class Payload:
                         group_name,
                         group_id,
                     )
-            # end for loop user groups
-        # end for loop users
 
         self.write_status_file(
             success=success,
@@ -6397,7 +6328,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_users_core_share")
     def process_users_core_share(
@@ -6773,7 +6703,6 @@ class Payload:
                         "Successfully verified new email address -> '%s'.",
                         user_email,
                     )
-            # end if need_email_verification
 
             #
             # 4: Add users into groups in Core Share:
@@ -6895,8 +6824,6 @@ class Payload:
                         group_name,
                         group_id,
                     )
-            # end for loop user groups
-        # end for loop users
 
         self.write_status_file(
             success=success,
@@ -6906,7 +6833,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_users_m365")
     def process_users_m365(self, section_name: str = "usersM365") -> bool:
@@ -7114,9 +7040,7 @@ class Payload:
             app_internal_id = self._m365.config().get("teamsAppInternalId", None)
             response = self._m365.get_teams_apps_of_user(
                 user_id=m365_user_id,
-                filter_expression="contains(teamsAppDefinition/displayName, '{}')".format(
-                    app_name,
-                ),
+                filter_expression=f"contains(teamsAppDefinition/displayName, '{app_name}')",
             )
             if self._m365.exist_result_item(
                 response=response,
@@ -7332,7 +7256,6 @@ class Payload:
                             group_id=parent_group_id,
                             member_id=m365_user_id,
                         )
-                # end for parent_group_name
 
                 # Make this user follow the SharePoint site of his/her department.
                 # We only do this for users that have a valid M365 license (SKU):
@@ -7386,11 +7309,6 @@ class Payload:
                                     group_site_name,
                                 )
                                 success = False
-                        # end if group_site_id:
-                    # end if group_id:
-                # end if group_name == user_department and user["m365_skus"]:
-            # end for group name in group_names:
-        # end for user
 
         self.write_status_file(
             success=success,
@@ -7400,7 +7318,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_teams_m365")
     def process_teams_m365(self, section_name: str = "teamsM365") -> bool:
@@ -7513,7 +7430,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_teams_m365_apps")
     def process_teams_m365_apps(
@@ -7576,7 +7492,7 @@ class Payload:
         app_internal_id = self._m365.config()["teamsAppInternalId"]
         if not app_internal_id:
             response = self._m365.get_teams_apps(
-                filter_expression="contains(displayName, '{}')".format(app_name),
+                filter_expression=f"contains(displayName, '{app_name}')",
             )
             # Get the App catalog ID:
             app_internal_id = self._m365.get_result_value(
@@ -7655,9 +7571,7 @@ class Payload:
             # 3. Install the App for the particular M365 Team (if it is not yet installed):
             response = self._m365.get_teams_apps_of_team(
                 team_id=team_id,
-                filter_expression="contains(teamsAppDefinition/displayName, '{}')".format(
-                    app_name,
-                ),
+                filter_expression=f"contains(teamsAppDefinition/displayName, '{app_name}')",
             )
             if self._m365.exist_result_item(
                 response=response,
@@ -7785,7 +7699,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="cleanup_stale_teams_m365")
     def cleanup_stale_teams_m365(self, workspace_types: list) -> bool:
@@ -7836,7 +7749,6 @@ class Payload:
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="cleanup_all_teams_m365")
     def cleanup_all_teams_m365(self, section_name: str = "teamsM365Cleanup") -> bool:
@@ -7925,7 +7837,6 @@ class Payload:
 
         return result
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_sites_m365")
     def process_sites_m365(self, section_name: str = "sitesM365") -> bool:
@@ -8258,9 +8169,7 @@ class Payload:
                         "ContentServerFolderSelectedSite": "",
                         "ContentServerFolderDisplaySite": "",
                         "SSOEnabledSite": "",
-                        "SettingStorageURLGL": "{}/sites/appcatalog".format(
-                            site_url,
-                        ),
+                        "SettingStorageURLGL": f"{site_url}/sites/appcatalog",
                         "ContentServerURLGL": self._otcs.config()["csPublicUrl"],
                         "URLPrefixGL": "/cssupport",
                         "ShowPersonalWorkspaceGL": "No",
@@ -8309,15 +8218,13 @@ class Payload:
                         site_id,
                     )
                     success = False
-                # end else
-            # end else
 
             #
             # 6. Create URL object pointing to SharePoint site inside top level department folder
             #
 
             item_name = (
-                "SharePoint site for {} department".format(group_name)
+                f"SharePoint site for {group_name} department"
                 if folder_id != enterprise_node_id
                 else "SharePoint site for Innovate"
             )
@@ -8341,7 +8248,6 @@ class Payload:
                     item_name,
                     site["webUrl"],
                 )
-        # end for group in self._groups:
 
         self.write_status_file(
             success=success,
@@ -8351,7 +8257,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_admin_settings")
     def process_admin_settings(
@@ -8430,16 +8335,16 @@ class Payload:
                 continue
 
             settings_file = self._custom_settings_dir + filename
-            if os.path.exists(settings_file):
+            if Path(settings_file).exists():
                 description = admin_setting.get("description")
                 self.logger.info(
                     "Processing admin settings from file -> '%s'%s...",
                     filename,
-                    " ({})".format(description) if description else "",
+                    f" ({description})" if description else "",
                 )
 
                 # Read the config file:
-                with open(settings_file, encoding="utf-8") as file:
+                with Path(settings_file).open(encoding="utf-8") as file:
                     file_content = file.read()
 
                 self.logger.debug(
@@ -8451,8 +8356,8 @@ class Payload:
                 file_content = self.replace_placeholders(content=file_content)
 
                 # Write the updated config file:
-                tmpfile = os.path.join(tempfile.gettempdir(), os.path.basename(settings_file))
-                with open(tmpfile, "w", encoding="utf-8") as file:
+                tmpfile = Path(tempfile.gettempdir()) / Path(settings_file).name
+                with Path(tmpfile).open("w", encoding="utf-8") as file:
                     file.write(file_content)
 
                 response = self._otcs.apply_config(xml_file_path=tmpfile)
@@ -8489,7 +8394,6 @@ class Payload:
 
         return restart_required
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="check_external_system")
     def check_external_system(self, external_system: dict) -> bool:
@@ -8531,7 +8435,6 @@ class Payload:
             external_system["reachable"] = False
             return False
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_external_systems")
     def process_external_systems(self, section_name: str = "externalSystems") -> bool:
@@ -8653,7 +8556,7 @@ class Payload:
                 description = {"en": description}
 
             self._log_header_callback(
-                text="Process External System -> '{}' ({})".format(system_name, system_type),
+                text=f"Process External System -> '{system_name}' ({system_type})",
                 char="-",
             )
 
@@ -8736,7 +8639,7 @@ class Payload:
                 system_type,
                 connection_type,
                 as_url,
-                ", description -> {}".format(description) if description else "",
+                f", description -> {description}" if description else "",
             )
 
             skip_connection_test = external_system.get("skip_connection_test", False)
@@ -8807,7 +8710,6 @@ class Payload:
                         auth_method,
                     )
                     return False
-            # end match
 
             # We do this existance test late in this function to make sure the payload
             # datastructure is properly updated for debugging purposes.
@@ -8868,7 +8770,6 @@ class Payload:
                     )
 
                 continue
-            # end if external system exists
 
             #
             # Create External System:
@@ -8938,7 +8839,6 @@ class Payload:
                     self._guidewire_policy_center = self.init_guidewire(
                         guidewire_external_system=external_system,
                     )
-        # end for external_system in self._external_systems:
 
         self.write_status_file(
             success=success,
@@ -8948,7 +8848,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="lookup_external_system")
     def lookup_external_system(self, ext_system_id: str, prefix: str = "success_payload_") -> dict | None:
@@ -9014,7 +8913,6 @@ class Payload:
 
         return external_system
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="download_transport_package")
     def download_transport_package(
@@ -9040,7 +8938,7 @@ class Payload:
         """
 
         if not download_dir:
-            download_dir = os.path.join(tempfile.gettempdir(), "customizer", "transports")
+            download_dir = Path(tempfile.gettempdir()) / "customizer" / "transports"
 
         if not self._http_object:
             self._http_object = HTTP(logger=self.logger)
@@ -9052,11 +8950,11 @@ class Payload:
         path = parsed_url.path
 
         # Get the file name from the path
-        file_name = os.path.basename(path)
+        file_name = Path(path).name
 
-        download_name = os.path.join(download_dir, file_name)
+        download_name = Path(download_dir) / file_name
 
-        os.makedirs(download_dir, exist_ok=True)
+        Path(download_dir).mkdir(parents=True, exist_ok=True)
 
         if not self._http_object.download_file(
             url=package_url,
@@ -9073,7 +8971,6 @@ class Payload:
 
         return download_name
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_transport_packages")
     def process_transport_packages(
@@ -9211,7 +9108,6 @@ class Payload:
                 # Save the extractions for later processing, e.g. in process_business_object_types()
                 if extractions:
                     self.add_transport_extractions(extractions=extractions)
-        # end for transports
 
         self.write_status_file(
             success=success,
@@ -9231,7 +9127,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_user_photos")
     def process_user_photos(self, section_name: str = "userPhotos") -> bool:
@@ -9339,7 +9234,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_user_photos_m365")
     def process_user_photos_m365(self, section_name: str = "userPhotosM365") -> bool:
@@ -9457,9 +9351,9 @@ class Payload:
             photo_id = self._otcs.get_result_value(response=response, key="id")
             photo_name = self._otcs.get_result_value(response=response, key="name")
 
-            photo_path = os.path.join(tempfile.gettempdir(), "customizer", "user_photos", photo_name)
+            photo_path = Path(tempfile.gettempdir()) / "customizer" / "user_photos" / photo_name
             # Ensure the directory exists
-            os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+            Path(photo_path).parent.mkdir(parents=True, exist_ok=True)
 
             result = self._otcs.download_document(
                 node_id=photo_id,
@@ -9492,7 +9386,6 @@ class Payload:
                     "Successfully uploaded photo for user -> '%s' to Microsoft 365.",
                     user_name,
                 )
-        # end for loop
 
         # Check if Admin has a photo as well (nickname needs to be "admin")
         # Then we want this to be applied in M365 as well:
@@ -9504,9 +9397,9 @@ class Payload:
         else:
             photo_id = self._otcs.get_result_value(response=response, key="id")
             photo_name = self._otcs.get_result_value(response=response, key="name")
-            photo_path = os.path.join(tempfile.gettempdir(), "customizer", "user_photos", photo_name)
+            photo_path = Path(tempfile.gettempdir()) / "customizer" / "user_photos" / photo_name
             # Ensure the directory exists
-            os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+            Path(photo_path).parent.mkdir(parents=True, exist_ok=True)
             result = self._otcs.download_document(
                 node_id=photo_id,
                 file_path=photo_path,
@@ -9543,7 +9436,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_user_photos_salesforce")
     def process_user_photos_salesforce(
@@ -9652,12 +9544,12 @@ class Payload:
                 continue
             photo_id = self._otcs.get_result_value(response=response, key="id")
             photo_name = self._otcs.get_result_value(response=response, key="name")
-            photo_path = os.path.join(tempfile.gettempdir(), "customizer", "user_photos", photo_name)
+            photo_path = Path(tempfile.gettempdir()) / "customizer" / "user_photos" / photo_name
             # Ensure the directory exists
-            os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+            Path(photo_path).parent.mkdir(parents=True, exist_ok=True)
 
             # Check if it is not yet downloaded:
-            if not os.path.isfile(photo_path):
+            if not Path(photo_path).is_file():
                 # download the profile picture into the tmp directory:
                 result = self._otcs.download_document(
                     node_id=photo_id,
@@ -9712,7 +9604,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_user_photos_core_share")
     def process_user_photos_core_share(
@@ -9775,7 +9666,7 @@ class Payload:
             user_login = user["name"]
             user_last_name = user.get("lastname", "")
             user_first_name = user.get("firstname", "")
-            user_name = "{} {}".format(user_first_name, user_last_name).strip()
+            user_name = f"{user_first_name} {user_last_name}".strip()
 
             # Check if user has been explicitly disabled in payload
             # (enabled = false). In this case we skip the element:
@@ -9816,12 +9707,12 @@ class Payload:
                 continue
             photo_id = self._otcs.get_result_value(response=response, key="id")
             photo_name = self._otcs.get_result_value(response=response, key="name")
-            photo_path = os.path.join(tempfile.gettempdir(), "customizer", "user_photos", photo_name)
+            photo_path = Path(tempfile.gettempdir()) / "customizer" / "user_photos" / photo_name
             # Ensure the directory exists
-            os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+            Path(photo_path).parent.mkdir(parents=True, exist_ok=True)
 
             # Check if it is not yet downloaded:
-            if not os.path.isfile(photo_path):
+            if not Path(photo_path).is_file():
                 # download the profile picture into the tmp directory:
                 result = self._otcs.download_document(
                     node_id=photo_id,
@@ -9876,7 +9767,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="extract_properties_from_transport_packages")
     def extract_properties_from_transport_packages(
@@ -10161,13 +10051,9 @@ class Payload:
                         business_object_type["business_property_groups"].append(
                             property_mapping,
                         )
-                # end for property_group_mapping in property_group_mappings
-            # end for data in data_list
-        # end for extraction in self._transport_extractions
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_business_object_types")
     def process_business_object_types(
@@ -10305,7 +10191,7 @@ class Payload:
             if not bo_type_name or not bo_type_id:
                 self.logger.info(
                     "Business object type %sis void (dummy data for workspace types without a business object connection)! Skipping...",
-                    "for workspace type ID -> {} ".format(workspace_type_id) if workspace_type_id else "",
+                    f"for workspace type ID -> {workspace_type_id} " if workspace_type_id else "",
                 )
                 continue
             self.logger.info(
@@ -10342,7 +10228,6 @@ class Payload:
                 business_object_type["business_properties_groups"] = business_property_groups
             elif not self.extract_properties_from_transport_packages(business_object_type, bo_type_id, bo_type_name):
                 success = False
-        # end for business_object_type in self._business_object_types
 
         self.write_status_file(
             success=success,
@@ -10352,7 +10237,6 @@ class Payload:
 
         return self._business_object_types
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_business_object_properties")
     def get_business_object_properties(self, bo_type_name: str) -> dict | None:
@@ -10423,7 +10307,6 @@ class Payload:
 
         return lookup_dict
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workspace_types")
     def process_workspace_types(self, section_name: str = "workspaceTypes") -> list:
@@ -10570,16 +10453,11 @@ class Payload:
                             permissions=permission_string_list,
                             apply_to=1,  # 1 = only sub items - workspace node itself is OK
                         )
-                    # end for roles in response["results"]:
-                # end if payload_section.get("inherit_permissions", False):
-            # end for workspace_template in workspace_templates:
-        # end for workspace_type in self._workspace_types:
 
         self.write_status_file(success=True, payload_section_name=section_name, payload_section=self._workspace_types)
 
         return self._workspace_types
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workspace_templates")
     def process_workspace_templates(
@@ -10796,7 +10674,6 @@ class Payload:
                             template_name,
                             template_id,
                         )
-                # end for member_user in member_users:
 
                 # Process groups as workspace template members:
                 for member_group in member_groups:
@@ -10841,8 +10718,6 @@ class Payload:
                             template_name,
                             template_id,
                         )
-                # end for member_group in member_groups:
-            # end for member in members:
 
             existing_template_categories = None
             for category in categories:
@@ -10872,7 +10747,7 @@ class Payload:
                         "Cannot find category for workspace template -> '%s' (%s). Tried category %s.",
                         template_name,
                         template_id,
-                        "path {}".format(category_path) if category_path else "nickname {}".format(category_nickname),
+                        f"path {category_path}" if category_path else f"nickname {category_nickname}",
                     )
                     success = False
                     continue
@@ -10910,8 +10785,6 @@ class Payload:
                         template_id,
                     )
 
-            # end for category in categories:
-        # end for workspace_template in self._workspace_templates:
 
         self.write_status_file(
             success=success,
@@ -10921,7 +10794,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="resolve_attribute_values")
     def resolve_attribute_values(
@@ -11086,7 +10958,6 @@ class Payload:
         # This is the default case - we return the unchanged attribute values:
         return attribute_values
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="prepare_workspace_create_form")
     def prepare_workspace_create_form(
@@ -11177,8 +11048,6 @@ class Payload:
                 case _:
                     # the remaining option is that this form is the system attributes form:
                     self.logger.warning("Unknown form -> %s", str(form))
-            # end match form["role_name"]:
-        # end for form in forms:
 
         # We are just interested in the single category data set (role_name = "categories"):
         data = categories_form.get("data", None)
@@ -11360,8 +11229,6 @@ class Payload:
                                     attribute_values=attribute["value"],
                                 )
                         row += 1  # continue the while loop with the next row
-                    # end while row <= set_schema_max_rows:
-                # end if attr_type == "array" and ("properties" in schema_attributes[attr_id]["items"]):
 
                 #
                 # Handle single-line set:
@@ -11428,8 +11295,6 @@ class Payload:
                                 attribute_type=set_attr_type,
                                 attribute_values=attribute["value"],
                             )
-                    # end for set_attr_id in set_data_attributes:
-                # end elif attr_type == "object":
 
                 #
                 # Handle plain attribute (not inside a set):
@@ -11466,16 +11331,12 @@ class Payload:
                             attribute_type=attr_type,
                             attribute_values=attribute["value"],
                         )
-                # end else (plain attribute)
-            # end for attr_data, attr_schema
             category_create_data[cat_id] = data_attributes
-        # end for cat_data, cat_schema
 
         self.logger.debug("Category create data -> %s", category_create_data)
 
         return category_create_data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_salesforce_business_object")
     def get_salesforce_business_object(
@@ -11630,7 +11491,6 @@ class Payload:
 
         return bo_id
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_guidewire_business_object")
     def get_guidewire_business_object(
@@ -11731,7 +11591,6 @@ class Payload:
 
         return bo_id
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="prepare_item_create_form")
     def prepare_item_create_form(
@@ -11791,7 +11650,6 @@ class Payload:
             cat_id = self._otcs_frontend.get_result_value(response=response, key="id")
             if cat_id and cat_id not in category_ids:
                 category_ids.append(cat_id)
-        # end for volume, path, name in unique_categories:
 
         response = self._otcs_frontend.get_node_create_form(
             parent_id=parent_id,
@@ -11847,8 +11705,6 @@ class Payload:
                 case _:
                     # the remaining option is that this form is the system attributes form:
                     self.logger.warning("Unknown form -> %s", str(form))
-            # end match form["role_name"]:
-        # end for form in forms:
 
         # We are just interested in the single category data set (role_name = "categories"):
         data = categories_form.get("data", None)
@@ -12030,8 +11886,6 @@ class Payload:
                                     attribute_values=attribute["value"],
                                 )
                         row += 1  # continue the while loop with the next row
-                    # end while row <= set_schema_max_rows:
-                # end if attr_type == "array" and ("properties" in schema_attributes[attr_id]["items"]):
 
                 #
                 # Handle single-line set:
@@ -12098,8 +11952,6 @@ class Payload:
                                 attribute_type=set_attr_type,
                                 attribute_values=attribute["value"],
                             )
-                    # end for set_attr_id in set_data_attributes:
-                # end elif attr_type == "object":
 
                 #
                 # Handle plain attribute (not inside a set):
@@ -12136,16 +11988,12 @@ class Payload:
                             attribute_type=attr_type,
                             attribute_values=attribute["value"],
                         )
-                # end else (plain attribute)
-            # end for attr_data, attr_schema
             category_create_data[cat_id] = data_attributes
-        # end for cat_data, cat_schema
 
         self.logger.debug("Category Create Data -> %s", category_create_data)
 
         return category_create_data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="prepare_workspace_business_objects")
     def prepare_workspace_business_objects(
@@ -12292,7 +12140,6 @@ class Payload:
                         bo_search_value,
                     )
                     continue
-            # end if external_system_type == "Salesforce" and not bo_id
 
             # For Guidewire we try to determine the actual business object ID (technical ID) if it is
             # not specified in the payload (but instead a search field and search value):
@@ -12312,7 +12159,6 @@ class Payload:
                         bo_search_value,
                     )
                     continue
-            # end if external_system_type == "Guidewire" and not bo_id
 
             self.logger.info(
                 "Workspace -> '%s' will be connected with external system -> '%s' (%s) with (type -> '%s', ID -> '%s').",
@@ -12334,7 +12180,6 @@ class Payload:
 
         return business_object_list
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workspace")
     def process_workspace(
@@ -12566,7 +12411,7 @@ class Payload:
                 type_name,
                 template_name,
                 template_id,
-                " with business object references -> {}".format(business_object_list) if business_object_list else "",
+                f" with business object references -> {business_object_list}" if business_object_list else "",
             )
         elif business_object_list:
             self.logger.info(
@@ -12738,7 +12583,6 @@ class Payload:
                     type_name,
                     workspace["node_id"],
                 )
-        # end for business_object in business_object_list
 
         # if the workspace creation has failed - e.g. error in lookup of business
         # object in external system then we continue with the next workspace:
@@ -12753,7 +12597,6 @@ class Payload:
             workspace=workspace,
         )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workspace_post")
     def process_workspace_post(
@@ -12805,7 +12648,6 @@ class Payload:
                     workspace_name,
                     workspace_id,
                 )
-        # end if "nickname" in workspace
 
         # Check if there's an workspace icon/image configured:
         if "image_nickname" in workspace:
@@ -12823,9 +12665,9 @@ class Payload:
                         "Missing mime type information - assuming 'image/png'...",
                     )
                     mime_type = "image/png"
-                file_path = os.path.join(tempfile.gettempdir(), "customizer", "workspace_images", image_nickname)
+                file_path = Path(tempfile.gettempdir()) / "customizer" / "workspace_images" / image_nickname
                 # Ensure the directory exists
-                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                Path(file_path).parent.mkdir(parents=True, exist_ok=True)
                 result = self._otcs.download_document(node_id=node_id, file_path=file_path)
                 if not result:
                     self.logger.error(
@@ -12852,7 +12694,6 @@ class Payload:
                     image_nickname,
                     workspace_name,
                 )
-        # end if "image_nickname" in workspace
 
         # Check if an RM classification is specified for the workspace:
         # RM Classification is specified as list of path elements (top-down)
@@ -12906,8 +12747,6 @@ class Payload:
                             workspace["rm_classification_path"][-1],
                             workspace_name,
                         )
-            # end if rm_class_node_id
-        # end if "rm_classification_path" in workspace and workspace["rm_classification_path"] != []
 
         # Check if one or multiple classifications are specified for the workspace
         # Classifications are specified as list of path elements (top-down)
@@ -12954,13 +12793,9 @@ class Payload:
                                 classification_path[-1],
                                 workspace_name,
                             )
-                # end if class_node_id
-            # end for classification_path in workspace["classification_pathes"]
-        # end if "classification_pathes" in workspace and workspace["classification_pathes"] != []
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workspaces_worker")
     def process_workspaces_worker(
@@ -13041,7 +12876,6 @@ class Payload:
 
         results.append(result)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_ontologies")
     def process_ontologies(self, section_name: str = "ontologies") -> bool:
@@ -13100,7 +12934,7 @@ class Payload:
                 continue
 
             self._log_header_callback(
-                text="Process ontology '{}'".format(ontology_name),
+                text=f"Process ontology '{ontology_name}'",
                 char="-",
             )
 
@@ -13152,14 +12986,12 @@ class Payload:
                     # As we don't have a datastructure in OTCM for Workspace Type synonyms we just write them
                     # into the description field (appended to the regular description):
                     workspace_type_description += "\n" + "Synonyms: " + ", ".join(synonyms)
-                # end if synonyms
 
                 key_aspects = set(entity.get("key_aspects", []))
                 if key_aspects:
                     # As we don't have a datastructure in OTCM for Workspace Type key aspects we just write them
                     # into the description field (appended to the regular description):
                     workspace_type_description += "\n" + "Key Aspects: " + ", ".join(key_aspects)
-                # end if key_aspects
 
                 if synonyms or key_aspects:
                     response = self._otcs.update_item(
@@ -13270,7 +13102,6 @@ class Payload:
                         # 2. keep track in which ontologies this relationship is defined:
                         merged_relationships[rel_key]["predicates"].update(rel.get("predicates", []))
                         merged_relationships[rel_key]["ontologies"].add(ontology_name)
-                # end for rel in relationships
 
                 if not entity_relations or added == 0:
                     # We don't want to overwrite with empty or unchanged relationships
@@ -13300,14 +13131,11 @@ class Payload:
                         workspace_type_name,
                         len(entity_relations),
                     )
-                # end if otcs_version >= 26.2
                 else:
                     self.logger.warning(
                         "OTCM version < 26.2 detected. Skipping update of workspace type relationships via REST API."
                     )
 
-            # end for entity in entities
-        # end for ontology in self._ontologies
 
         # Convert sets back to sorted lists for JSON serializability
         final_entities = []
@@ -13398,7 +13226,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workspaces")
     def process_workspaces(self, section_name: str = "workspaces") -> bool:
@@ -13501,7 +13328,6 @@ class Payload:
                 # Avoid that all threads start at the exact same time with
                 # potentially expired cookies that cases race conditions:
                 time.sleep(1)
-            # end for index, partition in enumerate(partitions, start=1)
 
             # Wait for all threads to complete
             for thread in threads:
@@ -13580,7 +13406,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workspace_relationship")
     def process_workspace_relationship(self, workspace: dict) -> bool:
@@ -13683,8 +13508,7 @@ class Payload:
                             related_workspace_payload["type_name"],
                         )
                         continue
-                    found_by = "logical ID -> '{}' in payload".format(related_workspace)
-                # end if related_workspace_payload:
+                    found_by = f"logical ID -> '{related_workspace}' in payload"
 
                 #
                 # 2. Option: Find the related workspace with plain nickname:
@@ -13697,8 +13521,7 @@ class Payload:
                         key="id",
                     )
                     if related_workspace_node_id:
-                        found_by = "nickname -> '{}'".format(related_workspace)
-            # end if isinstance(related_workspace_id, (str, int)):
+                        found_by = f"nickname -> '{related_workspace}'"
 
             #
             # 3. Option: Find the related workspace type and name or by nickname with relationship type:
@@ -13717,9 +13540,7 @@ class Payload:
                         key="id",
                     )
                     if related_workspace_node_id:
-                        found_by = "type -> '{}' and name -> '{}'".format(
-                            related_workspace_type, related_workspace_name
-                        )
+                        found_by = f"type -> '{related_workspace_type}' and name -> '{related_workspace_name}'"
                 elif related_workspace_nickname:
                     response = self._otcs.get_node_from_nickname(nickname=related_workspace_nickname)
                     related_workspace_node_id = self._otcs.get_result_value(
@@ -13727,7 +13548,7 @@ class Payload:
                         key="id",
                     )
                     if related_workspace_node_id:
-                        found_by = "nickname -> '{}'".format(related_workspace)
+                        found_by = f"nickname -> '{related_workspace}'"
             #
             # 4. Option: Find the related workspace volume and path:
             #
@@ -13740,7 +13561,7 @@ class Payload:
                     key="id",
                 )
                 if related_workspace_node_id:
-                    found_by = "path -> {}".format(related_workspace)
+                    found_by = f"path -> {related_workspace}"
 
             if related_workspace_node_id is None:
                 self.logger.error(
@@ -13793,11 +13614,9 @@ class Payload:
             else:
                 self.logger.info("Successfully created workspace relationship.")
 
-        # end for relationships
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workspace_relationships_worker")
     def process_workspace_relationships_worker(
@@ -13854,7 +13673,6 @@ class Payload:
 
         results.append(result)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workspace_relationships")
     def process_workspace_relationships(
@@ -13929,7 +13747,6 @@ class Payload:
                 # Avoid that all threads start at the exact same time with
                 # potentially expired cookies that cases race conditions:
                 time.sleep(1)
-            # end for index, partition in enumerate(partitions, start=1)
 
             # Wait for all threads to complete
             for thread in threads:
@@ -13975,7 +13792,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workspace_members")
     def process_workspace_members(self, section_name: str = "workspaceMembers") -> bool:
@@ -14325,8 +14141,6 @@ class Payload:
                         str(member_permissions),
                     )
                     success = False
-            # end for member in members:
-        # end for workspace in self._workspaces:
 
         self.write_status_file(
             success=success,
@@ -14336,7 +14150,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workspace_member_permissions")
     def process_workspace_member_permissions(
@@ -14507,7 +14320,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workspace_aviators")
     def process_workspace_aviators(
@@ -14610,7 +14422,6 @@ class Payload:
             ):
                 success = False
                 continue
-        # end for workspace in self._workspaces
 
         self.write_status_file(
             success=success,
@@ -14620,7 +14431,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_web_reports")
     def process_web_reports(
@@ -14756,7 +14566,6 @@ class Payload:
                     nickname=nickname,
                     web_report_parameters=actual_params,
                 )
-            # end if actual_params
             else:
                 self.logger.info(
                     "Running Web Report -> '%s' (%s) without parameters...",
@@ -14784,7 +14593,6 @@ class Payload:
                         nickname,
                     )
                 response = self._otcs.run_web_report(nickname=nickname)
-            # end else
             if response is None:
                 self.logger.error(
                     "Failed to run web report with nickname -> '%s'!",
@@ -14803,7 +14611,6 @@ class Payload:
 
         return restart_required
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_cs_applications")
     def process_cs_applications(
@@ -14875,7 +14682,7 @@ class Payload:
             self.logger.info(
                 "Install CS Application -> '%s'%s...",
                 application_name,
-                " ({})".format(application_description) if application_description else "",
+                f" ({application_description})" if application_description else "",
             )
             response = otcs_object.install_cs_application(
                 application_name=application_name,
@@ -14895,7 +14702,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_user_settings")
     def process_user_settings(self, section_name: str = "userSettings") -> bool:
@@ -14949,7 +14755,7 @@ class Payload:
                 continue
 
             self._log_header_callback(
-                text="Process settings for user -> '{}'".format(user_name),
+                text=f"Process settings for user -> '{user_name}'",
                 char="-",
             )
 
@@ -15025,7 +14831,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_user_favorites_and_profiles")
     def process_user_favorites_and_profiles(
@@ -15086,7 +14891,7 @@ class Payload:
                     continue
 
                 self._log_header_callback(
-                    text="Process Favorites and Profile for user -> '{}'".format(user_name),
+                    text=f"Process Favorites and Profile for user -> '{user_name}'",
                     char="-",
                 )
 
@@ -15306,7 +15111,6 @@ class Payload:
                             if is_workspace
                             else self._otcs.get_node(node_id=favorite_id, fields="properties{id}")
                         )
-                # end for favorite in favorites
 
                 # we work through the list of proxies defined for the user
                 # (we need to consider that not all users have the proxies element):
@@ -15345,7 +15149,6 @@ class Payload:
                             proxy_user_id,
                             user_name,
                         )
-            # end for user in self._users
 
         if self._users:
             # Impersonate as the admin user:
@@ -15414,7 +15217,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_security_clearances")
     def process_security_clearances(
@@ -15486,7 +15288,7 @@ class Payload:
                     "Creating security clearance -> '%s' : %s%s...",
                     clearance_level,
                     clearance_name,
-                    " ({})".format(clearance_description) if clearance_description else "",
+                    f" ({clearance_description})" if clearance_description else "",
                 )
                 self._otcs.run_web_report(
                     nickname="web_report_security_clearance",
@@ -15506,7 +15308,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_supplemental_markings")
     def process_supplemental_markings(
@@ -15566,7 +15367,7 @@ class Payload:
                 self.logger.info(
                     "Creating supplemental marking -> '%s'%s...",
                     code,
-                    " ({})".format(description) if description else "",
+                    f" ({description})" if description else "",
                 )
                 self._otcs.run_web_report(
                     nickname="web_report_supplemental_marking",
@@ -15586,7 +15387,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_user_security")
     def process_user_security(self, section_name: str = "userSecurity") -> bool:
@@ -15664,7 +15464,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_records_management_settings")
     def process_records_management_settings(
@@ -15777,7 +15576,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_holds")
     def process_holds(self, section_name: str = "holds") -> bool:
@@ -15936,7 +15734,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_additional_group_members")
     def process_additional_group_members(
@@ -16045,7 +15842,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(
         attributes=OTEL_TRACING_ATTRIBUTES, name="process_additional_application_role_assignments"
@@ -16187,7 +15983,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_additional_access_role_members")
     def process_additional_access_role_members(
@@ -16321,7 +16116,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_renamings")
     def process_renamings(self, section_name: str = "renamings") -> bool:
@@ -16427,7 +16221,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_items")
     def process_items(self, items: list, section_name: str = "items") -> bool:
@@ -16718,9 +16511,9 @@ class Payload:
                 self.logger.error(
                     "Failed to create item -> '%s' under parent%s!",
                     item_name,
-                    " with nickname -> '{}'".format(parent_nickname)
+                    f" with nickname -> '{parent_nickname}'"
                     if parent_nickname
-                    else " path -> {} in volume -> {}".format(parent_path, parent_volume),
+                    else f" path -> {parent_path} in volume -> {parent_volume}",
                 )
                 success = False
                 continue
@@ -16729,9 +16522,9 @@ class Payload:
                 "Successfully created item -> '%s' (%s) under parent%s.",
                 item_name,
                 node_id,
-                " with nickname -> '{}'".format(parent_nickname)
+                f" with nickname -> '{parent_nickname}'"
                 if parent_nickname
-                else " path -> {} in volume -> {}".format(parent_path, parent_volume),
+                else f" path -> {parent_path} in volume -> {parent_volume}",
             )
 
             # Special handling for scheduled bot items:
@@ -16808,7 +16601,6 @@ class Payload:
                 if not actions:
                     self.logger.info("No immediate actions specified for scheduled bot -> '%s'.", item_name)
 
-            # end if item_type == self._otcs.ITEM_TYPE_SCHEDULED_BOT:
 
             # Special handling for collection items:
             elif item_type == self._otcs.ITEM_TYPE_COLLECTION:
@@ -16856,19 +16648,16 @@ class Payload:
                             )
                             continue
                     item_node_ids.append(member_id)
-                # end for collection_item in item_ids
                 if item_node_ids:
                     response = self._otcs.add_node_to_collection(
                         collection_id=node_id,
                         node_ids=item_node_ids,
                     )
-            # end if item_type == self._otcs.ITEM_TYPE_COLLECTION
 
             # Do we have a nickname for the item in the payload? Then assign it:
             if item_nickname:
                 self.logger.info("Assign nickname -> '%s' to item -> '%s' (%s)...", item_nickname, item_name, node_id)
                 self._otcs.set_node_nickname(node_id=node_id, nickname=item_nickname)
-        # end for item in items:
 
         self.write_status_file(
             success=success,
@@ -16878,7 +16667,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_permission")
     def process_permission(
@@ -16985,7 +16773,6 @@ class Payload:
                     node_id,
                 )
                 return False
-        # end if "public_permissions" in permission
 
         # 4. Process Assigned User Permissions (if specified and not empty)
         users = permission.get("users", [])
@@ -17033,7 +16820,6 @@ class Payload:
                     node_id,
                 )
                 return False
-        # end for user in users
 
         # 5. Process Assigned Group Permissions (if specified and not empty)
         groups = permission.get("groups", [])
@@ -17081,7 +16867,6 @@ class Payload:
                     node_id,
                 )
                 return False
-        # end for group in groups
 
         # 6. Process Workspace Role Permissions (if specified and not empty)
         roles = permission.get("roles", [])
@@ -17139,11 +16924,9 @@ class Payload:
                     node_id,
                 )
                 return False
-        # end for role in roles
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_permissions")
     def process_permissions(
@@ -17320,7 +17103,6 @@ class Payload:
             ):
                 success = False
                 continue
-        # end for permission in permissions
 
         self.write_status_file(
             success=success,
@@ -17330,7 +17112,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workspace_permissions")
     def process_workspace_permissions(
@@ -17464,7 +17245,6 @@ class Payload:
                 ):
                     success = False
                     continue
-            # end for workspace_instance in workspace_instances:
 
         self.write_status_file(
             success=success,
@@ -17474,7 +17254,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_assignments")
     def process_assignments(self, section_name: str = "assignments") -> bool:
@@ -17682,7 +17461,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_category_assignments")
     def process_category_assignments(self, section_name: str = "categoryAssignments") -> bool:
@@ -17947,7 +17725,6 @@ class Payload:
                         )
                         success = False
                         continue
-                # end for category in category_data
             else:
                 self.logger.info(
                     "No category data found for item -> '%s' (%d). Skipping update...",
@@ -17965,7 +17742,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_user_licenses")
     def process_user_licenses(
@@ -18133,8 +17909,6 @@ class Payload:
                         user_name,
                     )
                     success = False
-            # end for user_license_feature in user_license_features
-        # end for user in self._users
 
         self.write_status_file(
             success=success,
@@ -18144,7 +17918,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_exec_commands")
     def process_exec_commands(self, section_name: str = "execCommands") -> bool:
@@ -18256,7 +18029,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_exec_pod_commands")
     def process_exec_pod_commands(self, section_name: str = "execPodCommands") -> bool:
@@ -18399,7 +18171,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_kubernetes")
     def process_kubernetes(self, section_name: str = "kubernetes") -> bool:
@@ -18573,7 +18344,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_exec_database_commands")
     def process_exec_database_commands(self, section_name: str = "execDatabaseCommands") -> bool:
@@ -18663,9 +18433,7 @@ class Payload:
                 success = False
                 continue
 
-            connect_string = "dbname={} user={} password={} host={} port={}".format(
-                db_name, db_username, db_password, db_hostname, db_port
-            )
+            connect_string = f"dbname={db_name} user={db_username} password={db_password} host={db_hostname} port={db_port}"
 
             db_commands = database_command_set.get("db_commands", [])
 
@@ -18724,7 +18492,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_document_generators")
     def process_document_generators(
@@ -18784,7 +18551,7 @@ class Payload:
             workspace_type = doc_generator["workspace_type"]
 
             self._log_header_callback(
-                text="Process Document Generator for workspace type -> '{}'".format(workspace_type),
+                text=f"Process Document Generator for workspace type -> '{workspace_type}'",
                 char="-",
             )
 
@@ -19060,8 +18827,6 @@ class Payload:
                         workspace_id,
                         exec_as_user,
                     )
-            # end for workspace_instance in workspace_instances:
-        # end for doc_generator in self._doc_generators:
 
         if authenticated_user != "admin":
             # Impersonate as the admin user:
@@ -19085,7 +18850,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workflow_attributes")
     def process_workflow_attributes(
@@ -19148,7 +18912,6 @@ class Payload:
                 str(attributes),
             )
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workflow_step")
     def process_workflow_step(
@@ -19315,7 +19078,6 @@ class Payload:
                 exec_as_user,
             )
             workflow_step["process_id"] = process_id
-        # end if action == "Initiate"
         else:
             if not process_id:
                 self.logger.error(
@@ -19349,7 +19111,6 @@ class Payload:
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_workflows")
     def process_workflows(self, section_name: str = "workflows") -> bool:
@@ -19522,8 +19283,6 @@ class Payload:
                         break
                     if "process_id" in workflow_step:
                         process_id = workflow_step["process_id"]
-            # end for workspace_instance in workspace_instances:
-        # end for workflow in self._workflows
 
         # Set back admin credentials:
         self._otcs.set_credentials(
@@ -19546,7 +19305,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_browser_automations")
     def process_browser_automations(
@@ -19615,7 +19373,7 @@ class Payload:
                 continue
 
             self._log_header_callback(
-                text="Process {} Automation -> '{}'".format(automation_type, name),
+                text=f"Process {automation_type} Automation -> '{name}'",
                 char="-",
             )
 
@@ -19926,9 +19684,7 @@ class Payload:
                             show_error=show_error,
                         )
                         if not result:
-                            message = "Cannot find clickable element with selector -> '{}' ({}) on current page. Skipping this step...".format(
-                                selector, selector_type
-                            )
+                            message = f"Cannot find clickable element with selector -> '{selector}' ({selector_type}) on current page. Skipping this step..."
                             if show_error:
                                 self.logger.error(message)
                                 automation_step["result"] = "failure"
@@ -19940,11 +19696,11 @@ class Payload:
                             "Successfully %s%s %s%s element selected by -> '%s' (%s%s).",
                             "force " if force else "",
                             "clicked" if not hover_only else "hovered over",
-                            "occurrence #{} of ".format(occurrence) if occurrence > 1 else "",
+                            f"occurrence #{occurrence} of " if occurrence > 1 else "",
                             "navigational" if navigation else "non-navigational",
                             selector,
-                            "selector type -> '{}'".format(selector_type),
-                            ", role type -> '{}'".format(role_type) if role_type else "",
+                            f"selector type -> '{selector_type}'",
+                            f", role type -> '{role_type}'" if role_type else "",
                         )
                     case "set_elem":
                         # We keep the deprecated "elem" syntax supported (for now)
@@ -19997,10 +19753,10 @@ class Payload:
                         )
                         if not result:
                             message = "Cannot set element{} selected by -> '{}' ({}{}) to value -> '{}'. Skipping this step...".format(
-                                " (occurrence -> {})".format(occurrence) if occurrence > 1 else "",
+                                f" (occurrence -> {occurrence})" if occurrence > 1 else "",
                                 selector,
-                                "selector type -> '{}'".format(selector_type),
-                                ", role type -> '{}'".format(role_type) if role_type else "",
+                                f"selector type -> '{selector_type}'",
+                                f", role type -> '{role_type}'" if role_type else "",
                                 value,
                             )
                             if show_error:
@@ -20012,10 +19768,10 @@ class Payload:
                             continue
                         self.logger.info(
                             "Successfully set element%s selected by -> '%s' (%s%s) to value -> '%s'.",
-                            " (occurrence -> {})".format(occurrence) if occurrence > 1 else "",
+                            f" (occurrence -> {occurrence})" if occurrence > 1 else "",
                             selector,
-                            "selector type -> '{}'".format(selector_type),
-                            ", role type -> '{}'".format(role_type) if role_type else "",
+                            f"selector type -> '{selector_type}'",
+                            f", role type -> '{role_type}'" if role_type else "",
                             value,
                         )
                     case "check_elem":
@@ -20063,22 +19819,22 @@ class Payload:
                                 "{} elements with selector -> '{}' ({}{})".format(
                                     min_count if want_exist else count,
                                     selector,
-                                    "selector type -> '{}'".format(selector_type),
-                                    ", role type -> '{}'".format(role_type) if role_type else "",
+                                    f"selector type -> '{selector_type}'",
+                                    f", role type -> '{role_type}'" if role_type else "",
                                 )
                                 if (min_count > 1 and want_exist) or (count > 1 and not want_exist)
                                 else "an element with selector -> '{}' ({}{})".format(
                                     selector,
-                                    "selector type -> '{}'".format(selector_type),
-                                    ", role type -> '{}'".format(role_type) if role_type else "",
+                                    f"selector type -> '{selector_type}'",
+                                    f", role type -> '{role_type}'" if role_type else "",
                                 ),
                                 " with {}value -> '{}'".format("substring-" if substring else "", value)
                                 if value
                                 else "",
-                                " in attribute -> '{}'".format(attribute) if attribute else "",
+                                f" in attribute -> '{attribute}'" if attribute else "",
                                 " Found {}{} occurences.".format(
                                     count,
-                                    " undesirable" if not want_exist else " from a minimum of {}".format(min_count),
+                                    " undesirable" if not want_exist else f" from a minimum of {min_count}",
                                 ),
                             )
                             success = False
@@ -20087,11 +19843,11 @@ class Payload:
                         self.logger.info(
                             "Successfully passed %sexistence test for %s%s%s on current page.",
                             "non-" if not want_exist else "",
-                            "{} elements with selector -> '{}' ({})".format(min_count, selector, selector_type)
+                            f"{min_count} elements with selector -> '{selector}' ({selector_type})"
                             if min_count > 1
-                            else "an element with selector -> '{}' ({})".format(selector, selector_type),
+                            else f"an element with selector -> '{selector}' ({selector_type})",
                             " with {}value -> '{}'".format("substring-" if substring else "", value) if value else "",
-                            " in attribute -> '{}'".format(attribute) if attribute else "",
+                            f" in attribute -> '{attribute}'" if attribute else "",
                         )
                     case _:
                         self.logger.error(
@@ -20102,9 +19858,7 @@ class Payload:
                         automation_step["result"] = "failure"
                         success = False
                         break
-                # end match automation_step_type:
                 first_step = False
-            # end for automation_step in automation_steps:
 
             # Cleanup session and and remove reference to the object:
             browser_automation_object.end_session()
@@ -20113,7 +19867,6 @@ class Payload:
             browser_automation["result"] = (
                 "failure" if any(step.get("result", "success") == "failure" for step in automation_steps) else "success"
             )
-        # end for browser_automation in browser_automations:
 
         if check_status:
             self.write_status_file(
@@ -20124,7 +19877,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="init_sap")
     def init_sap(
@@ -20236,7 +19988,6 @@ class Payload:
 
         return sap_object
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_sap_rfcs")
     def process_sap_rfcs(self, sap_rfcs: list, section_name: str = "sapRFCs") -> bool:
@@ -20306,14 +20057,14 @@ class Payload:
                     rfc_name,
                     rfc_description,
                     str(rfc_params),
-                    " and options -> {}".format(rfc_call_options) if rfc_call_options else "",
+                    f" and options -> {rfc_call_options}" if rfc_call_options else "",
                 )
             else:
                 self.logger.info(
                     "Calling SAP RFC -> '%s' (%s)%s...",
                     rfc_name,
                     rfc_description,
-                    " with options -> {}".format(rfc_call_options) if rfc_call_options else "",
+                    f" with options -> {rfc_call_options}" if rfc_call_options else "",
                 )
 
             if rfc_call_options:
@@ -20354,7 +20105,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="init_successfactors")
     def init_successfactors(
@@ -20415,7 +20165,6 @@ class Payload:
 
         return successfactors_object
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="init_salesforce")
     def init_salesforce(self, salesforce_external_system: dict) -> Salesforce | None:
@@ -20464,7 +20213,6 @@ class Payload:
 
         return salesforce_object
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="init_guidewire")
     def init_guidewire(self, guidewire_external_system: dict) -> Guidewire | None:
@@ -20508,7 +20256,6 @@ class Payload:
 
         return guidewire_object
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="write_data_source_file")
     def write_data_source_file(
@@ -20555,9 +20302,9 @@ class Payload:
             target_folder_id = 2004  # use Personal Workspace of Admin as fallback
 
         if self._payload_source:
-            payload_file_name = os.path.basename(
+            payload_file_name = Path(
                 self._payload_source,
-            )  # remove directories
+            ).name  # remove directories
             # Split once at the first occurance of a dot
             # as the _payload_source may have multiple suffixes
             # such as .yml.gz.b64:
@@ -20568,9 +20315,9 @@ class Payload:
         file_name = "data_source_" + payload_file_name + data_source_name + ".json"
         if compression:
             file_name += ".zip"
-        full_path = os.path.join(tempfile.gettempdir(), "customizer", "data_sources", file_name)
+        full_path = Path(tempfile.gettempdir()) / "customizer" / "data_sources" / file_name
         # Ensure the directory exists
-        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        Path(full_path).parent.mkdir(parents=True, exist_ok=True)
 
         # We also want to keep the row numbers (index):
         if not data.save_json_data(
@@ -20616,7 +20363,7 @@ class Payload:
                 file_name,
             )
             # Don't leave stuff behind:
-            os.remove(full_path)
+            Path(full_path).unlink()
 
             return True
 
@@ -20627,7 +20374,6 @@ class Payload:
 
         return False
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="read_data_source_file")
     def read_data_source_file(
@@ -20663,9 +20409,9 @@ class Payload:
             target_folder_id = 2004  # use Personal Workspace of Admin as fallback
 
         if self._payload_source:
-            payload_file_name = os.path.basename(
+            payload_file_name = Path(
                 self._payload_source,
-            )  # remove directories
+            ).name  # remove directories
             # Split once at the first occurance of a dot
             # as the _payload_source may have multiple suffixes
             # such as .yml.gz.b64:
@@ -20676,9 +20422,9 @@ class Payload:
         file_name = "data_source_" + payload_file_name + data_source_name + ".json"
         if compression:
             file_name += ".zip"
-        full_path = os.path.join(tempfile.gettempdir(), "customizer", "data_sources", file_name)
+        full_path = Path(tempfile.gettempdir()) / "customizer" / "data_sources" / file_name
         # Ensure the directory exists
-        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        Path(full_path).parent.mkdir(parents=True, exist_ok=True)
 
         # Check if the data source file has been uploaded before.
         # This can happen if we re-run the python container.
@@ -20733,11 +20479,10 @@ class Payload:
         data_source["data"] = data
 
         # Don't leave stuff behind:
-        os.remove(full_path)
+        Path(full_path).unlink()
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_datasource_otcs")
     def process_bulk_datasource_otcs(self, data_source: dict) -> Data:
@@ -20921,7 +20666,6 @@ class Payload:
 
         return data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_datasource_servicenow")
     def process_bulk_datasource_servicenow(self, data_source: dict) -> Data | None:
@@ -21042,7 +20786,6 @@ class Payload:
 
         return data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_datasource_otmm")
     def process_bulk_datasource_otmm(self, data_source: dict) -> Data | None:
@@ -21142,7 +20885,6 @@ class Payload:
 
         return data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_datasource_pht")
     def process_bulk_datasource_pht(self, data_source: dict) -> Data | None:
@@ -21272,7 +21014,6 @@ class Payload:
 
         return data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="prepare_datasource_file")
     def prepare_datasource_file(self, data_source: dict, filename: str) -> str:
@@ -21294,9 +21035,9 @@ class Payload:
             return filename
 
         name = data_source.get("name", "")
-        tmp_filename = os.path.join(tempfile.gettempdir(), "{}_{}".format(name, os.path.basename(filename)))
+        tmp_filename = Path(tempfile.gettempdir()) / f"{name}_{Path(filename).name}"
 
-        if os.path.isfile(tmp_filename):
+        if Path(tmp_filename).is_file():
             self.logger.info("Reusing previously downloaded file -> '%s'.", tmp_filename)
             return tmp_filename
 
@@ -21308,7 +21049,7 @@ class Payload:
             )
             response = requests.get(filename, stream=True, timeout=10)
 
-            with open(tmp_filename, "wb") as f:
+            with Path(tmp_filename).open("wb") as f:
                 for chunk in response.iter_content(chunk_size=1024):
                     if chunk:
                         f.write(chunk)
@@ -21318,7 +21059,6 @@ class Payload:
 
         return tmp_filename
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_datasource_excel")
     def process_bulk_datasource_excel(self, data_source: dict) -> Data | None:
@@ -21365,7 +21105,6 @@ class Payload:
 
         return data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_datasource_xml")
     def process_bulk_datasource_xml(self, data_source: dict) -> Data | None:
@@ -21427,7 +21166,6 @@ class Payload:
 
         return data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_datasource_json")
     def process_bulk_datasource_json(self, data_source: dict) -> Data | None:
@@ -21472,7 +21210,6 @@ class Payload:
 
         return data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_datasource_csv")
     def process_bulk_datasource_csv(self, data_source: dict) -> Data | None:
@@ -21532,7 +21269,6 @@ class Payload:
 
         return data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_datasource_web")
     def process_bulk_datasource_web(self, data_source: dict) -> Data | None:
@@ -21589,7 +21325,6 @@ class Payload:
 
         return data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_datasource_nhc")
     def process_bulk_datasource_nhc(self, data_source: dict) -> Data | None:
@@ -21637,13 +21372,13 @@ class Payload:
         # directly or we construct it from the general download dir:
         nhc_download_dir_images = data_source.get(
             "nhc_download_dir_images",
-            os.path.join(nhc_download_dir, "images"),
+            Path(nhc_download_dir) / "images",
         )  # don't use "/images"
         # We either get the download dir for data files (JSON) from the
         # payload directly or we construct it from the general download dir:
         nhc_download_dir_data = data_source.get(
             "nhc_download_dir_images",
-            os.path.join(nhc_download_dir, "json"),
+            Path(nhc_download_dir) / "json",
         )  # don't use "/data"
 
         # 2. Creating the NHC object:
@@ -21680,7 +21415,6 @@ class Payload:
 
         return data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_datasource_filesystem")
     def process_bulk_datasource_filesystem(self, data_source: dict) -> Data | None:
@@ -21726,7 +21460,6 @@ class Payload:
 
         return data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_datasource")
     def process_bulk_datasource(
@@ -21765,7 +21498,7 @@ class Payload:
             return None
 
         self._log_header_callback(
-            text="Process Bulk Data Source -> '{}'".format(data_source_name),
+            text=f"Process Bulk Data Source -> '{data_source_name}'",
             char="-",
         )
 
@@ -22067,7 +21800,7 @@ class Payload:
         data_source["data"] = data
 
         self._log_header_callback(
-            text="Completed Bulk Data Source -> '{}'".format(data_source_name),
+            text=f"Completed Bulk Data Source -> '{data_source_name}'",
             char="-",
         )
 
@@ -22077,7 +21810,6 @@ class Payload:
 
         return data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_workspaces")
     def process_bulk_workspaces(self, section_name: str = "bulkWorkspaces") -> bool:
@@ -22167,10 +21899,7 @@ class Payload:
                 continue
 
             self._log_header_callback(
-                text="Process bulk workspaces for -> '{}' using data source -> '{}'".format(
-                    type_name,
-                    data_source_name,
-                ),
+                text=f"Process bulk workspaces for -> '{type_name}' using data source -> '{data_source_name}'",
                 char="-",
             )
 
@@ -22427,7 +22156,6 @@ class Payload:
                 # Avoid that all threads start at the exact same time with
                 # potentially expired cookies that cases race conditions:
                 time.sleep(1)
-            # end for index, partition in enumerate(partitions, start=1)
 
             # Wait for all threads to complete
             for thread in threads:
@@ -22477,10 +22205,7 @@ class Payload:
                 # create workspaces that have been created before.
                 bulk_workspace["workspaces"].update(result["workspaces"])
             self._log_header_callback(
-                text="Completed processing of bulk workspaces for -> '{}' using data source -> '{}'".format(
-                    type_name,
-                    data_source_name,
-                ),
+                text=f"Completed processing of bulk workspaces for -> '{type_name}' using data source -> '{data_source_name}'",
                 char="-",
             )
 
@@ -22492,7 +22217,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_categories")
     def process_bulk_categories(
@@ -22622,10 +22346,8 @@ class Payload:
                         attribute["value"] = value if value is not None else ""
                         worker_categories_expanded.append(attribute)
                     row_index += 1
-            # end if "value_type" in category_item and category_item["value_type"] == "table"
             else:
                 worker_categories_expanded.append(category_item)
-        # end for category_item in worker_categories
 
         # this loop generates a "value" for each
         # "value_field". "value_field" may also contain lists
@@ -22813,7 +22535,6 @@ class Payload:
                             value,
                             lookup_data_source,
                         )
-                # end if not isinstance(value, list)
                 else:
                     # value is a list - so we apply the lookup to each item:
                     # Iterate backwards to avoid index issues while popping items:
@@ -22850,7 +22571,6 @@ class Payload:
                                 category_item["attribute"],
                                 lookup_data_source,
                             )
-            # end if lookup_data_source
 
             # If value is a list then we have a multi-value attribute.
             # We now want to make sure that we don't have duplicates in
@@ -22928,7 +22648,6 @@ class Payload:
                     str(value),
                 )
             category_item["value"] = value
-        # end for category_item in worker_categories_expanded
 
         # Cleanup categories_payload to remove empty rows of sets:
         rows_to_remove = {}
@@ -22966,7 +22685,6 @@ class Payload:
 
         return cleaned_categories
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_classification_assignments")
     def process_bulk_classification_assignments(
@@ -23032,7 +22750,6 @@ class Payload:
 
         return result_list
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_workspaces_worker")
     def process_bulk_workspaces_worker(
@@ -23250,9 +22967,7 @@ class Payload:
                         workspace_name_field,
                         " There's no alternative field name given in the payload (via 'name_alt')."
                         if not name_field_alt
-                        else " The alternative field -> '{}' could not be resolved either!".format(
-                            name_field_alt,
-                        ),
+                        else f" The alternative field -> '{name_field_alt}' could not be resolved either!",
                     )
                     result["skipped_counter"] += 1
                     continue
@@ -23463,7 +23178,6 @@ class Payload:
                             )
                             result["skipped_counter"] += 1
                             continue
-                # end if nickname_field
                 else:
                     nickname = None
 
@@ -23597,8 +23311,6 @@ class Payload:
                             parent_id,
                         )
                         handle_name_clash = True
-                    # end if key_attribute
-                # end if key
                 else:
                     # If we haven't a key we try by type + name
                     response = self._otcs_frontend.get_workspace_by_type_and_name(
@@ -23799,7 +23511,6 @@ class Payload:
                             wait_for_completion=False,
                         )
 
-                # end if not workspace_id and "create" or "recreate" in row_operations
 
                 # If "updates" are an requested row operation we update the existing workspace with
                 # fresh metadata from the payload. Additionally we check the external
@@ -23852,7 +23563,6 @@ class Payload:
                             result["success"] = False
                             result["failure_counter"] += 1
                             continue  # for index, row in partition.iterrows()
-                    # end if categories
                     else:
                         workspace_category_data = {}
 
@@ -23933,7 +23643,6 @@ class Payload:
                             node_id=workspace_id,
                             wait_for_completion=False,
                         )
-                # end elif "update" in row_operations...
                 elif workspace_id and "delete" in row_operations:
                     # We delete with immediate purging to keep recycle bin clean
                     # and to not run into issues with nicknames used in deleted items:
@@ -23958,7 +23667,6 @@ class Payload:
                     )
                     result["delete_counter"] += 1
                     workspace_id = None
-                # end elif workspace_id and "delete" in row_operations
 
                 # this is the plain old "it does exist and we just skip it" case:
                 elif workspace_id:
@@ -24087,7 +23795,6 @@ class Payload:
                                 workspace_id=workspace_id,
                                 role_id=role_id,
                             )
-                # end if members...
 
                 # Depending on the bulk operations (create, update, delete)
                 # and the related conditions it may well be that workspace_id is None.
@@ -24097,13 +23804,11 @@ class Payload:
                     # Record the workspace name and ID to allow to read it from failure file
                     # and speedup the process.
                     result["workspaces"][workspace_name] = workspace_id
-        # end for index...
 
         self.logger.info("End working...")
 
         results.append(result)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="lookup_data_source_value")
     def lookup_data_source_value(
@@ -24184,7 +23889,6 @@ class Payload:
 
         return lookup_row
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_workspaces_synonym_lookup")
     def process_bulk_workspaces_synonym_lookup(
@@ -24294,7 +23998,6 @@ class Payload:
 
         return (None, None)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_workspaces_lookup")
     def process_bulk_workspaces_lookup(
@@ -24364,7 +24067,7 @@ class Payload:
         else:
             self.logger.error(
                 "No workspace name specified. Cannot find the workspace by nickname%s, nor by type and name, nor by parent ID and name, nor by synonym.",
-                " -> {}".format(workspace_nickname) if workspace_nickname else "",
+                f" -> {workspace_nickname}" if workspace_nickname else "",
             )
             return (None, None)
 
@@ -24418,19 +24121,16 @@ class Payload:
         message = "Couldn't find a workspace "
         concat_string = ""
         if workspace_nickname:
-            message += "by nickname -> '{}'".format(workspace_nickname)
+            message += f"by nickname -> '{workspace_nickname}'"
             concat_string = ", nor "
         if workspace_name:
-            message += "{}by name -> '{}'".format(concat_string, workspace_name)
+            message += f"{concat_string}by name -> '{workspace_name}'"
             concat_string = ", nor "
         if parent_id:
-            message += "{}by parent ID -> {}".format(concat_string, parent_id)
+            message += f"{concat_string}by parent ID -> {parent_id}"
             concat_string = ", nor "
         if data_source_name:
-            message += "{}as synonym in data source -> '{}'".format(
-                concat_string,
-                data_source_name,
-            )
+            message += f"{concat_string}as synonym in data source -> '{data_source_name}'"
         if show_error:
             self.logger.error(message)
         else:
@@ -24441,7 +24141,6 @@ class Payload:
             workspace_name,
         )  # it is important to return the name - used by process_bulk_categories()
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_workspace_relationships")
     def process_bulk_workspace_relationships(
@@ -24555,10 +24254,7 @@ class Payload:
                 continue
 
             self._log_header_callback(
-                text="Process bulk workspace relationships from -> '{}' to -> '{}'".format(
-                    from_sub_workspace or from_workspace,
-                    to_sub_workspace or to_workspace,
-                ),
+                text=f"Process bulk workspace relationships from -> '{from_sub_workspace or from_workspace}' to -> '{to_sub_workspace or to_workspace}'",
                 char="-",
             )
 
@@ -24657,7 +24353,6 @@ class Payload:
                     "Size of data frame after explosion -> %s.",
                     str(len(data)),
                 )
-            # end for explosion in explosions
 
             # Keep only selected rows if filters are specified in bulkWorkspaceRelationship.
             # We have this _after_ "explosions" to allow access to subfields as well.
@@ -24741,7 +24436,6 @@ class Payload:
                 # Avoid that all threads start at the exact same time with
                 # potentially expired cookies that cases race conditions:
                 time.sleep(1)
-            # end for index, partition in enumerate(partitions, start=1)
 
             # Wait for all threads to complete
             for thread in threads:
@@ -24784,10 +24478,7 @@ class Payload:
                     result["relationships"],
                 )
             self._log_header_callback(
-                text="Completed processing of bulk workspace relationships from -> '{}' to -> '{}'".format(
-                    from_sub_workspace or from_workspace,
-                    to_sub_workspace or to_workspace,
-                ),
+                text=f"Completed processing of bulk workspace relationships from -> '{from_sub_workspace or from_workspace}' to -> '{to_sub_workspace or to_workspace}'",
                 char="-",
             )
 
@@ -24799,7 +24490,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_bulk_workspace_relationship_endpoint")
     def get_bulk_workspace_relationship_endpoint(
@@ -24841,7 +24531,7 @@ class Payload:
             return (None, None)
 
         # Determine the workspace nickname field:
-        workspace_nickname_field = bulk_workspace_relationship.get("{}_workspace".format(endpoint))
+        workspace_nickname_field = bulk_workspace_relationship.get(f"{endpoint}_workspace")
         workspace_nickname = self.replace_bulk_placeholders(
             input_string=workspace_nickname_field,
             row=row,
@@ -24858,10 +24548,10 @@ class Payload:
             return (None, None)
 
         # Get the workspace type if specified:
-        workspace_type = bulk_workspace_relationship.get("{}_workspace_type".format(endpoint))
+        workspace_type = bulk_workspace_relationship.get(f"{endpoint}_workspace_type")
 
         # Get the workspace name if specified:
-        workspace_name_field = bulk_workspace_relationship.get("{}_workspace_name".format(endpoint))
+        workspace_name_field = bulk_workspace_relationship.get(f"{endpoint}_workspace_name")
         if workspace_name_field:
             workspace_name = self.replace_bulk_placeholders(
                 input_string=workspace_name_field,
@@ -24880,7 +24570,7 @@ class Payload:
             workspace_name = None
 
         # Get the workspace data source if specified:
-        workspace_data_source = bulk_workspace_relationship.get("{}_workspace_data_source".format(endpoint))
+        workspace_data_source = bulk_workspace_relationship.get(f"{endpoint}_workspace_data_source")
 
         # Based on the given information, we now try to determine
         # the name and the ID of the workspace that is the endpoint
@@ -24897,15 +24587,15 @@ class Payload:
             self.logger.warning(
                 "Cannot find workspace to establish relationship (endpoint -> '%s')%s%s%s%s",
                 endpoint,
-                (", nickname -> '{}'".format(workspace_nickname) if workspace_nickname else ""),
-                (", workspace name -> '{}'".format(workspace_name) if workspace_name else ""),
-                (", workspace type -> '{}'".format(workspace_type) if workspace_type else ""),
-                (", data source -> '{}'".format(workspace_data_source) if workspace_data_source else ""),
+                (f", nickname -> '{workspace_nickname}'" if workspace_nickname else ""),
+                (f", workspace name -> '{workspace_name}'" if workspace_name else ""),
+                (f", workspace type -> '{workspace_type}'" if workspace_type else ""),
+                (f", data source -> '{workspace_data_source}'" if workspace_data_source else ""),
             )
             return (None, None)
 
         # See if a sub-workspace is configured:
-        sub_workspace_name_field = bulk_workspace_relationship.get("{}_sub_workspace_name".format(endpoint))
+        sub_workspace_name_field = bulk_workspace_relationship.get(f"{endpoint}_sub_workspace_name")
         # If no sub-workspace is configured we can already
         # return the resulting workspace ID and name here:
         if not sub_workspace_name_field:
@@ -24928,7 +24618,7 @@ class Payload:
             return (None, None)
 
         # See if a sub-workspace is in a sub-path of the main workspace:
-        sub_workspace_path = bulk_workspace_relationship.get("{}_sub_workspace_path".format(endpoint))
+        sub_workspace_path = bulk_workspace_relationship.get(f"{endpoint}_sub_workspace_path")
         if sub_workspace_path:
             # sub_workspace_path is a mutable that is changed in place!
             result = self.replace_bulk_placeholders_list(
@@ -24971,7 +24661,6 @@ class Payload:
                     workspace_id,
                 )
                 return (None, None)
-        # end if sub_workspace_path_field
         else:
             # the sub-workspace is immediately under the main workspace:
             parent_id = workspace_id
@@ -24988,7 +24677,6 @@ class Payload:
 
         return (sub_workspace_id, sub_workspace_name)
 
-    # end method definition
 
     @tracer.start_as_current_span(
         attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_workspace_relationships_worker"
@@ -25141,9 +24829,7 @@ class Payload:
                         else ""
                     ),
                     (
-                        "Failed to retrieve 'from' endpoint (workspace name -> {}) for bulk workspace relationship! ".format(
-                            from_workspace_name,
-                        )
+                        f"Failed to retrieve 'from' endpoint (workspace name -> {from_workspace_name}) for bulk workspace relationship! "
                         if not from_workspace_id and from_workspace_name
                         else ""
                     ),
@@ -25206,9 +24892,7 @@ class Payload:
                         else ""
                     ),
                     (
-                        "Failed to retrieve 'to' endpoint (workspace name -> {}) for bulk workspace relationship!".format(
-                            to_workspace_name,
-                        )
+                        f"Failed to retrieve 'to' endpoint (workspace name -> {to_workspace_name}) for bulk workspace relationship!"
                         if not to_workspace_id and to_workspace_name
                         else ""
                     ),
@@ -25329,7 +25013,6 @@ class Payload:
 
         results.append(result)
 
-    # end method definition
 
     def build_category_data(
         self, categories_payload: list, node_id: int, response: dict, filter_category_name: str | None = None
@@ -25483,20 +25166,17 @@ class Payload:
                         continue
                     attribute_value = user_id
                 category_data[str(category_id)][attribute_id] = attribute_value
-            # end for attribute in categories_payload:
 
             # If for none of the attributes of the current category ID a value was found
             # in the payload we remove the dictionary entry to not cause problems
             # for later category updates:
             if not category_data[str(category_id)]:
                 del category_data[str(category_id)]
-        # end for inherited_category in inherited_categories:
 
         self.logger.debug("Resulting category data -> %s", str(category_data))
 
         return category_data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="prepare_category_data")
     def prepare_category_data(
@@ -25612,12 +25292,10 @@ class Payload:
                         inheritance=None if source_is_document else True,
                         apply_to_sub_items=not source_is_document,
                     )
-            # end for category_name in missing_categories
 
             # Now with the category assigned to the parent (source node id)
             # We retry getting the inherited category:
             response = self._otcs_frontend.get_node_categories(node_id=source_node_id)
-        # end if missing_categories:
 
         # Initialize the result dict we will return at the end of the method
         # and the list of inherited categories:
@@ -25754,20 +25432,17 @@ class Payload:
                         continue
                     attribute_value = user_id
                 category_data[str(category_id)][attribute_id] = attribute_value
-            # end for attribute in categories_payload:
 
             # If for none of the attributes of the current category ID a value was found
             # in the payload we remove the dictionary entry to not cause problems
             # for later category updates:
             if not category_data[str(category_id)]:
                 del category_data[str(category_id)]
-        # end for inherited_category in inherited_categories:
 
         self.logger.debug("Resulting category data -> %s", str(category_data))
 
         return category_data
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_documents")
     def process_bulk_documents(self, section_name: str = "bulkDocuments") -> bool:
@@ -25926,7 +25601,6 @@ class Payload:
                     "Size of data frame after explosion -> %s.",
                     str(len(data)),
                 )
-            # end for explosion in explosions
 
             # Keep only selected rows if filters are specified in bulkDocuments.
             # We have this _after_ "explosions" to allow access to subfields as well.
@@ -25983,10 +25657,7 @@ class Payload:
                 continue
 
             self._log_header_callback(
-                text="Process bulk documents -> '{}' from data source -> '{}'".format(
-                    name_field,
-                    data_source_name,
-                ),
+                text=f"Process bulk documents -> '{name_field}' from data source -> '{data_source_name}'",
                 char="-",
             )
 
@@ -26060,7 +25731,6 @@ class Payload:
                     logger=self.logger,
                 )
                 source_otcs.authenticate()
-            # end if bulk_document.get("source_type", "URL").lower() == "contentserver"
             else:
                 source_otcs = None
 
@@ -26088,7 +25758,6 @@ class Payload:
                 # Avoid that all threads start at the exact same time with
                 # potentially expired cookies that cases race conditions:
                 time.sleep(1)
-            # end for index, partition in enumerate(partitions, start=1)
 
             # Wait for all threads to complete
             for thread in threads:
@@ -26137,12 +25806,8 @@ class Payload:
                 # to restart in case of failures and avoid trying to
                 # uploading that have been successfully uploaded before.
                 bulk_document["documents"].update(result["documents"])
-            # end for result in results
             self._log_header_callback(
-                text="Completed processing of bulk documents -> '{}' using data source -> '{}'".format(
-                    name_field,
-                    data_source_name,
-                ),
+                text=f"Completed processing of bulk documents -> '{name_field}' using data source -> '{data_source_name}'",
                 char="-",
             )
 
@@ -26154,7 +25819,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="construct_file_name")
     def construct_file_name(
@@ -26198,21 +25862,21 @@ class Payload:
         if path:
             # Normalize on Linux style path separators. Python is able to handle this also under Windows
             path = path.replace("\\", "/")
-            if os.path.exists(path):
+            if Path(path).exists():
                 # if we have a path specified it should be a directory and not a file!
                 # The isfile() test is only working if the file already exist. It cannot
                 # tell the difference between a folder and a file otherwise!
-                if os.path.isfile(path):
+                if Path(path).is_file():
                     self.logger.warning(
                         "Download directory -> '%s' is pointing to an existing file and not a directory - please check the 'download_dir' variable in payload! Stripping path...",
                         path,
                     )
-                    path = os.path.dirname(path)
+                    path = str(Path(path).parent)
                     self.logger.info("Stripped path -> '%s'...", path)
             else:
                 # if we have a path specified but it does not exist, then create it.
                 try:
-                    os.makedirs(path)
+                    Path(path).mkdir(parents=True, exist_ok=True)
                 except (OSError, PermissionError):
                     self.logger.error(
                         "Cannot create folder -> '%s' in file system!",
@@ -26256,14 +25920,12 @@ class Payload:
                         file_name = path + file_data
                         # If we found a match we stop the (inner loop)
                         break
-        # end if download_name_wildcards and any(char in download_name for char in "*?[]")
         else:
             # We have a normal filename without wildcards:
             file_name = path + download_name
 
         return file_name
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="download_bulk_document")
     def download_bulk_document(
@@ -26366,22 +26028,22 @@ class Payload:
         #    if we want to delete existing files (to download fresh ones)
         #
 
-        file_exists = os.path.exists(file_name) if file_name else False
+        file_exists = Path(file_name).exists() if file_name else False
 
         # make sure there's no name conflict with stale documents:
         delete_download = bulk_document.get("delete_download", True)
         if file_exists and delete_download:
-            os.remove(file_name)
+            Path(file_name).unlink()
             file_exists = False
 
         # Careful: If the construction of file name and the alternative
         # file name leads to identical result then there's actually
         # no alternative file name!
         if file_name != file_name_alt:
-            file_exists_alt = os.path.exists(file_name_alt) if file_name_alt else False
+            file_exists_alt = Path(file_name_alt).exists() if file_name_alt else False
             # make sure there's no name conflict with stale documents:
             if file_exists_alt and delete_download:
-                os.remove(file_name_alt)
+                Path(file_name_alt).unlink()
                 file_exists_alt = False
         else:
             file_exists_alt = False
@@ -26505,7 +26167,6 @@ class Payload:
                                 )
                                 result["skipped_counter"] += 1
                                 return None, None
-                        # end if download_url_alt
                         else:
                             # as we cannot fully rely one data source we don't treat this
                             # as an error but a warning:
@@ -26522,7 +26183,6 @@ class Payload:
                             download_url,
                             file_name,
                         )
-        # end if not file_exists and not file_exists_alt
         else:  # we already have a local file to reuse
             # If we found the alternative file name in file system
             # but not the regular one, then we switch to alternative
@@ -26537,7 +26197,6 @@ class Payload:
 
         return file_name, mime_type
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_bulk_document_location")
     def get_bulk_document_location(
@@ -26823,7 +26482,6 @@ class Payload:
                         workspace_id,
                         str(parent_id),
                     )
-        # end if workspace_path
         else:
             self.logger.info(
                 "Workspace folder path for workspace -> '%s' of workspace type -> '%s' is not specified. Using workspace root for document upload.",
@@ -27033,7 +26691,6 @@ class Payload:
                                 sub_workspace_id,
                             )
 
-        # end if sub-workspace does not exist
         else:
             self.logger.info(
                 "Using existing sub workspace -> '%s' (%s) of type -> '%s'...",
@@ -27151,7 +26808,6 @@ class Payload:
 
         return parent_id, success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_documents_worker")
     def process_bulk_documents_worker(
@@ -27569,7 +27225,7 @@ class Payload:
                     "Check if document -> '%s' is already in target folder with ID -> %s%s...",
                     document_name,
                     parent_id,
-                    " (using key -> '{}')".format(key) if key is not None else "",
+                    f" (using key -> '{key}')" if key is not None else "",
                 )
                 # Initialize variables - this is important!
                 document_old_name = None
@@ -27667,7 +27323,6 @@ class Payload:
                         )
                         success = False
                         continue
-                # end if key
                 else:
                     # If we haven't a key we try by parent + name
                     response = self._otcs_frontend.get_node_by_parent_and_name(
@@ -27792,7 +27447,6 @@ class Payload:
                             categories_payload=worker_categories,
                             source_node_id=parent_id,
                         )
-                    # end if categories
                     else:
                         document_category_data = {}
 
@@ -27839,9 +27493,9 @@ class Payload:
                         document_id,
                         file_name,
                         mime_type,
-                        ", description -> {}".format(description) if description else "",
-                        ", size -> {}".format(os.path.getsize(file_name))
-                        if os.path.exists(file_name)
+                        f", description -> {description}" if description else "",
+                        f", size -> {Path(file_name).stat().st_size}"
+                        if Path(file_name).exists()
                         else "",  # this can happen for files in zip files that have been cleaned up already
                         parent_id,
                     )
@@ -27871,7 +27525,6 @@ class Payload:
                             remove_existing=aviator_remove_existing,
                         )
 
-                # end if not workspace_id and "create" in row_operations
 
                 # If updates are requested we update the existing document with
                 # a new document version and with fresh metadata from the payload.
@@ -27924,7 +27577,6 @@ class Payload:
                             )
                             success = False
                             continue  # for index, row in partition.iterrows()
-                    # end if categories
                     else:
                         document_category_data = {}
 
@@ -27991,8 +27643,8 @@ class Payload:
                         file_name,
                         mime_type,
                         description,
-                        ", size -> {}".format(os.path.getsize(file_name))
-                        if os.path.exists(file_name)
+                        f", size -> {Path(file_name).stat().st_size}"
+                        if Path(file_name).exists()
                         else "",  # this can happen for files in zip files that have been cleaned up already
                     )
                     result["update_counter"] += 1
@@ -28020,7 +27672,6 @@ class Payload:
                             wait_for_completion=False,
                             remove_existing=aviator_remove_existing,
                         )
-                # end if workspace_id and "update" in row_operations
                 elif document_id and "delete" in row_operations:
                     # We delete with immediate purging to keep recycle bin clean
                     # and to not run into issues with nicknames used in deleted items:
@@ -28043,7 +27694,6 @@ class Payload:
                     )
                     result["delete_counter"] += 1
                     document_id = None
-                # end elif document_id and "delete" in row_operations
 
                 # this is the plain old "if it does exist we just skip it" case:
                 elif document_id:
@@ -28093,7 +27743,6 @@ class Payload:
                     # and speedup the process.
                     result["documents"][document_name] = document_id
 
-            # end for workspaces
 
             # We want the success, failure and skip counter
             # to consider only complete data frame rows. In
@@ -28115,15 +27764,13 @@ class Payload:
 
             # Make sure no temp documents are piling up except
             # we want it (e.g. if using cloud document storage):
-            if file_name and os.path.exists(file_name) and bulk_document.get("delete_download", True):
-                os.remove(file_name)
-        # end for index, row in partition.iterrows()
+            if file_name and Path(file_name).exists() and bulk_document.get("delete_download", True):
+                Path(file_name).unlink()
 
         self.logger.info("End working...")
 
         results.append(result)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_items")
     def process_bulk_items(self, section_name: str = "bulkItems") -> bool:
@@ -28280,7 +27927,6 @@ class Payload:
                     "Size of data frame after explosion -> %s.",
                     str(len(data)),
                 )
-            # end for explosion in explosions
 
             # Keep only selected rows if filters are specified in bulkDocuments.
             # We have this _after_ "explosions" to allow access to subfields as well.
@@ -28337,10 +27983,7 @@ class Payload:
                 continue
 
             self._log_header_callback(
-                text="Process bulk items -> '{}' from data source -> '{}'".format(
-                    name_field,
-                    data_source_name,
-                ),
+                text=f"Process bulk items -> '{name_field}' from data source -> '{data_source_name}'",
                 char="-",
             )
 
@@ -28398,7 +28041,6 @@ class Payload:
                 # Avoid that all threads start at the exact same time with
                 # potentially expired cookies that cases race conditions:
                 time.sleep(1)
-            # end for index, partition in enumerate(partitions, start=1)
 
             # Wait for all threads to complete
             for thread in threads:
@@ -28447,12 +28089,8 @@ class Payload:
                 # to restart in case of failures and avoid trying to
                 # create items that have been successfully created before.
                 bulk_item["items"].update(result["items"])
-            # end for result in results
             self._log_header_callback(
-                text="Completed processing of bulk items -> '{}' using data source -> '{}'".format(
-                    name_field,
-                    data_source_name,
-                ),
+                text=f"Completed processing of bulk items -> '{name_field}' using data source -> '{data_source_name}'",
                 char="-",
             )
 
@@ -28464,7 +28102,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_items_worker")
     def process_bulk_items_worker(
@@ -28864,7 +28501,7 @@ class Payload:
                     "Check if item -> '%s' is already in target folder with ID -> %s%s...",
                     item_name,
                     parent_id,
-                    " (using key -> '{}')".format(key) if key is not None else "",
+                    f" (using key -> '{key}')" if key is not None else "",
                 )
                 # Initialize variables - this is important!
                 item_old_name = None
@@ -28957,8 +28594,6 @@ class Payload:
                         )
                         success = False
                         continue
-                    # end if key_attribute:
-                # end if key:
                 else:
                     # If we haven't a key we try by parent + name
                     response = self._otcs_frontend.get_node_by_parent_and_name(
@@ -29075,7 +28710,6 @@ class Payload:
                             categories_payload=worker_categories,
                             source_node_id=parent_id,
                         )
-                    # end if categories
                     else:
                         item_category_data = {}
 
@@ -29122,7 +28756,6 @@ class Payload:
                     )
                     result["create_counter"] += 1
 
-                # end if not workspace_id and "create" in row_operations
 
                 # If updates are requested we update the existing item with
                 # a new item version and with fresh metadata from the payload.
@@ -29176,7 +28809,6 @@ class Payload:
                             )
                             success = False
                             continue  # for index, row in partition.iterrows()
-                    # end if categories
                     else:
                         item_category_data = {}
 
@@ -29212,7 +28844,6 @@ class Payload:
                         description,
                     )
                     result["update_counter"] += 1
-                # end if item_id and "update" in row_operations
                 elif item_id and "delete" in row_operations:
                     # We delete with immediate purging to keep recycle bin clean
                     # and to not run into issues with nicknames used in deleted items:
@@ -29235,7 +28866,6 @@ class Payload:
                     )
                     result["delete_counter"] += 1
                     item_id = None
-                # end elif item_id and "delete" in row_operations
 
                 # this is the plain old "if it does exist we just skip it" case:
                 elif item_id:
@@ -29285,7 +28915,6 @@ class Payload:
                     # and speedup the process.
                     result["items"][item_name] = item_id
 
-            # end for workspaces
 
             # We want the success, failure and skip counter
             # to consider only complete data frame rows. In
@@ -29305,13 +28934,11 @@ class Payload:
             else:
                 result["success_counter"] += 1
 
-        # end for index, row in partition.iterrows()
 
         self.logger.info("End working...")
 
         results.append(result)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_avts_repositories")
     def process_avts_repositories(self, section_name: str = "avtsRepositories") -> bool:
@@ -29453,8 +29080,6 @@ class Payload:
                             payload_repo["name"],
                         )
                         self.logger.debug("%s", response)
-            # end for payload_repo in self._avts_repositories:
-        # end else:
 
         self.write_status_file(
             success=success,
@@ -29464,7 +29089,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_avts_questions")
     def process_avts_questions(self, section_name: str = "avtsQuestions") -> bool:
@@ -29529,7 +29153,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_embeddings")
     def process_embeddings(self, section_name: str = "embeddings") -> bool:
@@ -29656,7 +29279,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="replace_bulk_placeholders_list")
     def replace_bulk_placeholders_list(
@@ -29708,7 +29330,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="replace_bulk_placeholders")
     def replace_bulk_placeholders(
@@ -29786,7 +29407,7 @@ class Payload:
                     self.logger.warning(
                         "KeyError: Cannot replace field -> '%s'%s as the data frame row does not have a column called -> '%s': %s",
                         field_name,
-                        " (sub-key -> '{}')".format(key) if key != field_name else "",
+                        f" (sub-key -> '{key}')" if key != field_name else "",
                         field_name,
                         str(e),
                     )
@@ -29798,7 +29419,7 @@ class Payload:
                     self.logger.error(
                         "TypeError: Cannot replace field -> '%s'%s (value type -> %s). Expecting a dictionary-like value.",
                         field_name,
-                        " (sub-key -> '{}')".format(key) if key != field_name else "",
+                        f" (sub-key -> '{key}')" if key != field_name else "",
                         str(type(value)),
                     )
                     had_lookup_error = True
@@ -29831,13 +29452,12 @@ class Payload:
                         "Cannot replace field -> '%s' as %s has no value in the current row!",
                         field_name,
                         (
-                            "sub-key -> '{}'".format(key) if key != keys[0] else "column -> '{}'".format(key)
+                            f"sub-key -> '{key}'" if key != keys[0] else f"column -> '{key}'"
                         ),  # the first key is the column
                     )
                     had_lookup_error = True
                     return ""
 
-            # end for key in keys
 
             if isinstance(value, list):
                 if value == []:
@@ -29888,7 +29508,6 @@ class Payload:
 
             return value
 
-        # end sub-method replace()
 
         if not input_string:
             return ""
@@ -29902,7 +29521,6 @@ class Payload:
 
         return result_string
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="cleanup_value")
     def cleanup_value(
@@ -29960,7 +29578,6 @@ class Payload:
 
         return cleaned_string
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="evaluate_conditions")
     def evaluate_conditions(
@@ -30079,7 +29696,6 @@ class Payload:
 
         return evaluated_condition
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_classifications")
     def process_bulk_classifications(self, section_name: str = "bulkClassifications") -> bool:
@@ -30147,9 +29763,7 @@ class Payload:
                 continue
 
             self._log_header_callback(
-                text="Process bulk classifications using data source -> '{}'".format(
-                    data_source_name,
-                ),
+                text=f"Process bulk classifications using data source -> '{data_source_name}'",
                 char="-",
             )
 
@@ -30321,7 +29935,6 @@ class Payload:
                 # Avoid that all threads start at the exact same time with
                 # potentially expired cookies that cases race conditions:
                 time.sleep(1)
-            # end for index, partition in enumerate(partitions, start=1)
 
             # Wait for all threads to complete
             for thread in threads:
@@ -30371,7 +29984,7 @@ class Payload:
                 # create classifications that have been created before.
                 bulk_classification["classifications"].update(result["classifications"])
             self._log_header_callback(
-                text="Completed processing of bulk classifications using data source -> '{}'".format(data_source_name),
+                text=f"Completed processing of bulk classifications using data source -> '{data_source_name}'",
                 char="-",
             )
 
@@ -30383,7 +29996,6 @@ class Payload:
 
         return success
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_classifications_worker")
     def process_bulk_classifications_worker(
@@ -30547,9 +30159,7 @@ class Payload:
                     name_field,
                     " There's no alternative field name given in the payload (via 'name_alt')."
                     if not name_field_alt
-                    else " The alternative field -> '{}' could not be resolved either!".format(
-                        name_field_alt,
-                    ),
+                    else f" The alternative field -> '{name_field_alt}' could not be resolved either!",
                 )
                 result["skipped_counter"] += 1
                 continue
@@ -30755,7 +30365,6 @@ class Payload:
                         )
                         result["skipped_counter"] += 1
                         continue
-            # end if nickname_field
             else:
                 nickname = None
 
@@ -30896,8 +30505,6 @@ class Payload:
                         parent_id,
                     )
                     handle_name_clash = True
-                # end if key_attribute
-            # end if key
             else:
                 # Get the parent classification element:
                 response = self._otcs_frontend.get_node_by_volume_and_path(
@@ -31065,7 +30672,6 @@ class Payload:
                 )
                 result["create_counter"] += 1
 
-            # end if not classification_id and "create" or "recreate" in row_operations
 
             # If "updates" are an requested row operation we update the existing classification with
             # fresh metadata from the payload. Additionally we check the external
@@ -31123,7 +30729,6 @@ class Payload:
                         result["success"] = False
                         result["failure_counter"] += 1
                         continue  # for index, row in partition.iterrows()
-                # end if categories
                 else:
                     classification_category_data = {}
 
@@ -31161,7 +30766,6 @@ class Payload:
                 )
                 result["update_counter"] += 1
 
-            # end elif "update" in row_operations...
             elif classification_id and "delete" in row_operations:
                 # We delete with immediate purging to keep recycle bin clean
                 # and to not run into issues with nicknames used in deleted items:
@@ -31185,7 +30789,6 @@ class Payload:
                 )
                 result["delete_counter"] += 1
                 classification_id = None
-            # end elif classification_id and "delete" in row_operations
 
             # this is the plain old "it does exist and we just skip it case":
             elif classification_id:
@@ -31240,13 +30843,11 @@ class Payload:
                 # Record the classification name and ID to allow to read it from failure file
                 # and speedup the process.
                 result["classifications"][classification_name] = classification_id
-        # end for index...
 
         self.logger.info("End working...")
 
         results.append(result)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="start_impersonation")
     def start_impersonation(self, username: str, otcs_object: OTCS | None = None) -> bool:
@@ -31285,7 +30886,6 @@ class Payload:
 
         return bool(response)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="stop_impersonation")
     def stop_impersonation(self, otcs_object: OTCS | None = None) -> bool:
@@ -31315,7 +30915,6 @@ class Payload:
 
         return bool(response)
 
-    # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_nifi_flows")
     def process_nifi_flows(self, section_name: str = "nifi") -> bool:
@@ -31445,7 +31044,6 @@ class Payload:
                     name,
                     parameter_value if not parameter_sensitive else "<sensitive>",
                 )
-            # end for parameter in parameters:
             if start:
                 response = self._otkd.start_all_processors(name=name)
                 if response:
@@ -31463,7 +31061,6 @@ class Payload:
 
             else:
                 self.logger.info("Don't (re)start Nifi flow -> '%s'.", name)
-        # end for nifi_flow in self._nifi_flows:
 
         self.write_status_file(
             success=success,
@@ -31473,4 +31070,3 @@ class Payload:
 
         return success
 
-    # end method definition

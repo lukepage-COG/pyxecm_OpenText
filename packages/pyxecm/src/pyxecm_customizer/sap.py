@@ -112,7 +112,6 @@ class SAP:
         if destination:
             self._connection_parameters["dest"] = destination
 
-        # end method definition
 
     def call(self, rfc_name: str, options: dict, rfc_parameters: dict) -> dict | None:
         """Do an RFC Call.
@@ -160,4 +159,3 @@ class SAP:
             )
             return None
 
-        # end method definition

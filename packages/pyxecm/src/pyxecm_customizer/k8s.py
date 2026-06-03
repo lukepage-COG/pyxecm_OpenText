@@ -17,6 +17,7 @@ import logging
 import os
 import time
 from datetime import UTC, datetime
+from pathlib import Path
 
 from kubernetes import client, config
 from kubernetes.client import (
@@ -97,7 +98,7 @@ class K8s:
         if kubeconfig_file is None:
             kubeconfig_file = os.getenv(
                 "KUBECONFIG",
-                os.path.expanduser("~/.kube/config"),
+                str(Path("~/.kube/config").expanduser()),
             )
 
         if not configured:
@@ -116,8 +117,7 @@ class K8s:
         if namespace == "default":
             # Read current namespace
             try:
-                with open(
-                    "/var/run/secrets/kubernetes.io/serviceaccount/namespace",
+                with Path("/var/run/secrets/kubernetes.io/serviceaccount/namespace").open(
                     encoding="utf-8",
                 ) as namespace_file:
                     self._namespace = namespace_file.read()
@@ -126,7 +126,6 @@ class K8s:
         else:
             self._namespace = namespace
 
-    # end method definition
 
     def get_core_v1_api(self) -> CoreV1Api:
         """Return Kubernetes Core V1 API object.
@@ -138,7 +137,6 @@ class K8s:
 
         return self._core_v1_api
 
-    # end method definition
 
     def get_apps_v1_api(self) -> AppsV1Api:
         """Return Kubernetes Apps V1 API object.
@@ -150,7 +148,6 @@ class K8s:
 
         return self._apps_v1_api
 
-    # end method definition
 
     def get_networking_v1_api(self) -> NetworkingV1Api:
         """Return Kubernetes Networking V1 API object.
@@ -162,7 +159,6 @@ class K8s:
 
         return self._networking_v1_api
 
-    # end method definition
 
     def get_namespace(self) -> str:
         """Return Kubernetes Namespace.
@@ -174,7 +170,6 @@ class K8s:
 
         return self._namespace
 
-    # end method definition
 
     def get_pod(self, pod_name: str) -> V1Pod:
         """Get a pod in the configured namespace (the namespace is defined in the class constructor).
@@ -209,7 +204,6 @@ class K8s:
                 return None  # Unexpected error, return None
         return response
 
-    # end method definition
 
     def list_pods(
         self,
@@ -254,7 +248,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def wait_pod_condition(
         self,
@@ -311,7 +304,6 @@ class K8s:
                     condition_name,
                 )
 
-    # end method definition
 
     def exec_pod_command(
         self,
@@ -402,7 +394,6 @@ class K8s:
 
         return None
 
-    # end method definition
 
     # Some commands like the OTAC spawner need to run interactive - otherwise the command "hangs"
     def exec_pod_command_interactive(
@@ -500,7 +491,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def delete_pod(self, pod_name: str) -> V1Pod | None:
         """Delete a pod in the configured namespace (the namespace is defined in the class constructor).
@@ -535,7 +525,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def get_config_map(self, config_map_name: str) -> V1ConfigMap:
         """Get a config map in the configured namespace (the namespace is defined in the class constructor).
@@ -580,7 +569,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def list_config_maps(
         self,
@@ -626,7 +614,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def find_config_map(self, config_map_name: str) -> V1ConfigMapList:
         """Find a Kubernetes Config Map based on its name.
@@ -646,7 +633,7 @@ class K8s:
 
         try:
             response = self.list_config_maps(
-                field_selector="metadata.name={}".format(config_map_name),
+                field_selector=f"metadata.name={config_map_name}",
             )
         except ApiException:
             self.logger.error(
@@ -657,7 +644,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def replace_config_map(
         self,
@@ -701,7 +687,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def get_stateful_set(self, sts_name: str) -> V1StatefulSet:
         """Get a Kubernetes Stateful Set based on its name.
@@ -733,7 +718,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def get_stateful_set_scale(self, sts_name: str) -> V1Scale:
         """Get the number of replicas for a Kubernetes Stateful Set.
@@ -765,7 +749,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def patch_stateful_set(self, sts_name: str, sts_body: dict) -> V1StatefulSet:
         """Patch a Stateful set with new values.
@@ -801,7 +784,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def scale_stateful_set(self, sts_name: str, scale: int) -> V1StatefulSet:
         """Scale a stateful set to a specific number of replicas.
@@ -836,7 +818,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def get_service(self, service_name: str) -> V1Service:
         """Get a Kubernetes Service with a defined name in the current namespace.
@@ -867,7 +848,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def list_services(self, field_selector: str = "", label_selector: str = "") -> None:
         """List all Kubernetes Service in the current namespace.
@@ -911,7 +891,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def patch_service(self, service_name: str, service_body: dict) -> V1Service:
         """Patch a Kubernetes Service with an updated spec.
@@ -948,7 +927,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def get_ingress(self, ingress_name: str) -> V1Ingress:
         """Get a Kubernetes Ingress with a defined name in the current namespace.
@@ -979,7 +957,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def patch_ingress(self, ingress_name: str, ingress_body: dict) -> V1Ingress:
         """Patch a Kubernetes Ingress with a updated spec.
@@ -1018,7 +995,6 @@ class K8s:
 
         return response
 
-    # end method definition
 
     def update_ingress_backend_services(
         self,
@@ -1093,19 +1069,18 @@ class K8s:
         body = [
             {
                 "op": "replace",
-                "path": "/spec/rules/{}/http/paths/{}/backend/service/name".format(rule_index, path_index),
+                "path": f"/spec/rules/{rule_index}/http/paths/{path_index}/backend/service/name",
                 "value": service_name,
             },
             {
                 "op": "replace",
-                "path": "/spec/rules/{}/http/paths/{}/backend/service/port/number".format(rule_index, path_index),
+                "path": f"/spec/rules/{rule_index}/http/paths/{path_index}/backend/service/port/number",
                 "value": service_port,
             },
         ]
 
         return self.patch_ingress(ingress_name, body)
 
-    # end method definition
 
     def verify_pod_status(
         self,
@@ -1221,12 +1196,10 @@ class K8s:
             )
             return False
 
-        # end method definition
 
         # Wait until the pod is ready
         return wait_for_pod_ready(pod_name=pod_name, timeout=timeout)
 
-    # end method definition
 
     def verify_pod_deleted(
         self,
@@ -1283,7 +1256,6 @@ class K8s:
 
         return False
 
-    # end method definition
 
     def restart_deployment(
         self, deployment_name: str, force: bool = False, wait: bool = False, wait_timeout: int = 1800
@@ -1421,7 +1393,6 @@ class K8s:
 
         return success
 
-    # end method definition
 
     def restart_stateful_set(
         self,
@@ -1494,7 +1465,6 @@ class K8s:
                     sts_name,
                 )
                 return False
-        # end for container in containers
 
         # ------------------------------------------------------------------
         # Trigger rolling restart via annotation
@@ -1592,7 +1562,6 @@ class K8s:
 
             wait_time = 30
 
-        # end while rollout monitoring
 
         # ------------------------------------------------------------------
         # Endpoint gating (optional)
@@ -1647,11 +1616,8 @@ class K8s:
                     sts_name,
                 )
                 time.sleep(5)
-            # end while endpoint registration
-        # end if endpoint_service_name
 
         self.logger.info("Rolling restart completed for stateful set ->'%s'", sts_name)
 
         return True
 
-    # end method definition

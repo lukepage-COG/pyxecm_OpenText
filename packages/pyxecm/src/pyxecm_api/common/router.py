@@ -6,6 +6,7 @@ import os
 import signal
 import tempfile
 from http import HTTPStatus
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
@@ -82,10 +83,7 @@ def list_browser_automation_files(
     """List all browser automation files."""
 
     result = list_files_in_directory(
-        os.path.join(
-            tempfile.gettempdir(),
-            "browser_automations",
-        )
+        Path(tempfile.gettempdir()) / "browser_automations"
     )
 
     return JSONResponse(result)
@@ -98,23 +96,23 @@ def get_browser_automation_file(
 ) -> FileResponse:
     """Download the logfile for a specific payload."""
 
-    filename = os.path.join(tempfile.gettempdir(), "browser_automations", file)
+    filename = Path(tempfile.gettempdir()) / "browser_automations" / file
 
-    if not os.path.isfile(filename):
+    if not Path(filename).is_file():
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="File -> '{}' not found".format(filename),
+            detail=f"File -> '{filename}' not found",
         )
 
     media_type, _ = mimetypes.guess_type(filename)
 
-    with open(filename, "rb") as f:
+    with Path(filename).open("rb") as f:
         content = f.read()
 
     return Response(
         content,
         media_type=media_type,
         headers={
-            "Content-Disposition": f'attachment; filename="{os.path.basename(filename)}"',
+            "Content-Disposition": f'attachment; filename="{Path(filename).name}"',
         },
     )

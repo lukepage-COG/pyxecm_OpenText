@@ -10,12 +10,12 @@ __maintainer__ = "Dr. Marc Diefenbruch"
 __email__ = "mdiefenb@opentext.com"
 
 import logging
-import os
 import pprint
 import threading
 import time
 import traceback
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pandas as pd
 from opentelemetry import trace
@@ -75,7 +75,6 @@ class PayloadList:
             ],
         )
 
-    # end method definition
 
     def calculate_payload_item_duration(self) -> None:
         """Update the dataframe column "duration" for all running items."""
@@ -105,7 +104,6 @@ class PayloadList:
             axis=1,
         )
 
-    # end method definition
 
     def get_payload_items(self) -> pd.DataFrame:
         """Get the payload items in their current order in the PayloadList.
@@ -120,7 +118,6 @@ class PayloadList:
 
         return self.payload_items
 
-    # end method definition
 
     def get_payload_item(self, index: int) -> pd.Series:
         """Get the payload item by index if it exists, otherwise return None.
@@ -141,7 +138,6 @@ class PayloadList:
 
         return self.payload_items.loc[index]
 
-    # end method definition
 
     def get_payload_item_by_name(self, name: str) -> pd.Series:
         """Get the payload item by name if it exists, otherwise return None.
@@ -163,7 +159,6 @@ class PayloadList:
 
         return next((item for item in data if item.get("name") == name), None)
 
-    # end method definition
 
     def get_payload_items_by_value(
         self,
@@ -204,7 +199,6 @@ class PayloadList:
 
         return filtered_items
 
-    # end method definition
 
     def add_payload_item(
         self,
@@ -272,7 +266,6 @@ class PayloadList:
 
         return new_item
 
-    # end method definition
 
     def update_payload_item(
         self,
@@ -303,7 +296,6 @@ class PayloadList:
 
         return True
 
-    # end method definition
 
     def remove_payload_item(self, index: int) -> bool:
         """Remove an item by its index from the PayloadList.
@@ -329,7 +321,6 @@ class PayloadList:
 
         return True
 
-    # end method definition
 
     def move_payload_item_up(self, index: int) -> int | None:
         """Move an item up by one position in the PayloadList.
@@ -356,7 +347,6 @@ class PayloadList:
 
         return new_position
 
-    # end method definition
 
     def move_payload_item_down(self, index: int) -> int | None:
         """Move an item down by one position in the PayloadList.
@@ -384,7 +374,6 @@ class PayloadList:
 
         return new_position
 
-    # end method definition
 
     def __len__(self) -> int:
         """Return the number of items in the PayloadList.
@@ -397,7 +386,6 @@ class PayloadList:
 
         return len(self.payload_items)
 
-    # end method definition
 
     def __getitem__(self, index: int) -> pd.Series:
         """Get an item by its index using the "[index]" syntax.
@@ -427,12 +415,11 @@ class PayloadList:
         """
 
         if index not in self.payload_items.index:
-            exception = "Index -> {} is out of range".format(index)
+            exception = f"Index -> {index} is out of range"
             raise IndexError(exception)
 
         return self.payload_items.loc[index]
 
-    # end method definition
 
     def __setitem__(self, index: int, value: dict) -> None:
         """Set an item at the specified index using the "[index]" syntax.
@@ -471,12 +458,11 @@ class PayloadList:
             raise ValueError(msg)
 
         if index not in self.payload_items.index:
-            exception = "Index -> {} is out of range".format(index)
+            exception = f"Index -> {index} is out of range"
             raise IndexError(exception)
 
         self.payload_items.loc[index] = value
 
-    # end method definition
 
     def __delitem__(self, index: int) -> None:
         """Delete an item by its index.
@@ -491,7 +477,6 @@ class PayloadList:
 
         self.remove_payload_item(index=index)
 
-    # end method definition
 
     def __getattr__(self, attribute: str) -> pd.Series:
         """Provide dynamic access to columns using the "." syntax.
@@ -513,7 +498,7 @@ class PayloadList:
 
         """
 
-        error_message = "Payload list has no attribute -> '{}'".format(attribute)
+        error_message = f"Payload list has no attribute -> '{attribute}'"
 
         try:
             # Prevent infinite recursion in case the object is not fully initialized
@@ -530,7 +515,6 @@ class PayloadList:
 
         raise AttributeError(error_message) from None
 
-    # end method definition
 
     def __repr__(self) -> str:
         """Return a string representation of the PayloadList for logging and debugging.
@@ -543,7 +527,6 @@ class PayloadList:
 
         return self.payload_items.to_string(index=True)
 
-    # end method definition
 
     def __iter__(self) -> iter:
         """Iterate over the rows of the PayloadList.
@@ -576,7 +559,6 @@ class PayloadList:
         for _, row in self.payload_items.iterrows():
             yield row
 
-    # end method definition
 
     def pick_runnables(self) -> pd.DataFrame:
         """Pick all PayloadItems with status "planned" and no dependencies on items that are not in status "completed".
@@ -597,7 +579,6 @@ class PayloadList:
 
             return all(self.payload_items.loc[dep, "status"] == "completed" for dep in dependencies or [])
 
-        # end sub-method definition
 
         if self.payload_items.empty:
             return None
@@ -620,7 +601,6 @@ class PayloadList:
 
         return runnable_df
 
-    # end method definition
 
     def pick_running(self) -> int:
         """Pick all PayloadItems with status "running".
@@ -638,7 +618,6 @@ class PayloadList:
 
         return all_status.get("running", 0)
 
-    # end method definition
 
     def process_payload_list(self, concurrent: int | None = None) -> None:
         """Process runnable payloads.
@@ -750,7 +729,7 @@ class PayloadList:
                         cprofiler.disable()
 
                     now = datetime.now(UTC)
-                    log_path = os.path.dirname(payload_item.logfile)
+                    log_path = str(Path(payload_item.logfile).parent)
                     profile_log_prefix = (
                         f"{log_path}/{payload_item['index']}_{payload_item['name']}_{now.strftime('%Y-%m-%d_%H-%M-%S')}"
                     )
@@ -761,7 +740,7 @@ class PayloadList:
                         s = io.StringIO()
                         stats = pstats.Stats(cprofiler, stream=s).sort_stats("cumtime")
                         stats.print_stats()
-                        with open(f"{profile_log_prefix}.log", "w+") as f:
+                        with Path(f"{profile_log_prefix}.log").open("w+") as f:
                             f.write(s.getvalue())
                         stats.dump_stats(filename=f"{profile_log_prefix}.cprof")
 
@@ -781,7 +760,6 @@ class PayloadList:
                         "An exception occurred: \n%s",
                         traceback.format_exc(),
                     )
-            # end if payload
 
             if not success:
                 thread_logger.error(
@@ -808,7 +786,6 @@ class PayloadList:
                 {"stop_time": stop_time, "duration": formatted_duration},
             )
 
-        # end  def run_and_complete_payload()
 
         # add delay here to allow for logging to work reliably for the the first payload
         time.sleep(10)
@@ -851,7 +828,6 @@ class PayloadList:
             # Sleep briefly to avoid a busy wait loop
             time.sleep(1)
 
-    # end method definition
 
     def run_payload_processing(self, concurrent: int | None = None) -> None:
         """Start the `process_payload_list` method in a daemon thread."""
@@ -870,11 +846,9 @@ class PayloadList:
         self._stopped = False
         scheduler_thread.start()
 
-    # end method definition
 
     def stop_payload_processing(self) -> None:
         """Set a stop flag which triggers the stopping of further payload processing."""
 
         self._stopped = True
 
-    # end method definition

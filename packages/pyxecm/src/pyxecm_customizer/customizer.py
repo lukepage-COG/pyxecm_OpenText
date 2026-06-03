@@ -11,6 +11,7 @@ import os
 import tempfile
 import time
 from datetime import UTC, datetime
+from pathlib import Path
 
 import requests
 
@@ -70,7 +71,6 @@ class Customizer:
         self.otkd_object: OTKD | None = None
         self.avts_object: AVTS | None = None
 
-    # end initializer
 
     def log_header(self, text: str, char: str = "=", length: int = 120) -> None:
         """Output a section header in the log file.
@@ -109,7 +109,6 @@ class Customizer:
             char * (char_count + extra_char),
         )
 
-    # end method definition
 
     def init_m365(self) -> M365:
         """Initialize the M365 object we use to talk to the Microsoft Graph API.
@@ -196,7 +195,7 @@ class Customizer:
             # Download MS Teams App from OTCS (this has with 23.2 a nasty side-effect
             # of unsetting 2 checkboxes on that config page - we reset these checkboxes
             # with the settings file "O365Settings.xml"):
-            file_path = os.path.join(tempfile.gettempdir(), "ot.xecm.teams.zip")
+            file_path = Path(tempfile.gettempdir()) / "ot.xecm.teams.zip"
             _ = self.otcs_frontend_object.download_config_file(
                 otcs_url_suffix="/cs/cs?func=officegroups.DownloadTeamsPackage",
                 file_path=file_path,
@@ -215,9 +214,7 @@ class Customizer:
                     self.settings.m365.teams_app_external_id,
                 )
                 response = m365_object.get_teams_apps(
-                    filter_expression="externalId eq '{}'".format(
-                        self.settings.m365.teams_app_external_id,
-                    ),
+                    filter_expression=f"externalId eq '{self.settings.m365.teams_app_external_id}'",
                 )
                 # this should always be True as ID is unique:
                 app_exist = m365_object.exist_result_item(
@@ -239,9 +236,7 @@ class Customizer:
                     self.settings.m365.teams_app_name,
                 )
                 response = m365_object.get_teams_apps(
-                    filter_expression="contains(displayName, '{}')".format(
-                        self.settings.m365.teams_app_name,
-                    ),
+                    filter_expression=f"contains(displayName, '{self.settings.m365.teams_app_name}')",
                 )
                 app_exist = m365_object.exist_result_item(
                     response=response,
@@ -285,7 +280,7 @@ class Customizer:
                     app_internal_id,
                     app_catalog_version,
                 )
-                app_path = os.path.join(tempfile.gettempdir(), "ot.xecm.teams.zip")
+                app_path = Path(tempfile.gettempdir()) / "ot.xecm.teams.zip"
                 app_download_version = m365_object.extract_version_from_app_manifest(
                     app_path=app_path,
                 )
@@ -374,7 +369,6 @@ class Customizer:
 
         return m365_object
 
-    # end method definition
 
     def init_otca(self) -> OTCA:
         """Initialize the Content Aviator object we use to talk to the CSAI REST API.
@@ -428,7 +422,6 @@ class Customizer:
             logger=self.logger,
         )
 
-    # end method definition
 
     def init_otkd(self) -> OTKD:
         """Initialize the Knowledge Discovery object we use to talk to the Nifi REST API.
@@ -465,7 +458,6 @@ class Customizer:
             logger=self.logger,
         )
 
-    # end method definition
 
     def init_avts(self) -> AVTS:
         """Initialize the Aviator Search object we use to talk to the REST API.
@@ -515,7 +507,6 @@ class Customizer:
             logger=self.logger,
         )
 
-    # end method definition
 
     def init_coreshare(self) -> CoreShare:
         """Initialize the Core Share object we use to talk to the Core Share API.
@@ -580,7 +571,6 @@ class Customizer:
 
         return core_share_object
 
-    # end method definition
 
     def init_k8s(self) -> K8s:
         """Initialize the Kubernetes object we use to talk to the Kubernetes API.
@@ -619,9 +609,7 @@ class Customizer:
             sts_name=self.settings.k8s.sts_otcs_frontend,
         )
         if not otcs_frontend_scale:
-            msg = "Cannot find Kubernetes stateful set -> '{}' for OTCS Frontends".format(
-                self.settings.k8s.sts_otcs_frontend,
-            )
+            msg = f"Cannot find Kubernetes stateful set -> '{self.settings.k8s.sts_otcs_frontend}' for OTCS Frontends"
             self.logger.error(msg)
             raise RuntimeError(msg)
 
@@ -637,9 +625,7 @@ class Customizer:
             sts_name=self.settings.k8s.sts_otcs_admin,
         )
         if not otcs_backend_scale:
-            msg = "Cannot find Kubernetes stateful set -> '{}' for OTCS Backends".format(
-                self.settings.k8s.sts_otcs_admin,
-            )
+            msg = f"Cannot find Kubernetes stateful set -> '{self.settings.k8s.sts_otcs_admin}' for OTCS Backends"
             self.logger.error(msg)
             raise RuntimeError(msg)
 
@@ -653,7 +639,6 @@ class Customizer:
 
         return k8s_object
 
-    # end method definition
 
     def init_otds(self) -> OTDS:
         """Initialize the OTDS object and parameters and authenticate at OTDS once it is ready.
@@ -726,7 +711,6 @@ class Customizer:
 
         return otds_object
 
-    # end method definition
 
     def init_otac(self) -> OTAC:
         """Initialize the OTAC object and parameters.
@@ -811,7 +795,6 @@ class Customizer:
 
         return otac_object
 
-    # end method definition
 
     def init_otcs(
         self,
@@ -928,9 +911,7 @@ class Customizer:
             )
 
         if self.settings.otawp.enabled:
-            otcs_resource["logoutURL"] = "{}://{}/home/system/wcp/sso/sso_logout.htm".format(
-                self.settings.otawp.public_protocol, self.settings.otawp.public_url
-            )
+            otcs_resource["logoutURL"] = f"{self.settings.otawp.public_protocol}://{self.settings.otawp.public_url}/home/system/wcp/sso/sso_logout.htm"
             otcs_resource["logoutMethod"] = "GET"
 
             self.otds_object.update_resource(name=self.settings.otcs.resource_name, resource=otcs_resource)
@@ -940,7 +921,6 @@ class Customizer:
 
         return otcs_object
 
-    # end method definition
 
     def init_otiv(self) -> OTIV | None:
         """Initialize the OTIV (Intelligent Viewing) object and its OTDS settings.
@@ -1030,7 +1010,6 @@ class Customizer:
 
         return otiv_object
 
-    # end method definition
 
     def init_otpd(self) -> OTPD:
         """Initialize the OTPD (PowerDocs) object and parameters.
@@ -1094,7 +1073,6 @@ class Customizer:
 
         return otpd_object
 
-    # end method definition
 
     def init_otawp(self) -> OTAWP:
         """Initialize OTDS for Appworks Platform.
@@ -1313,7 +1291,6 @@ class Customizer:
 
         return otawp_object
 
-    # end method definition
 
     def restart_otcs_service(
         self,
@@ -1363,7 +1340,6 @@ class Customizer:
                 self.logger.error(
                     "Rolling restart failed for Distributed Agent StatefulSet -> '%s'", self.settings.k8s.sts_otcs_da
                 )
-        # end if self.settings.k8s.sts_otcs_da
 
         # ------------------------------------------------------------------
         # Frontend Pods
@@ -1381,7 +1357,6 @@ class Customizer:
                 self.logger.error(
                     "Rolling restart failed for OTCS frontend stateful set -> '%s'", self.settings.k8s.sts_otcs_frontend
                 )
-        # end if self.settings.k8s.sts_otcs_frontend
 
         # ------------------------------------------------------------------
         # Backend (Admin) Pods
@@ -1432,7 +1407,6 @@ class Customizer:
 
         self.logger.info("Zero-downtime OTCS rolling restart completed successfully.")
 
-    # end method definition
 
     def restart_otac_service(self) -> bool:
         """Restart the Archive Center spawner service in OTAC pod.
@@ -1462,14 +1436,12 @@ class Customizer:
 
         return bool(response)
 
-    # end method definition
 
     def restart_otawp_pod(self) -> None:
         """Delete the AppWorks Platform pod to make Kubernetes restart it."""
 
         self.k8s_object.delete_pod(self.settings.k8s.sts_otawp + "-0")
 
-    # end method definition
 
     def consolidate_otds(self) -> None:
         """Consolidate OTDS resources."""
@@ -1479,7 +1451,6 @@ class Customizer:
         if self.settings.otawp.enabled:  # is AppWorks Platform deployed?
             self.otds_object.consolidate(self.settings.otawp.resource_name)
 
-    # end method definition
 
     def import_powerdocs_configuration(self, otpd_object: OTPD) -> None:
         """Import a database export (zip file) into the PowerDocs database.
@@ -1506,11 +1477,11 @@ class Customizer:
                     self.settings.otpd.db_importfile,
                     package.status_code,
                 )
-                filename = os.path.join(tempfile.gettempdir(), "customizer", "packages", "otpd_db_import.zip")
+                filename = Path(tempfile.gettempdir()) / "customizer" / "packages" / "otpd_db_import.zip"
                 # Ensure the directory exists
-                os.makedirs(os.path.dirname(filename), exist_ok=True)
+                Path(filename).parent.mkdir(parents=True, exist_ok=True)
 
-                with open(filename, mode="wb") as localfile:
+                with Path(filename).open(mode="wb") as localfile:
                     localfile.write(package.content)
 
                 self.logger.info(
@@ -1526,7 +1497,6 @@ class Customizer:
             except requests.exceptions.RequestException:
                 self.logger.error("Failed to download PowerDocs database file!")
 
-    # end method definition
 
     def set_maintenance_mode(self, enable: bool = True) -> None:
         """Enable or Disable Maintenance Mode.
@@ -1570,7 +1540,6 @@ class Customizer:
             )
             self.logger.info("OTCS frontend is now back in Production Mode!")
 
-    # end method definition
 
     @tracer.start_as_current_span("init_customizer")
     def init_customizer(self) -> bool:
@@ -1728,7 +1697,6 @@ class Customizer:
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span("customization_run")
     def customization_run(self) -> bool:
@@ -1752,13 +1720,13 @@ class Customizer:
 
         cust_payload_list = []
         # Is uncompressed payload provided?
-        if self.settings.cust_payload and os.path.exists(self.settings.cust_payload):
+        if self.settings.cust_payload and Path(self.settings.cust_payload).exists():
             self.logger.info("Found payload file -> '%s'", self.settings.cust_payload)
             cust_payload_list.append(self.settings.cust_payload)
         # Is compressed payload provided?
-        if self.settings.cust_payload_gz and os.path.exists(
+        if self.settings.cust_payload_gz and Path(
             self.settings.cust_payload_gz,
-        ):
+        ).exists():
             self.logger.info(
                 "Found compressed payload file -> '%s'",
                 self.settings.cust_payload_gz,
@@ -1766,14 +1734,14 @@ class Customizer:
             cust_payload_list.append(self.settings.cust_payload_gz)
 
         # do we have additional payload as an external file?
-        if self.settings.cust_payload_external and os.path.exists(
+        if self.settings.cust_payload_external and Path(
             self.settings.cust_payload_external,
-        ):
+        ).exists():
             for filename in sorted(
                 os.scandir(self.settings.cust_payload_external),
                 key=lambda e: e.name,
             ):
-                if filename.is_file() and os.path.getsize(filename) > 0:
+                if filename.is_file() and Path(filename).stat().st_size > 0:
                     self.logger.info(
                         "Found external payload file -> '%s'",
                         filename.path,
@@ -1792,7 +1760,7 @@ class Customizer:
                         "payload": cust_payload,
                     }
                 )
-                self.log_header("Start processing of payload -> '{}'".format(cust_payload))
+                self.log_header(f"Start processing of payload -> '{cust_payload}'")
 
                 # Set startTime for duration calculation
                 start_time = datetime.now(UTC)
@@ -1852,7 +1820,7 @@ class Customizer:
                         self.logger.info(
                             "OTCS -> '%s' is not ready. Cannot upload payload file -> '%s' to OTCS. Waiting 30 seconds and retry...",
                             self.otcs_frontend_object.hostname(),
-                            os.path.basename(cust_payload),
+                            Path(cust_payload).name,
                         )
                         time.sleep(30)
 
@@ -1874,17 +1842,17 @@ class Customizer:
 
                     # Write YAML file with upadated payload (including IDs, etc.).
                     # We need to write to a temporary location as initial location is read-only:
-                    payload_file = os.path.basename(cust_payload)
+                    payload_file = Path(cust_payload).name
                     payload_file = payload_file.removesuffix(".gz.b64")
                     payload_file = payload_file.replace(".tfvars", ".yaml").replace(
                         ".tf",
                         ".yaml",
                     )
-                    cust_payload = os.path.join(tempfile.gettempdir(), "customizer", "payloads", payload_file)
+                    cust_payload = Path(tempfile.gettempdir()) / "customizer" / "payloads" / payload_file
                     # Ensure the directory exists
-                    os.makedirs(os.path.dirname(cust_payload), exist_ok=True)
+                    Path(cust_payload).parent.mkdir(parents=True, exist_ok=True)
 
-                    with open(cust_payload, "w", encoding="utf-8") as file:
+                    with Path(cust_payload).open("w", encoding="utf-8") as file:
                         yaml.dump(
                             data=payload_object.get_payload(
                                 drop_bulk_datasources_data=True,
@@ -1897,7 +1865,7 @@ class Customizer:
                     # In this case we add a version to the existing document:
                     response = self.otcs_frontend_object.get_node_by_parent_and_name(
                         parent_id=int(target_folder_id),
-                        name=os.path.basename(cust_payload),
+                        name=Path(cust_payload).name,
                     )
                     target_document_id = self.otcs_frontend_object.get_result_value(
                         response=response,
@@ -1907,33 +1875,29 @@ class Customizer:
                         response = self.otcs_frontend_object.add_document_version(
                             node_id=int(target_document_id),
                             file_url=cust_payload,
-                            file_name=os.path.basename(cust_payload),
+                            file_name=Path(cust_payload).name,
                             mime_type="text/plain",
                             description="Updated payload file after re-run of customization",
                         )
                     else:
                         response = self.otcs_frontend_object.upload_file_to_parent(
                             file_url=cust_payload,
-                            file_name=os.path.basename(cust_payload),
+                            file_name=Path(cust_payload).name,
                             mime_type="text/plain",
                             parent_id=int(target_folder_id),
                         )
 
                 duration = datetime.now(UTC) - start_time
                 self.log_header(
-                    "Customizer completed processing of payload -> {} in {}".format(
-                        cust_payload,
-                        duration,
-                    ),
+                    f"Customizer completed processing of payload -> {cust_payload} in {duration}",
                 )
-        # end for cust_payload in cust_payload_list
 
         if self.settings.otcs.maintenance_mode:
             self.set_maintenance_mode(enable=False)
 
         # Upload log file for later review to "Deployment" folder
         # in "Administration" folder in OTCS Enterprise volume:
-        if os.path.exists(self.settings.cust_log_file) and self.settings.otcs.upload_log_file:
+        if Path(self.settings.cust_log_file).exists() and self.settings.otcs.upload_log_file:
             self.log_header("Upload log file to OpenText Content Management")
             response = self.otcs_frontend_object.get_node_from_nickname(
                 nickname=self.settings.cust_target_folder_nickname,
@@ -1953,7 +1917,7 @@ class Customizer:
             # In this case we add a version to the existing document:
             response = self.otcs_frontend_object.get_node_by_parent_and_name(
                 parent_id=int(target_folder_id),
-                name=os.path.basename(self.settings.cust_log_file),
+                name=Path(self.settings.cust_log_file).name,
             )
             target_document_id = self.otcs_frontend_object.get_result_value(
                 response=response,
@@ -1963,14 +1927,14 @@ class Customizer:
                 response = self.otcs_frontend_object.add_document_version(
                     node_id=int(target_document_id),
                     file_url=self.settings.cust_log_file,
-                    file_name=os.path.basename(self.settings.cust_log_file),
+                    file_name=Path(self.settings.cust_log_file).name,
                     mime_type="text/plain",
                     description="Updated Python Log after re-run of customization",
                 )
             else:
                 response = self.otcs_frontend_object.upload_file_to_parent(
                     file_url=self.settings.cust_log_file,
-                    file_name=os.path.basename(self.settings.cust_log_file),
+                    file_name=Path(self.settings.cust_log_file).name,
                     mime_type="text/plain",
                     parent_id=int(target_folder_id),
                     description="Initial Python Log after first run of customization",
@@ -1978,12 +1942,9 @@ class Customizer:
 
         self.customizer_end_time = datetime.now(UTC)
         self.log_header(
-            "Customizer completed in {}".format(
-                self.customizer_end_time - self.customizer_start_time,
-            ),
+            f"Customizer completed in {self.customizer_end_time - self.customizer_start_time}",
         )
 
         # Return the success status:
         return success
 
-    # end method definition
