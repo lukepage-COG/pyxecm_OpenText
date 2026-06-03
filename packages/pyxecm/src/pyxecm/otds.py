@@ -19,6 +19,7 @@ __email__ = "mdiefenb@opentext.com"
 import base64
 import json
 import logging
+from typing import Any
 import os
 from pathlib import Path
 import platform
@@ -179,7 +180,7 @@ class OTDS:
 
         self._config = otds_config
 
-    def config(self) -> dict:
+    def config(self) -> dict[str, Any]:
         """Return the configuration dictionary.
 
         Returns:
@@ -190,7 +191,7 @@ class OTDS:
         return self._config
 
 
-    def cookie(self) -> dict:
+    def cookie(self) -> dict[str, Any]:
         """Return the login cookie of OTDS.
 
         This is set by the authenticate() method
@@ -203,7 +204,7 @@ class OTDS:
         return self._cookie
 
 
-    def set_cookie(self, ticket: str) -> dict:
+    def set_cookie(self, ticket: str) -> dict[str, Any]:
         """Return the login cookie of OTDS.
 
         This is set by the authenticate() method
@@ -285,7 +286,7 @@ class OTDS:
         )
 
 
-    def credentials(self) -> dict:
+    def credentials(self) -> dict[str, Any]:
         """Return the credentials (username + password).
 
         Returns:
@@ -302,7 +303,7 @@ class OTDS:
 
     def client_credentials(
         self, grant_type: str = "client_credentials", scope: str | None = None, **kwargs: dict[str, str]
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Return the client credentials (client_id + client_secret).
 
         Args:
@@ -538,7 +539,7 @@ class OTDS:
         return self.config()["adminPartition"]
 
 
-    def request_header(self, content_type: str = "application/json") -> dict:
+    def request_header(self, content_type: str = "application/json") -> dict[str, Any]:
         """Return the request header used for requests.
 
         Consists of Bearer access token and Content Type
@@ -589,7 +590,7 @@ class OTDS:
         max_retries: int = REQUEST_MAX_RETRIES,
         retry_forever: bool = False,
         parse_request_response: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Call an OTDS REST API in a safe way.
 
         Args:
@@ -764,7 +765,7 @@ class OTDS:
         response_object: object,
         additional_error_message: str = "",
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Convert the request response to a dict in a safe way that also handles exceptions.
 
         Args:
@@ -807,7 +808,7 @@ class OTDS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="authenticate")
     def authenticate(
         self, revalidate: bool = False, grant_type: str | None = None, show_error: bool = True
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Authenticate at Directory Services and retrieve OTDS ticket.
 
         Args:
@@ -930,7 +931,7 @@ class OTDS:
         user_id: str,
         partition: str = "Content Server Members",
         ticket: str = "",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Impersonate as a user.
 
         Args:
@@ -1031,7 +1032,7 @@ class OTDS:
         description: str = "",
         values: list | None = None,
         custom_attributes: list | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new application role to partition.
 
         Args:
@@ -1082,7 +1083,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_application_role")
-    def get_application_role(self, name: str, partition: str = "OAuthClients", show_error: bool = True) -> dict | None:
+    def get_application_role(self, name: str, partition: str = "OAuthClients", show_error: bool = True) -> dict[str, Any] | None:
         """Get an existing application role from OTDS.
 
         Args:
@@ -1287,7 +1288,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_partition")
-    def add_partition(self, name: str, description: str) -> dict | None:
+    def add_partition(self, name: str, description: str) -> dict[str, Any] | None:
         """Add a new user partition to OTDS.
 
         Args:
@@ -1323,7 +1324,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_partition")
-    def get_partition(self, name: str, show_error: bool = True) -> dict | None:
+    def get_partition(self, name: str, show_error: bool = True) -> dict[str, Any] | None:
         """Get an existing user partition from OTDS.
 
         Args:
@@ -1365,7 +1366,7 @@ class OTDS:
         first_name: str = "",
         last_name: str = "",
         email: str = "",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new user to a user partition in OTDS.
 
         Args:
@@ -1418,7 +1419,7 @@ class OTDS:
         )
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user")
-    def get_user(self, partition: str, user_id: str) -> dict | None:
+    def get_user(self, partition: str, user_id: str) -> dict[str, Any] | None:
         """Get an existing user by its partition and user ID.
 
         Args:
@@ -1461,7 +1462,7 @@ class OTDS:
         page_size: int | None = None,
         attributes_as_keys: bool = True,
         next_page_cookie: str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get all users in a partition. Additional filters can be applied.
 
         Args:
@@ -1692,7 +1693,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_current_user")
-    def get_current_user(self) -> dict | None:
+    def get_current_user(self) -> dict[str, Any] | None:
         """Get the currently logged in user.
 
         Returns:
@@ -1723,7 +1724,7 @@ class OTDS:
         user_id: str,
         attribute_name: str,
         attribute_value: str,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update a user attribute with a new value.
 
         Args:
@@ -1847,7 +1848,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_group")
-    def add_group(self, partition: str, name: str, description: str) -> dict | None:
+    def add_group(self, partition: str, name: str, description: str) -> dict[str, Any] | None:
         """Add a new user group to a user partition in OTDS.
 
         Args:
@@ -1890,7 +1891,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_group")
-    def get_group(self, group: str, show_error: bool = True) -> dict | None:
+    def get_group(self, group: str, show_error: bool = True) -> dict[str, Any] | None:
         """Get a OTDS group by its group name.
 
         Args:
@@ -1945,7 +1946,7 @@ class OTDS:
         page_size: int | None = None,
         attributes_as_keys: bool = True,
         next_page_cookie: str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get all groups in a partition. Additional filters can be applied.
 
         Args:
@@ -2268,7 +2269,7 @@ class OTDS:
         resource_id: str | None = None,
         secret: str | None = None,  # needs to be 16 bytes!
         additional_payload: dict | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add an OTDS resource.
 
         Args:
@@ -2340,7 +2341,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_resource")
-    def get_resource(self, name: str, show_error: bool = False) -> dict | None:
+    def get_resource(self, name: str, show_error: bool = False) -> dict[str, Any] | None:
         """Get an existing OTDS resource.
 
         Args:
@@ -2404,7 +2405,7 @@ class OTDS:
         name: str,
         resource: object,
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update an existing OTDS resource.
 
         Args:
@@ -2436,7 +2437,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="activate_resource")
-    def activate_resource(self, resource_id: str) -> dict | None:
+    def activate_resource(self, resource_id: str) -> dict[str, Any] | None:
         """Activate an OTDS resource.
 
         Args:
@@ -2469,7 +2470,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_access_roles")
-    def get_access_roles(self) -> dict | None:
+    def get_access_roles(self) -> dict[str, Any] | None:
         """Get a list of all OTDS access roles.
 
         Args:
@@ -2494,7 +2495,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_access_role")
-    def get_access_role(self, access_role: str) -> dict | None:
+    def get_access_role(self, access_role: str) -> dict[str, Any] | None:
         """Get an OTDS access role.
 
         Args:
@@ -2731,7 +2732,7 @@ class OTDS:
         self,
         name: str,
         attribute_list: list,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update some attributes of an existing OTDS access role.
 
         Args:
@@ -2792,7 +2793,7 @@ class OTDS:
         product_description: str,
         resource_id: str,
         update: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a product license to an OTDS resource.
 
         Args:
@@ -2887,7 +2888,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_license_for_resource")
-    def get_license_for_resource(self, resource_id: str) -> dict | None:
+    def get_license_for_resource(self, resource_id: str) -> dict[str, Any] | None:
         """Get a product license for a resource in OTDS.
 
         Args:
@@ -3186,7 +3187,7 @@ class OTDS:
         resource_id: str,
         license_feature: str,
         license_name: str,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Return the licensed objects for a license + license feature associated with an OTDS resource (like "cs").
 
         Licensed objects can be users, groups, or partitions.
@@ -3469,7 +3470,7 @@ class OTDS:
         name: str,
         description: str,
         data: dict,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new synchronized partition to OTDS.
 
         Args:
@@ -3519,7 +3520,7 @@ class OTDS:
         name: str,
         value: str,
         description: str = "",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new system attribute to OTDS.
 
         Args:
@@ -3570,7 +3571,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_trusted_sites")
-    def get_trusted_sites(self) -> dict | None:
+    def get_trusted_sites(self) -> dict[str, Any] | None:
         """Get all configured OTDS trusted sites.
 
         Args:
@@ -3595,7 +3596,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_trusted_site")
-    def add_trusted_site(self, trusted_site: str) -> dict | None:
+    def add_trusted_site(self, trusted_site: str) -> dict[str, Any] | None:
         """Add a new OTDS trusted site.
 
         Args:
@@ -3648,7 +3649,7 @@ class OTDS:
         enable: bool = True,
         days_to_keep: int = 7,
         event_types: list | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Enable the OTDS Audit.
 
         Args:
@@ -3760,7 +3761,7 @@ class OTDS:
         auth_code_lifetime: int = 20000,
         allow_refresh_token: bool = True,
         use_session_refresh_token_lifetime: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new OAuth client to OTDS.
 
         Args:
@@ -3891,7 +3892,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_oauth_client")
-    def get_oauth_client(self, client_id: str, show_error: bool = True) -> dict | None:
+    def get_oauth_client(self, client_id: str, show_error: bool = True) -> dict[str, Any] | None:
         """Get an existing OAuth client from OTDS.
 
         Args:
@@ -3924,7 +3925,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_oauth_client")
-    def update_oauth_client(self, client_id: str, updates: dict) -> dict | None:
+    def update_oauth_client(self, client_id: str, updates: dict) -> dict[str, Any] | None:
         """Update an OAuth client with new values.
 
         Args:
@@ -3961,7 +3962,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_oauth_clients_to_access_role")
-    def add_oauth_clients_to_access_role(self, access_role_name: str) -> dict | None:
+    def add_oauth_clients_to_access_role(self, access_role_name: str) -> dict[str, Any] | None:
         """Add OAuth clients (in the "OAuthClients" partition) to an OTDS access role.
 
         Args:
@@ -4038,7 +4039,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_auth_handler")
-    def get_auth_handler(self, name: str, show_error: bool = True) -> dict | None:
+    def get_auth_handler(self, name: str, show_error: bool = True) -> dict[str, Any] | None:
         """Get the OTDS auth handler with a given name.
 
         Args:
@@ -4118,7 +4119,7 @@ class OTDS:
         active_by_default: bool = False,
         auth_principal_attributes: list | None = None,
         nameid_format: str = "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new SAML authentication handler.
 
         Args:
@@ -4467,7 +4468,7 @@ class OTDS:
         enabled: bool = True,
         priority: int = 10,
         auth_principal_attributes: list | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new SAP authentication handler.
 
         Args:
@@ -4698,7 +4699,7 @@ class OTDS:
         enabled: bool = True,
         priority: int = 10,
         auth_principal_attributes: list | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a new OAuth authentication handler.
 
         Args:
@@ -5259,7 +5260,7 @@ class OTDS:
 
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_password_policy")
-    def get_password_policy(self) -> dict | None:
+    def get_password_policy(self) -> dict[str, Any] | None:
         """Get the global password policy.
 
         Args:

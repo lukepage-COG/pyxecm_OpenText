@@ -15,6 +15,7 @@ __email__ = "mdiefenb@opentext.com"
 import json
 import logging
 import os
+from typing import Any
 from pathlib import Path
 import re
 import threading
@@ -37,12 +38,12 @@ class Data:
     def read_sql(
         cls,
         sql: str,
-        con: any,
+        con: Any,
         columns: list[str] | None = None,
         dtypes: dict[str, type | str] | None = None,
         index_columns: str | list[str] | None = None,
         **kwargs: dict,
-    ) -> Data:
+    ) -> "Data":
         """Load a Data object directly from a SQL table/query.
 
         Args:
@@ -198,7 +199,7 @@ class Data:
         return "Data(Uninitialized)"
 
 
-    def __getitem__(self, column: any) -> pd.Series:
+    def __getitem__(self, column: Any) -> pd.Series:
         """Return the column corresponding to the key from the data frame.
 
         NOTE: This operates on the COLUMN axis. To retrieve specific rows,
@@ -223,7 +224,7 @@ class Data:
         return self._df[column]
 
 
-    def __setitem__(self, key: any, value: any) -> None:
+    def __setitem__(self, key: Any, value: Any) -> None:
         """Assign data to a column or create a new column.
 
         NOTE: This operates on the COLUMN axis. Assignments will modify
@@ -248,7 +249,7 @@ class Data:
             self._df[key] = self._df[key].astype(self._schema[key])
 
 
-    def __delitem__(self, key: any) -> None:
+    def __delitem__(self, key: Any) -> None:
         """Remove a column from the DataFrame.
 
         NOTE: This operates on the COLUMN axis. To delete rows (nodes/edges),
@@ -268,7 +269,7 @@ class Data:
         self._df.drop(columns=key, inplace=True)
 
 
-    def __getattr__(self, attr: str) -> any:
+    def __getattr__(self, attr: str) -> Any:
         """Delegate attribute access to the internal pandas DataFrame.
 
         This method is only called if the attribute is not found
@@ -443,7 +444,7 @@ class Data:
             )
 
 
-    def append(self, add_data: pd.DataFrame | list | dict | Data, enforce_schema: bool = False) -> bool:
+    def append(self, add_data: pd.DataFrame | list | dict | "Data", enforce_schema: bool = False) -> bool:
         """Append additional data to the data frame.
 
         Note: This method is not thread-safe; locking must be handled by the caller.
@@ -3612,7 +3613,7 @@ class Data:
         self._df = self._df[~mask]
 
 
-    def get_match_mask(self, match_with: Data | pd.DataFrame, on_columns: list[str]) -> pd.Series:
+    def get_match_mask(self, match_with: "Data" | pd.DataFrame, on_columns: list[str]) -> pd.Series:
         """Find rows in this Data object that match another Data object or DataFrame.
 
         Args:

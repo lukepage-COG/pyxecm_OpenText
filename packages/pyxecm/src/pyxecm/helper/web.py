@@ -114,7 +114,7 @@ class HTTP:
         wait_on_status: list | None = None,
         show_error: bool = True,
         stream: bool = False,
-    ) -> dict | None:
+    ) -> requests.Response | None:
         """Issues an http request to a given URL.
 
         Args:
@@ -211,16 +211,12 @@ class HTTP:
                         return response
 
                 else:
-                    message = "HTTP request -> {} to url -> {} failed; status -> {}; error -> {}".format(
-                        method,
-                        url,
-                        response.status_code,
-                        (
-                            response.text
-                            if response.headers.get("content-type") == "application/json"
-                            else "see debug log"
-                        ),
+                    error_detail = (
+                        response.text
+                        if response.headers.get("content-type") == "application/json"
+                        else "see debug log"
                     )
+                    message = f"HTTP request -> {method} to url -> {url} failed; status -> {response.status_code}; error -> {error_detail}"
                     if show_error and retries == 0:
                         self.logger.error(message)
                     else:
