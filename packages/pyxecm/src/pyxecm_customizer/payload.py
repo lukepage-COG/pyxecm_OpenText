@@ -45,6 +45,7 @@ import gzip
 import json
 import logging
 import os
+from pathlib import Path
 import random
 import re
 import string
@@ -98,7 +99,7 @@ except ModuleNotFoundError:
 
 THREAD_NUMBER = 3
 BULK_THREAD_NUMBER = int(os.environ.get("BULK_THREAD_NUMBER", "1"))
-BULK_DOCUMENT_PATH = os.path.join(tempfile.gettempdir(), "bulkDocuments")
+BULK_DOCUMENT_PATH = Path(tempfile.gettempdir()) / "bulkDocuments"
 ENABLE_MULTI_THREADING = THREAD_NUMBER > 1
 OTEL_TRACING_ATTRIBUTES = {"class": "payload"}
 
@@ -126,7 +127,7 @@ def load_payload(
 
     """
 
-    if not os.path.exists(payload_source):
+    if not Path(payload_source).exists():
         logger.error("Cannot access payload file -> '%s'!", payload_source)
         return None
 
@@ -134,7 +135,7 @@ def load_payload(
     if payload_source.endswith(".yaml"):
         logger.info("Open payload from YAML file -> '%s'...", payload_source)
         try:
-            with open(payload_source, encoding="utf-8") as stream:
+            with Path(payload_source).open(encoding="utf-8") as stream:
                 payload_data = stream.read()
             return yaml.safe_load(payload_data)
         except yaml.YAMLError:
@@ -147,7 +148,7 @@ def load_payload(
     elif payload_source.endswith((".tf", ".tfvars")):
         logger.info("Open payload from Terraform file -> '%s'...", payload_source)
         try:
-            with open(payload_source, encoding="utf-8") as stream:
+            with Path(payload_source).open(encoding="utf-8") as stream:
                 payload = hcl2.api.load(stream)
             # If payload is wrapped into "external_payload" we unwrap it:
             if payload.get("external_payload"):
@@ -173,7 +174,7 @@ def load_payload(
     elif payload_source.endswith(".yml.gz.b64"):
         logger.info("Open payload from base64-gz-YAML file -> '%s'...", payload_source)
         try:
-            with open(payload_source, encoding="utf-8") as stream:
+            with Path(payload_source).open(encoding="utf-8") as stream:
                 content = base64.b64decode(stream.read())
                 decoded_data = gzip.decompress(content)
 
@@ -903,7 +904,7 @@ class Payload:
             license_name = self._otawp.product_name()
             product_name = self._otawp.product_name() + "_" + organization.upper()
             product_description = self._otawp.product_name() + organization
-            if os.path.isfile(self._otawp.license_file()):
+            if Path(self._otawp.license_file().is_file()):
                 self.logger.info(
                     "Found OTAWP license file -> '%s', assiging it to OTDS resource -> '%s'...",
                     self._otawp.license_file(),
@@ -1422,7 +1423,7 @@ class Payload:
         # Some sections are actually not payload specific like teamsM365Cleanup
         # we don't want external payload runs to re-apply this processing:
         if payload_specific:
-            file_name = os.path.basename(self._payload_source)  # remove directories
+            file_name = Path(self._payload_source).name  # remove directories
             # Split once at the first occurance of a dot
             # as the _payload_source may have multiple suffixes
             # such as .yml.gz.b64:
@@ -1593,11 +1594,11 @@ class Payload:
             prefix=prefix,
         )
 
-        full_path = os.path.join(tempfile.gettempdir(), "customizer", "status_files", file_name)
+        full_path = Path(tempfile.gettempdir()) / "customizer" / "status_files" / file_name
         # Ensure the directory exists
-        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        Path(str(Path(full_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
 
-        with open(full_path, mode="w", encoding="utf-8") as localfile:
+        with Path(full_path).open(mode="w", encoding="utf-8") as localfile:
             localfile.write(json.dumps(payload_section, indent=2))
 
         # Check if the status file has been uploaded before.
@@ -8334,7 +8335,7 @@ class Payload:
                 continue
 
             settings_file = self._custom_settings_dir + filename
-            if os.path.exists(settings_file):
+            if Path(settings_file).exists():
                 description = admin_setting.get("description")
                 self.logger.info(
                     "Processing admin settings from file -> '%s'%s...",
@@ -8343,7 +8344,7 @@ class Payload:
                 )
 
                 # Read the config file:
-                with open(settings_file, encoding="utf-8") as file:
+                with Path(settings_file).open(encoding="utf-8") as file:
                     file_content = file.read()
 
                 self.logger.debug(
@@ -8355,8 +8356,8 @@ class Payload:
                 file_content = self.replace_placeholders(content=file_content)
 
                 # Write the updated config file:
-                tmpfile = os.path.join(tempfile.gettempdir(), os.path.basename(settings_file))
-                with open(tmpfile, "w", encoding="utf-8") as file:
+                tmpfile = Path(tempfile.gettempdir()) / Path(settings_file).name
+                with Path(tmpfile).open("w", encoding="utf-8") as file:
                     file.write(file_content)
 
                 response = self._otcs.apply_config(xml_file_path=tmpfile)
@@ -8937,7 +8938,7 @@ class Payload:
         """
 
         if not download_dir:
-            download_dir = os.path.join(tempfile.gettempdir(), "customizer", "transports")
+            download_dir = Path(tempfile.gettempdir()) / "customizer" / "transports"
 
         if not self._http_object:
             self._http_object = HTTP(logger=self.logger)
@@ -8949,11 +8950,11 @@ class Payload:
         path = parsed_url.path
 
         # Get the file name from the path
-        file_name = os.path.basename(path)
+        file_name = Path(path).name
 
-        download_name = os.path.join(download_dir, file_name)
+        download_name = Path(download_dir) / file_name
 
-        os.makedirs(download_dir, exist_ok=True)
+        Path(download_dir).mkdir(parents=True, exist_ok=True)
 
         if not self._http_object.download_file(
             url=package_url,
@@ -9350,9 +9351,9 @@ class Payload:
             photo_id = self._otcs.get_result_value(response=response, key="id")
             photo_name = self._otcs.get_result_value(response=response, key="name")
 
-            photo_path = os.path.join(tempfile.gettempdir(), "customizer", "user_photos", photo_name)
+            photo_path = Path(tempfile.gettempdir()) / "customizer" / "user_photos" / photo_name
             # Ensure the directory exists
-            os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+            Path(str(Path(photo_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
 
             result = self._otcs.download_document(
                 node_id=photo_id,
@@ -9396,9 +9397,9 @@ class Payload:
         else:
             photo_id = self._otcs.get_result_value(response=response, key="id")
             photo_name = self._otcs.get_result_value(response=response, key="name")
-            photo_path = os.path.join(tempfile.gettempdir(), "customizer", "user_photos", photo_name)
+            photo_path = Path(tempfile.gettempdir()) / "customizer" / "user_photos" / photo_name
             # Ensure the directory exists
-            os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+            Path(str(Path(photo_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
             result = self._otcs.download_document(
                 node_id=photo_id,
                 file_path=photo_path,
@@ -9543,12 +9544,12 @@ class Payload:
                 continue
             photo_id = self._otcs.get_result_value(response=response, key="id")
             photo_name = self._otcs.get_result_value(response=response, key="name")
-            photo_path = os.path.join(tempfile.gettempdir(), "customizer", "user_photos", photo_name)
+            photo_path = Path(tempfile.gettempdir()) / "customizer" / "user_photos" / photo_name
             # Ensure the directory exists
-            os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+            Path(str(Path(photo_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
 
             # Check if it is not yet downloaded:
-            if not os.path.isfile(photo_path):
+            if not Path(photo_path).is_file():
                 # download the profile picture into the tmp directory:
                 result = self._otcs.download_document(
                     node_id=photo_id,
@@ -9706,12 +9707,12 @@ class Payload:
                 continue
             photo_id = self._otcs.get_result_value(response=response, key="id")
             photo_name = self._otcs.get_result_value(response=response, key="name")
-            photo_path = os.path.join(tempfile.gettempdir(), "customizer", "user_photos", photo_name)
+            photo_path = Path(tempfile.gettempdir()) / "customizer" / "user_photos" / photo_name
             # Ensure the directory exists
-            os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+            Path(str(Path(photo_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
 
             # Check if it is not yet downloaded:
-            if not os.path.isfile(photo_path):
+            if not Path(photo_path).is_file():
                 # download the profile picture into the tmp directory:
                 result = self._otcs.download_document(
                     node_id=photo_id,
@@ -12664,9 +12665,9 @@ class Payload:
                         "Missing mime type information - assuming 'image/png'...",
                     )
                     mime_type = "image/png"
-                file_path = os.path.join(tempfile.gettempdir(), "customizer", "workspace_images", image_nickname)
+                file_path = Path(tempfile.gettempdir()) / "customizer" / "workspace_images" / image_nickname
                 # Ensure the directory exists
-                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                Path(str(Path(file_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
                 result = self._otcs.download_document(node_id=node_id, file_path=file_path)
                 if not result:
                     self.logger.error(
@@ -20301,9 +20302,9 @@ class Payload:
             target_folder_id = 2004  # use Personal Workspace of Admin as fallback
 
         if self._payload_source:
-            payload_file_name = os.path.basename(
+            payload_file_name = Path(
                 self._payload_source,
-            )  # remove directories
+            ).name  # remove directories
             # Split once at the first occurance of a dot
             # as the _payload_source may have multiple suffixes
             # such as .yml.gz.b64:
@@ -20314,9 +20315,9 @@ class Payload:
         file_name = "data_source_" + payload_file_name + data_source_name + ".json"
         if compression:
             file_name += ".zip"
-        full_path = os.path.join(tempfile.gettempdir(), "customizer", "data_sources", file_name)
+        full_path = Path(tempfile.gettempdir()) / "customizer" / "data_sources" / file_name
         # Ensure the directory exists
-        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        Path(str(Path(full_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
 
         # We also want to keep the row numbers (index):
         if not data.save_json_data(
@@ -20362,7 +20363,7 @@ class Payload:
                 file_name,
             )
             # Don't leave stuff behind:
-            os.remove(full_path)
+            Path(full_path).unlink()
 
             return True
 
@@ -20408,9 +20409,9 @@ class Payload:
             target_folder_id = 2004  # use Personal Workspace of Admin as fallback
 
         if self._payload_source:
-            payload_file_name = os.path.basename(
+            payload_file_name = Path(
                 self._payload_source,
-            )  # remove directories
+            ).name  # remove directories
             # Split once at the first occurance of a dot
             # as the _payload_source may have multiple suffixes
             # such as .yml.gz.b64:
@@ -20421,9 +20422,9 @@ class Payload:
         file_name = "data_source_" + payload_file_name + data_source_name + ".json"
         if compression:
             file_name += ".zip"
-        full_path = os.path.join(tempfile.gettempdir(), "customizer", "data_sources", file_name)
+        full_path = Path(tempfile.gettempdir()) / "customizer" / "data_sources" / file_name
         # Ensure the directory exists
-        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        Path(str(Path(full_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
 
         # Check if the data source file has been uploaded before.
         # This can happen if we re-run the python container.
@@ -20478,7 +20479,7 @@ class Payload:
         data_source["data"] = data
 
         # Don't leave stuff behind:
-        os.remove(full_path)
+        Path(full_path).unlink()
 
         return True
 
@@ -21034,9 +21035,9 @@ class Payload:
             return filename
 
         name = data_source.get("name", "")
-        tmp_filename = os.path.join(tempfile.gettempdir(), f"{name}_{os.path.basename(filename)}")
+        tmp_filename = Path(tempfile.gettempdir()) / f"{name}_{Path(filename).name}"
 
-        if os.path.isfile(tmp_filename):
+        if Path(tmp_filename).is_file():
             self.logger.info("Reusing previously downloaded file -> '%s'.", tmp_filename)
             return tmp_filename
 
@@ -21048,7 +21049,7 @@ class Payload:
             )
             response = requests.get(filename, stream=True, timeout=10)
 
-            with open(tmp_filename, "wb") as f:
+            with Path(tmp_filename).open("wb") as f:
                 for chunk in response.iter_content(chunk_size=1024):
                     if chunk:
                         f.write(chunk)
@@ -21371,13 +21372,13 @@ class Payload:
         # directly or we construct it from the general download dir:
         nhc_download_dir_images = data_source.get(
             "nhc_download_dir_images",
-            os.path.join(nhc_download_dir, "images"),
+            Path(nhc_download_dir) / "images",
         )  # don't use "/images"
         # We either get the download dir for data files (JSON) from the
         # payload directly or we construct it from the general download dir:
         nhc_download_dir_data = data_source.get(
             "nhc_download_dir_images",
-            os.path.join(nhc_download_dir, "json"),
+            Path(nhc_download_dir) / "json",
         )  # don't use "/data"
 
         # 2. Creating the NHC object:
@@ -25861,21 +25862,21 @@ class Payload:
         if path:
             # Normalize on Linux style path separators. Python is able to handle this also under Windows
             path = path.replace("\\", "/")
-            if os.path.exists(path):
+            if Path(path).exists():
                 # if we have a path specified it should be a directory and not a file!
                 # The isfile() test is only working if the file already exist. It cannot
                 # tell the difference between a folder and a file otherwise!
-                if os.path.isfile(path):
+                if Path(path).is_file():
                     self.logger.warning(
                         "Download directory -> '%s' is pointing to an existing file and not a directory - please check the 'download_dir' variable in payload! Stripping path...",
                         path,
                     )
-                    path = os.path.dirname(path)
+                    path = str(Path(path).parent)
                     self.logger.info("Stripped path -> '%s'...", path)
             else:
                 # if we have a path specified but it does not exist, then create it.
                 try:
-                    os.makedirs(path)
+                    Path(path).mkdir(parents=True, exist_ok=True)
                 except (OSError, PermissionError):
                     self.logger.error(
                         "Cannot create folder -> '%s' in file system!",
@@ -26027,22 +26028,22 @@ class Payload:
         #    if we want to delete existing files (to download fresh ones)
         #
 
-        file_exists = os.path.exists(file_name) if file_name else False
+        file_exists = Path(file_name).exists() if file_name else False
 
         # make sure there's no name conflict with stale documents:
         delete_download = bulk_document.get("delete_download", True)
         if file_exists and delete_download:
-            os.remove(file_name)
+            Path(file_name).unlink()
             file_exists = False
 
         # Careful: If the construction of file name and the alternative
         # file name leads to identical result then there's actually
         # no alternative file name!
         if file_name != file_name_alt:
-            file_exists_alt = os.path.exists(file_name_alt) if file_name_alt else False
+            file_exists_alt = Path(file_name_alt).exists() if file_name_alt else False
             # make sure there's no name conflict with stale documents:
             if file_exists_alt and delete_download:
-                os.remove(file_name_alt)
+                Path(file_name_alt).unlink()
                 file_exists_alt = False
         else:
             file_exists_alt = False
@@ -27493,8 +27494,8 @@ class Payload:
                         file_name,
                         mime_type,
                         f", description -> {description}" if description else "",
-                        f", size -> {os.path.getsize(file_name)}"
-                        if os.path.exists(file_name)
+                        f", size -> {Path(file_name).stat().st_size}"
+                        if Path(file_name).exists()
                         else "",  # this can happen for files in zip files that have been cleaned up already
                         parent_id,
                     )
@@ -27642,8 +27643,8 @@ class Payload:
                         file_name,
                         mime_type,
                         description,
-                        f", size -> {os.path.getsize(file_name)}"
-                        if os.path.exists(file_name)
+                        f", size -> {Path(file_name).stat().st_size}"
+                        if Path(file_name).exists()
                         else "",  # this can happen for files in zip files that have been cleaned up already
                     )
                     result["update_counter"] += 1
@@ -27763,8 +27764,8 @@ class Payload:
 
             # Make sure no temp documents are piling up except
             # we want it (e.g. if using cloud document storage):
-            if file_name and os.path.exists(file_name) and bulk_document.get("delete_download", True):
-                os.remove(file_name)
+            if file_name and Path(file_name).exists() and bulk_document.get("delete_download", True):
+                Path(file_name).unlink()
 
         self.logger.info("End working...")
 

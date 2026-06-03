@@ -2,6 +2,7 @@
 
 import logging
 import os
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends
@@ -175,14 +176,14 @@ def list_files_in_directory(directory: str) -> dict:
         files.sort()
 
         current_level = result
-        path_parts = root.split(os.sep)
-        relative_path = os.path.relpath(root, directory)
-        for part in path_parts[len(directory.split(os.sep)) :]:
+        path_parts = Path(root).parts
+        relative_path = Path(root).relative_to(directory)
+        for part in path_parts[len(Path(directory).parts) :]:
             if part not in current_level:
                 current_level[part] = {}
             current_level = current_level[part]
         for file in files:
-            file_path = os.path.join(relative_path, file)
+            file_path = Path(relative_path) / file
             current_level[file] = file_path
 
     return result

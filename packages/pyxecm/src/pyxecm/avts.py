@@ -10,6 +10,7 @@ import base64
 import json
 import logging
 import os
+from pathlib import Path
 import platform
 import sys
 import time
@@ -1443,22 +1444,22 @@ class AVTS:
 
         """
 
-        if not os.path.isfile(filepath):
+        if not Path(filepath).is_file():
             return None
 
-        file_ext = os.path.splitext(filepath)[1].lower()
+        file_ext = Path(filepath).suffix.lower()
 
         if self.running_in_kubernetes_pod() and file_ext == ".pfx":
             # Return file directly as already base64 encoded
             self.logger.warning(
                 "Detected a binary pfx file in Kubernetes environment, expecting it to be already base64 encoded",
             )
-            with open(filepath, encoding="UTF-8") as file:
+            with Path(filepath).open(encoding="UTF-8") as file:
                 return file.read().strip()
 
         else:
             # Return file as base64 encoded
-            with open(filepath, "rb") as file:
+            with Path(filepath).open("rb") as file:
                 # Read the content of the file
                 file_content = file.read()
                 # Convert the bytes to a base64 string

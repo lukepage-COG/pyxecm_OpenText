@@ -21,6 +21,7 @@ import json
 import logging
 import mimetypes
 import os
+from pathlib import Path
 import platform
 import re
 import shutil
@@ -435,7 +436,7 @@ class OTCS:
                 self.logger.addFilter(logfilter)
 
         if not download_dir:
-            download_dir = os.path.join(tempfile.gettempdir(), "contentserver")
+            download_dir = Path(tempfile.gettempdir()) / "contentserver"
 
         # Initialize otcs_config as an empty dictionary
         otcs_config = {}
@@ -960,9 +961,9 @@ class OTCS:
         #
         # 1. Dump the ontology data structure into a file in local file system:
         #
-        download_dir = os.path.join(tempfile.gettempdir(), self.ONTOLOGY_TEMP_DIRECTORY)
-        file_path = os.path.join(download_dir, self.ONTOLOGY_FILE_NAME)
-        with open(file_path, "w", encoding="utf-8") as ontology_file:
+        download_dir = Path(tempfile.gettempdir()) / self.ONTOLOGY_TEMP_DIRECTORY
+        file_path = Path(download_dir) / self.ONTOLOGY_FILE_NAME
+        with Path(file_path).open("w", encoding="utf-8") as ontology_file:
             json.dump(self._workspace_ontology, ontology_file, indent=2)
             self.logger.info(
                 "Workspace ontology -> '%s' has been saved to JSON file -> %s", self.ONTOLOGY_FILE_NAME, file_path
@@ -2553,13 +2554,13 @@ class OTCS:
 
         """
 
-        filename = os.path.basename(xml_file_path)
+        filename = Path(xml_file_path).name
 
-        if not os.path.exists(xml_file_path):
+        if not Path(xml_file_path).exists():
             self.logger.error(
                 "The admin settings file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(xml_file_path),
+                str(Path(xml_file_path).parent),
             )
             return None
 
@@ -2572,7 +2573,7 @@ class OTCS:
             request_url,
         )
 
-        with open(xml_file_path, encoding="utf-8") as xml_file:
+        with Path(xml_file_path).open(encoding="utf-8") as xml_file:
             llconfig_file = {
                 "file": (filename, xml_file, "text/xml"),
             }
@@ -7889,9 +7890,9 @@ class OTCS:
             )
             file_content = package.content
 
-        elif os.path.exists(path_or_url):
+        elif Path(path_or_url).exists():
             self.logger.debug("Uploading local file -> '%s'", path_or_url)
-            file_content = open(file=path_or_url, mode="rb")  # noqa: SIM115
+            file_content = Path(file=path_or_url).open(mode="rb")  # noqa: SIM115
 
         else:
             self.logger.warning("Cannot access file -> '%s'", path_or_url)
@@ -8102,7 +8103,7 @@ class OTCS:
             if not file_name:
                 # if path_or_url does not end with a "/"
                 # we may get the missing file name from there:
-                file_name = os.path.basename(file_url)
+                file_name = Path(file_url).name
 
             if not file_name:
                 self.logger.error("Missing file name! Cannot upload file.")
@@ -8141,9 +8142,9 @@ class OTCS:
 
             # If path_or_url specifies a directory or a zip file we want to extract
             # it and then defer the upload to upload_directory_to_parent():
-            elif os.path.exists(file_url) and (
+            elif Path(file_url).exists() and (
                 ((file_url.endswith(".zip") or mime_type == "application/x-zip-compressed") and extract_zip)
-                or os.path.isdir(file_url)
+                or Path(file_url).is_dir()
             ):
                 return self.upload_directory_to_parent(
                     parent_id=parent_id,
@@ -8151,9 +8152,9 @@ class OTCS:
                     replace_existing=replace_existing,
                 )
 
-            elif os.path.exists(file_url):
+            elif Path(file_url).exists():
                 self.logger.debug("Uploading local file -> %s", file_url)
-                file_content = open(file=file_url, mode="rb")  # noqa: SIM115
+                file_content = Path(file=file_url).open(mode="rb")  # noqa: SIM115
 
             else:
                 self.logger.warning("Cannot access file -> '%s'", file_url)
@@ -8264,14 +8265,14 @@ class OTCS:
         """
 
         # Unzip if the path is ending in a file (then we assume it is a zip file)
-        if os.path.isfile(file_path):
+        if Path(file_path).is_file():
             try:
                 # If the ".zip" file extension is missing we add
                 # it and rename the file to avoid conflicts with
                 # extracted zips that may have a top level directory
                 # with the same name:
                 if not file_path.endswith(".zip"):
-                    os.rename(file_path, file_path + ".zip")
+                    Path(file_path).rename(file_path + ".zip")
                     file_path = file_path + ".zip"
                 with zipfile.ZipFile(file_path, "r") as zip_ref:
                     extract_path = file_path[:-4]  # Remove .zip extension
@@ -8336,7 +8337,7 @@ class OTCS:
                         current_parent_id,
                         new_parent_id,
                     )
-                    parent_id_map[os.path.join(root, dir_name)] = new_parent_id
+                    parent_id_map[Path(root) / dir_name] = new_parent_id
                     # Remember the first item created
                     if not first_response:
                         first_response = response.copy()
@@ -8344,7 +8345,7 @@ class OTCS:
             # 2. Traverse files in the current directory and
             #    upload the files into the OTCS folder:
             for file_name in files:
-                full_file_path = os.path.join(root, file_name)
+                full_file_path = Path(root) / file_name
                 if full_file_path.endswith(".zip"):
                     # Recursive call for zip files in zip files:
                     response = self.upload_directory_to_parent(
@@ -8382,7 +8383,7 @@ class OTCS:
                     first_response = response.copy()
 
         # Cleanup: remove extracted directory:
-        if extract_path and os.path.exists(extract_path) and os.path.isdir(extract_path):
+        if extract_path and Path(extract_path).exists() and Path(extract_path).is_dir():
             self.logger.debug(
                 "Delete temporary directory -> '%s' created from ZIP file...",
                 extract_path,
@@ -8494,7 +8495,7 @@ class OTCS:
             if not file_name:
                 # if path_or_url does not end with a "/"
                 # we may get the missing file name from there:
-                file_name = os.path.basename(file_url)
+                file_name = Path(file_url).name
 
             if not file_name:
                 self.logger.error("Missing file name! Cannot upload document version.")
@@ -8535,9 +8536,9 @@ class OTCS:
                 )
                 file_content = response.content
 
-            elif os.path.exists(file_url):
+            elif Path(file_url).exists():
                 self.logger.debug("Upload local file -> '%s' as new version.", file_url)
-                file_content = open(file=file_url, mode="rb")  # noqa: SIM115
+                file_content = Path(file=file_url).open(mode="rb")  # noqa: SIM115
 
             else:
                 self.logger.warning("Cannot access file -> '%s'", file_url)
@@ -9002,24 +9003,24 @@ class OTCS:
             content_encoding,
         )
 
-        if os.path.exists(file_path) and not overwrite:
+        if Path(file_path).exists() and not overwrite:
             self.logger.warning(
                 "File -> '%s' already exists and overwrite is set to False, not downloading document.",
                 file_path,
             )
             return False
 
-        directory = os.path.dirname(file_path)
-        if not os.path.exists(directory):
+        directory = str(Path(file_path).parent)
+        if not Path(directory).exists():
             self.logger.debug(
                 "Download directory -> '%s' does not exist, creating it.",
                 directory,
             )
-            os.makedirs(directory)
+            Path(directory).mkdir(parents=True, exist_ok=True)
 
         bytes_downloaded = 0
         try:
-            with open(file_path, "wb") as download_file:
+            with Path(file_path).open("wb") as download_file:
                 for chunk in response.iter_content(chunk_size=chunk_size):
                     if chunk:
                         download_file.write(chunk)
@@ -9116,7 +9117,7 @@ class OTCS:
             content = content.replace(search.encode("utf-8"), replace.encode("utf-8"))
 
         # Open file in write binary mode
-        with open(file=file_path, mode="wb") as file:
+        with Path(file=file_path).open(mode="wb") as file:
             # Write the content to the file
             file.write(content)
 
@@ -10335,12 +10336,12 @@ class OTCS:
 
         """
 
-        if not os.path.isfile(zip_file_path):
+        if not Path(zip_file_path).is_file():
             self.logger.error("Zip file -> '%s' not found.", zip_file_path)
             return False
 
         # Extract the zip file to a temporary directory
-        zip_file_folder = os.path.splitext(zip_file_path)[0]
+        zip_file_folder = Path(zip_file_path).stem
         with zipfile.ZipFile(zip_file_path, "r") as zfile:
             zfile.extractall(zip_file_folder)
 
@@ -10431,7 +10432,7 @@ class OTCS:
             return False
 
         # Create the new zip file and add all files from the directory to it
-        new_zip_file_path = os.path.dirname(zip_file_path) + "/new_" + os.path.basename(zip_file_path)
+        new_zip_file_path = str(Path(zip_file_path).parent) + "/new_" + Path(zip_file_path).name
         self.logger.debug(
             "Content of transport -> '%s' has been modified - repacking to new zip file -> '%s'...",
             zip_file_folder,
@@ -10442,25 +10443,25 @@ class OTCS:
                 zip_file_folder,
             ):  # 2nd parameter is not used, thus using _ instead of dirs
                 for file in files:
-                    file_path = os.path.join(subdir, file)
+                    file_path = Path(subdir) / file
                     rel_path = os.path.relpath(file_path, zip_file_folder)
                     zip_ref.write(file_path, arcname=rel_path)
 
         # Close the new zip file and delete the temporary directory
         zip_ref.close()
-        old_zip_file_path = os.path.dirname(zip_file_path) + "/old_" + os.path.basename(zip_file_path)
+        old_zip_file_path = str(Path(zip_file_path).parent) + "/old_" + Path(zip_file_path).name
         self.logger.debug(
             "Rename orginal transport zip file -> '%s' to -> '%s'...",
             zip_file_path,
             old_zip_file_path,
         )
-        os.rename(zip_file_path, old_zip_file_path)
+        Path(zip_file_path).rename(old_zip_file_path)
         self.logger.debug(
             "Rename new transport zip file -> '%s' to -> '%s'...",
             new_zip_file_path,
             zip_file_path,
         )
-        os.rename(new_zip_file_path, zip_file_path)
+        Path(new_zip_file_path).rename(zip_file_path)
 
         # Return success
         return True
@@ -10487,12 +10488,12 @@ class OTCS:
 
         """
 
-        if not os.path.isfile(zip_file_path):
+        if not Path(zip_file_path).is_file():
             self.logger.error("Zip file -> '%s' not found!", zip_file_path)
             return False
 
         # Extract the zip file to a temporary directory
-        zip_file_folder = os.path.splitext(zip_file_path)[0]
+        zip_file_folder = Path(zip_file_path).stem
         with zipfile.ZipFile(zip_file_path, "r") as zfile:
             zfile.extractall(zip_file_folder)
 
@@ -13955,13 +13956,13 @@ class OTCS:
 
         """
 
-        if not os.path.exists(file_path):
+        if not Path(file_path).exists():
             self.logger.error("Workspace icon file does not exist -> %s", file_path)
             return None
 
         update_workspace_icon_post_body = {
             "file_content_type": file_mimetype,
-            "file_filename": os.path.basename(file_path),
+            "file_filename": Path(file_path).name,
         }
 
         request_url = self.config()["businessWorkspacesUrl"] + "/" + str(workspace_id) + "/icons"
@@ -13975,12 +13976,12 @@ class OTCS:
             request_url,
         )
 
-        with open(file_path, "rb") as icon_file:
+        with Path(file_path).open("rb") as icon_file:
             upload_workspace_icon_post_files = [
                 (
                     "file",
                     (
-                        os.path.basename(file_path),
+                        Path(file_path).name,
                         icon_file,
                         file_mimetype,
                     ),
@@ -18026,16 +18027,16 @@ class OTCS:
             request_url,
         )
 
-        filename = os.path.basename(file_path)
-        if not os.path.exists(file_path):
+        filename = Path(file_path).name
+        if not Path(file_path).exists():
             self.logger.error(
                 "The file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(file_path),
+                str(Path(file_path).parent),
             )
             return False
 
-        with open(file=file_path, encoding="utf-8") as settings_file:
+        with Path(file=file_path).open(encoding="utf-8") as settings_file:
             settings_post_file = {
                 "file": (filename, settings_file, "text/xml"),
             }
@@ -18092,16 +18093,16 @@ class OTCS:
 
         codes_post_data = {"updateExistingCodes": update_existing_codes}
 
-        filename = os.path.basename(file_path)
-        if not os.path.exists(file_path):
+        filename = Path(file_path).name
+        if not Path(file_path).exists():
             self.logger.error(
                 "The file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(file_path),
+                str(Path(file_path).parent),
             )
             return False
 
-        with open(file=file_path, encoding="utf-8") as codes_file:
+        with Path(file=file_path).open(encoding="utf-8") as codes_file:
             codes_post_file = {
                 "file": (filename, codes_file, "text/xml"),
             }
@@ -18164,16 +18165,16 @@ class OTCS:
             "deleteSchedules": delete_schedules,
         }
 
-        filename = os.path.basename(file_path)
-        if not os.path.exists(file_path):
+        filename = Path(file_path).name
+        if not Path(file_path).exists():
             self.logger.error(
                 "The file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(file_path),
+                str(Path(file_path).parent),
             )
             return False
 
-        with open(file=file_path, encoding="utf-8") as rsis_file:
+        with Path(file=file_path).open(encoding="utf-8") as rsis_file:
             rsis_post_file = {
                 "file": (filename, rsis_file, "text/xml"),
             }
@@ -18222,16 +18223,16 @@ class OTCS:
             request_url,
         )
 
-        filename = os.path.basename(file_path)
-        if not os.path.exists(file_path):
+        filename = Path(file_path).name
+        if not Path(file_path).exists():
             self.logger.error(
                 "The file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(file_path),
+                str(Path(file_path).parent),
             )
             return False
 
-        with open(file=file_path, encoding="utf-8") as settings_file:
+        with Path(file=file_path).open(encoding="utf-8") as settings_file:
             settings_post_file = {
                 "file": (filename, settings_file, "text/xml"),
             }
@@ -18287,16 +18288,16 @@ class OTCS:
 
         codes_post_data = {"updateExistingCodes": update_existing_codes}
 
-        filename = os.path.basename(file_path)
-        if not os.path.exists(file_path):
+        filename = Path(file_path).name
+        if not Path(file_path).exists():
             self.logger.error(
                 "The file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(file_path),
+                str(Path(file_path).parent),
             )
             return False
 
-        with open(file=file_path, encoding="utf-8") as codes_file:
+        with Path(file=file_path).open(encoding="utf-8") as codes_file:
             codes_post_file = {
                 "file": (filename, codes_file, "text/xml"),
             }
@@ -18345,16 +18346,16 @@ class OTCS:
             request_url,
         )
 
-        filename = os.path.basename(file_path)
-        if not os.path.exists(file_path):
+        filename = Path(file_path).name
+        if not Path(file_path).exists():
             self.logger.error(
                 "The file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(file_path),
+                str(Path(file_path).parent),
             )
             return False
 
-        with open(file=file_path, encoding="utf-8") as locators_file:
+        with Path(file=file_path).open(encoding="utf-8") as locators_file:
             locators_post_file = {
                 "file": (filename, locators_file, "text/xml"),
             }
@@ -18410,16 +18411,16 @@ class OTCS:
 
         codes_post_data = {"includeusers": include_users}
 
-        filename = os.path.basename(file_path)
-        if not os.path.exists(file_path):
+        filename = Path(file_path).name
+        if not Path(file_path).exists():
             self.logger.error(
                 "The file -> '%s' does not exist in path -> '%s'!",
                 filename,
-                os.path.dirname(file_path),
+                str(Path(file_path).parent),
             )
             return False
 
-        with open(file=file_path, encoding="utf-8") as codes_file:
+        with Path(file=file_path).open(encoding="utf-8") as codes_file:
             codes_post_file = {
                 "file": (filename, codes_file, "text/xml"),
             }
@@ -21708,16 +21709,16 @@ class OTCS:
         with self._semaphore:
             self.download_document(node_id=node_id, file_path=file_path)
 
-        if extract_after_download and os.path.isfile(file_path):
+        if extract_after_download and Path(file_path).is_file():
             self.logger.debug("Extracting Zip file -> %s", file_path)
 
             file_with_ext = file_path + ".zip"
             try:
                 # Rename the node to ID.zip to extract it to
                 # the same name, remove zip if present:
-                if os.path.isfile(file_with_ext):
-                    os.remove(file_with_ext)
-                os.rename(file_path, file_with_ext)
+                if Path(file_with_ext).is_file():
+                    Path(file_with_ext).unlink()
+                Path(file_path).rename(file_with_ext)
             except OSError:
                 self.logger.error(
                     "Failed to rename file -> '%s' to '%s'!",
@@ -21729,7 +21730,7 @@ class OTCS:
             try:
                 with zipfile.ZipFile(file_with_ext, "r") as zfile:
                     zfile.extractall(file_path)
-                    os.remove(file_with_ext)
+                    Path(file_with_ext).unlink()
 
                 self.logger.debug(
                     "File successfully extracted, extracting nested items -> %s",
@@ -21746,14 +21747,14 @@ class OTCS:
             for root, _, files in os.walk(file_path):
                 for filename in files:
                     if filename.endswith(".zip"):
-                        file_spec = os.path.join(root, filename)
+                        file_spec = Path(root) / filename
                         try:
                             with zipfile.ZipFile(file_spec, "r") as zip_file:
                                 self.logger.debug(
                                     "Extracting nested ZIP archive -> %s",
                                     filename,
                                 )
-                                zip_file.extractall(os.path.join(root, filename[:-4]))
+                                zip_file.extractall(Path(root) / filename[:-4])
                         except Exception:
                             self.logger.error(
                                 "Failed to unzip nested ZIP file -> '%s'!",
@@ -22535,7 +22536,7 @@ class OTCS:
                 # We download only if not downloaded before or if downloaded
                 # before but forced to re-download:
                 if control_flags["download_documents"] and (
-                    not os.path.exists(file_path) or not control_flags["skip_existing_downloads"]
+                    not Path(file_path).exists() or not control_flags["skip_existing_downloads"]
                 ):
                     mime_type = self.get_result_value(response=node, key="mime_type")
                     extract_after_download = mime_type == "application/x-zip-compressed" and extract_zip
@@ -22628,8 +22629,8 @@ class OTCS:
         #
 
         # Create folder if it does not exist
-        if download_documents and not os.path.exists(self._download_dir):
-            os.makedirs(self._download_dir)
+        if download_documents and not Path(self._download_dir).exists():
+            Path(self._download_dir).mkdir(parents=True, exist_ok=True)
 
         # These won't change during processing - stays the same for all nodes:
         filter_workspace_data = {

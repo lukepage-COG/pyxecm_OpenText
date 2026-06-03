@@ -1,6 +1,7 @@
 """Settings for Customizer execution."""
 
 import os
+from pathlib import Path
 import tempfile
 from ipaddress import ip_address
 from typing import Self
@@ -276,7 +277,7 @@ class CustomizerSettingsK8S(BaseModel):
 
     enabled: bool = Field(default=True, description="Enable/Disable the K8s integration")
     kubeconfig_file: str = Field(
-        default=os.path.expanduser("~/.kube/config"),
+        default=str(Path("~/.kube/config").expanduser()),
         description="Path to the kubeconfig file",
     )
     namespace: str = Field(default="default", description="Name of the namespace")
@@ -413,7 +414,7 @@ class Settings(BaseSettings):
     """Class for all settings."""
 
     cust_log_file: str = Field(
-        default=os.path.join(tempfile.gettempdir(), "customizing.log"),
+        default=Path(tempfile.gettempdir()) / "customizing.log",
         description="Logfile for Customizer execution",
     )
 

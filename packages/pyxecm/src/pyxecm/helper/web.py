@@ -8,6 +8,7 @@ __email__ = "mdiefenb@opentext.com"
 
 import logging
 import os
+from pathlib import Path
 import platform
 import socket
 import sys
@@ -307,19 +308,19 @@ class HTTP:
             return False
 
         try:
-            directory = os.path.dirname(filename)
-            if not os.path.exists(directory):
+            directory = str(Path(filename).parent)
+            if not Path(directory).exists():
                 self.logger.info(
                     "Download directory -> '%s' does not exist, creating it.",
                     directory,
                 )
-                os.makedirs(directory)
-            with open(filename, "wb") as download_file:
+                Path(directory).mkdir(parents=True, exist_ok=True)
+            with Path(filename).open("wb") as download_file:
                 download_file.writelines(response.iter_content(chunk_size=chunk_size))
             self.logger.debug(
                 "File downloaded successfully as -> '%s' (size -> %s).",
                 filename,
-                self.human_readable_size(os.path.getsize(filename)),
+                self.human_readable_size(Path(filename).stat().st_size),
             )
         except (OSError, requests.exceptions.RequestException):
             self.logger.error(

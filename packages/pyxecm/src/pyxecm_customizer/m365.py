@@ -12,6 +12,7 @@ __email__ = "mdiefenb@opentext.com"
 import json
 import logging
 import os
+from pathlib import Path
 import platform
 import re
 import sys
@@ -1370,13 +1371,10 @@ class M365:
                 file_extension = "png"
             else:
                 file_extension = "img"  # Default extension if type is unknown
-            file_path = os.path.join(
-                photo_path,
-                f"{user_id}.{file_extension}",
-            )
+            file_path = Path(photo_path) / f"{user_id}.{file_extension}"
 
             try:
-                with open(file_path, "wb") as file:
+                with Path(file_path).open("wb") as file:
                     file.writelines(response.iter_content(chunk_size=8192))
             except OSError:
                 self.logger.error(
@@ -1414,13 +1412,13 @@ class M365:
         request_header = self.request_header("image/*")
 
         # Check if the photo file exists
-        if not os.path.isfile(photo_path):
+        if not Path(photo_path).is_file():
             self.logger.error("Photo file -> %s not found!", photo_path)
             return None
 
         try:
             # Read the photo file as binary data
-            with open(photo_path, "rb") as image_file:
+            with Path(photo_path).open("rb") as image_file:
                 photo_data = image_file.read()
         except OSError:
             # Handle any errors that occurred while reading the photo file
@@ -3027,7 +3025,7 @@ class M365:
             )
             return None
 
-        if not os.path.exists(app_path):
+        if not Path(app_path).exists():
             self.logger.error("M365 Teams app file -> %s does not exist!", app_path)
             return None
 
@@ -3046,7 +3044,7 @@ class M365:
         # (not the application credentials (client_id, client_secret))
         request_header = self.request_header_user(content_type="application/zip")
 
-        with open(app_path, "rb") as f:
+        with Path(app_path).open("rb") as f:
             app_data = f.read()
 
         with zipfile.ZipFile(app_path) as z:

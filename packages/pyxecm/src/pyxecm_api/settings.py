@@ -1,6 +1,7 @@
 """Settings for Customizer execution."""
 
 import os
+from pathlib import Path
 import tempfile
 import uuid
 from typing import Literal
@@ -54,13 +55,13 @@ class CustomizerAPISettings(BaseSettings):
     )
 
     temp_dir: str = Field(
-        default=os.path.join(tempfile.gettempdir(), "customizer"),
+        default=Path(tempfile.gettempdir()) / "customizer",
         description="location of the temp folder. Used for temporary files during the payload execution",
     )
 
     loglevel: Literal["INFO", "DEBUG", "WARNING", "ERROR"] = "INFO"
     logfolder: str = Field(
-        default=os.path.join(tempfile.gettempdir(), "customizer"),
+        default=Path(tempfile.gettempdir()) / "customizer",
         description="Logfolder for Customizer logfiles",
     )
     logfile: str = Field(
@@ -122,7 +123,7 @@ class CustomizerAPISettings(BaseSettings):
         description="Prefix for the CSAI",
     )
 
-    upload_folder: str = Field(default=os.path.join(tempfile.gettempdir(), "upload"), description="Folder for uploads")
+    upload_folder: str = Field(default=Path(tempfile.gettempdir()) / "upload", description="Folder for uploads")
 
     upload_key: str = Field(default=str(uuid.uuid4()), description="Upload key for the Logs")
 

@@ -59,6 +59,7 @@ __email__ = "mdiefenb@opentext.com"
 
 import logging
 import os
+from pathlib import Path
 import re
 import subprocess
 import tempfile
@@ -159,12 +160,7 @@ class BrowserAutomation:
         """
 
         if not download_directory:
-            download_directory = os.path.join(
-                tempfile.gettempdir(),
-                "browser_automations",
-                self.sanitize_filename(filename=automation_name),
-                "downloads",
-            )
+            download_directory = Path(tempfile.gettempdir()) / "browser_automations" / self.sanitize_filename(filename=automation_name) / "downloads"
 
         if logger != default_logger:
             self.logger = logger.getChild("browserautomation")
@@ -186,15 +182,10 @@ class BrowserAutomation:
 
         self.wait_until = wait_until or DEFAULT_WAIT_UNTIL_STRATEGY
 
-        self.screenshot_directory = os.path.join(
-            tempfile.gettempdir(),
-            "browser_automations",
-            self.screenshot_names,
-            "screenshots",
-        )
+        self.screenshot_directory = Path(tempfile.gettempdir()) / "browser_automations" / self.screenshot_names / "screenshots"
         self.logger.debug("Creating screenshot directory... -> %s", self.screenshot_directory)
-        if self.take_screenshots and not os.path.exists(self.screenshot_directory):
-            os.makedirs(self.screenshot_directory)
+        if self.take_screenshots and not Path(self.screenshot_directory).exists():
+            Path(self.screenshot_directory).mkdir(parents=True, exist_ok=True)
 
         if os.getenv("HTTP_PROXY"):
             self.proxy = {
@@ -1234,7 +1225,7 @@ class BrowserAutomation:
 
             download = download_info.value
             filename = download.suggested_filename
-            save_path = os.path.join(self.download_directory, filename)
+            save_path = Path(self.download_directory) / filename
             download.save_as(save_path)
         except Exception as e:
             self.logger.error("Download failed; error -> %s", str(e))
