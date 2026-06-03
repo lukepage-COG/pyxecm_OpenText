@@ -1,9 +1,8 @@
 """Settings for Customizer execution."""
 
-import os
-from pathlib import Path
 import tempfile
 import uuid
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field

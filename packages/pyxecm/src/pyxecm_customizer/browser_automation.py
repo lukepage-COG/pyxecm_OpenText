@@ -59,13 +59,13 @@ __email__ = "mdiefenb@opentext.com"
 
 import logging
 import os
-from pathlib import Path
 import re
 import subprocess
 import tempfile
 import time
 import traceback
 from http import HTTPStatus
+from pathlib import Path
 from types import TracebackType
 
 default_logger = logging.getLogger("pyxecm_customizer.browser_automation")

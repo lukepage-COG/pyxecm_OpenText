@@ -7,13 +7,12 @@ __maintainer__ = "Dr. Marc Diefenbruch"
 __email__ = "mdiefenb@opentext.com"
 
 import logging
-import os
-from pathlib import Path
 import platform
 import socket
 import sys
 import time
 from importlib.metadata import version
+from pathlib import Path
 from urllib.parse import urlparse
 
 import requests

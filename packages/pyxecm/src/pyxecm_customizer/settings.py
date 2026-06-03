@@ -1,9 +1,9 @@
 """Settings for Customizer execution."""
 
 import os
-from pathlib import Path
 import tempfile
 from ipaddress import ip_address
+from pathlib import Path
 from typing import Self
 
 from pydantic import AliasChoices, BaseModel, Field, HttpUrl, SecretStr, model_validator

@@ -11,10 +11,9 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import os
-from pathlib import Path
 import time
 from http import HTTPStatus
+from pathlib import Path
 
 import requests
 

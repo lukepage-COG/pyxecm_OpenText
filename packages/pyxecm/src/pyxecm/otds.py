@@ -19,9 +19,6 @@ __email__ = "mdiefenb@opentext.com"
 import base64
 import json
 import logging
-from typing import Any
-import os
-from pathlib import Path
 import platform
 import sys
 import tempfile
@@ -29,6 +26,8 @@ import time
 import urllib.parse
 from http import HTTPStatus
 from importlib.metadata import version
+from pathlib import Path
+from typing import Any
 
 import requests
 from opentelemetry import trace

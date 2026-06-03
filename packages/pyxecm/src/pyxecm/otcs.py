@@ -19,10 +19,8 @@ import html
 import io
 import json
 import logging
-from typing import Any
 import mimetypes
 import os
-from pathlib import Path
 import platform
 import re
 import shutil
@@ -39,7 +37,9 @@ from datetime import UTC, datetime
 from functools import cache
 from http import HTTPStatus
 from importlib.metadata import version
+from pathlib import Path
 from queue import Empty, LifoQueue, Queue
+from typing import Any
 
 import requests
 import websockets

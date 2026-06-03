@@ -7,13 +7,12 @@ __maintainer__ = "Dr. Marc Diefenbruch"
 __email__ = "mdiefenb@opentext.com"
 
 import fnmatch
-import glob
 import logging
 import os
-from pathlib import Path
 import re
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from queue import Queue
 
 import xmltodict

@@ -45,7 +45,6 @@ import gzip
 import json
 import logging
 import os
-from pathlib import Path
 import random
 import re
 import string
@@ -57,6 +56,7 @@ import traceback
 from ast import literal_eval
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import hcl2.api
@@ -1596,7 +1596,7 @@ class Payload:
 
         full_path = Path(tempfile.gettempdir()) / "customizer" / "status_files" / file_name
         # Ensure the directory exists
-        Path(str(Path(full_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
+        Path(full_path).parent.mkdir(parents=True, exist_ok=True)
 
         with Path(full_path).open(mode="w", encoding="utf-8") as localfile:
             localfile.write(json.dumps(payload_section, indent=2))
@@ -9353,7 +9353,7 @@ class Payload:
 
             photo_path = Path(tempfile.gettempdir()) / "customizer" / "user_photos" / photo_name
             # Ensure the directory exists
-            Path(str(Path(photo_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
+            Path(photo_path).parent.mkdir(parents=True, exist_ok=True)
 
             result = self._otcs.download_document(
                 node_id=photo_id,
@@ -9399,7 +9399,7 @@ class Payload:
             photo_name = self._otcs.get_result_value(response=response, key="name")
             photo_path = Path(tempfile.gettempdir()) / "customizer" / "user_photos" / photo_name
             # Ensure the directory exists
-            Path(str(Path(photo_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
+            Path(photo_path).parent.mkdir(parents=True, exist_ok=True)
             result = self._otcs.download_document(
                 node_id=photo_id,
                 file_path=photo_path,
@@ -9546,7 +9546,7 @@ class Payload:
             photo_name = self._otcs.get_result_value(response=response, key="name")
             photo_path = Path(tempfile.gettempdir()) / "customizer" / "user_photos" / photo_name
             # Ensure the directory exists
-            Path(str(Path(photo_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
+            Path(photo_path).parent.mkdir(parents=True, exist_ok=True)
 
             # Check if it is not yet downloaded:
             if not Path(photo_path).is_file():
@@ -9709,7 +9709,7 @@ class Payload:
             photo_name = self._otcs.get_result_value(response=response, key="name")
             photo_path = Path(tempfile.gettempdir()) / "customizer" / "user_photos" / photo_name
             # Ensure the directory exists
-            Path(str(Path(photo_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
+            Path(photo_path).parent.mkdir(parents=True, exist_ok=True)
 
             # Check if it is not yet downloaded:
             if not Path(photo_path).is_file():
@@ -12667,7 +12667,7 @@ class Payload:
                     mime_type = "image/png"
                 file_path = Path(tempfile.gettempdir()) / "customizer" / "workspace_images" / image_nickname
                 # Ensure the directory exists
-                Path(str(Path(file_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
+                Path(file_path).parent.mkdir(parents=True, exist_ok=True)
                 result = self._otcs.download_document(node_id=node_id, file_path=file_path)
                 if not result:
                     self.logger.error(
@@ -20317,7 +20317,7 @@ class Payload:
             file_name += ".zip"
         full_path = Path(tempfile.gettempdir()) / "customizer" / "data_sources" / file_name
         # Ensure the directory exists
-        Path(str(Path(full_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
+        Path(full_path).parent.mkdir(parents=True, exist_ok=True)
 
         # We also want to keep the row numbers (index):
         if not data.save_json_data(
@@ -20424,7 +20424,7 @@ class Payload:
             file_name += ".zip"
         full_path = Path(tempfile.gettempdir()) / "customizer" / "data_sources" / file_name
         # Ensure the directory exists
-        Path(str(Path(full_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
+        Path(full_path).parent.mkdir(parents=True, exist_ok=True)
 
         # Check if the data source file has been uploaded before.
         # This can happen if we re-run the python container.

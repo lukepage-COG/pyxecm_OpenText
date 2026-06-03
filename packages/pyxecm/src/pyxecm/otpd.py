@@ -8,13 +8,12 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import os
-from pathlib import Path
 import platform
 import sys
 import time
 from http import HTTPStatus
 from importlib.metadata import version
+from pathlib import Path
 
 import requests
 from requests.auth import HTTPBasicAuth

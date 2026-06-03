@@ -10,11 +10,11 @@ import base64
 import json
 import logging
 import os
-from pathlib import Path
 import platform
 import sys
 import time
 from importlib.metadata import version
+from pathlib import Path
 
 import requests
 

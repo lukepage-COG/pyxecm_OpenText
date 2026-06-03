@@ -11,8 +11,6 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import os
-from pathlib import Path
 import platform
 import sys
 import tempfile
@@ -22,6 +20,7 @@ import urllib.parse
 from collections.abc import Callable
 from functools import cache
 from importlib.metadata import version
+from pathlib import Path
 from typing import Any
 
 import requests

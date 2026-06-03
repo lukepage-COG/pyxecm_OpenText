@@ -17,6 +17,7 @@ import sys
 import time
 from http import HTTPStatus
 from importlib.metadata import version
+from pathlib import Path
 
 import requests
 

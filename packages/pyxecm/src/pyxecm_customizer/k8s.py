@@ -15,9 +15,9 @@ __email__ = "mdiefenb@opentext.com"
 
 import logging
 import os
-from pathlib import Path
 import time
 from datetime import UTC, datetime
+from pathlib import Path
 
 from kubernetes import client, config
 from kubernetes.client import (

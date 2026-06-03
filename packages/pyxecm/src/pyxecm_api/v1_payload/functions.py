@@ -9,8 +9,8 @@ __email__ = "mdiefenb@opentext.com"
 import asyncio
 import logging
 import os
-from pathlib import Path
 from collections.abc import AsyncGenerator
+from pathlib import Path
 
 import anyio
 from opentelemetry import trace

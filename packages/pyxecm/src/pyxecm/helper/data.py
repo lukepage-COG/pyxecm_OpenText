@@ -15,11 +15,11 @@ __email__ = "mdiefenb@opentext.com"
 import json
 import logging
 import os
-from typing import Any
-from pathlib import Path
 import re
 import threading
 from io import StringIO
+from pathlib import Path
+from typing import Any
 
 import pandas as pd
 import requests
@@ -444,7 +444,7 @@ class Data:
             )
 
 
-    def append(self, add_data: pd.DataFrame | list | dict | "Data", enforce_schema: bool = False) -> bool:
+    def append(self, add_data: "pd.DataFrame | list | dict | Data", enforce_schema: bool = False) -> bool:
         """Append additional data to the data frame.
 
         Note: This method is not thread-safe; locking must be handled by the caller.
@@ -851,8 +851,8 @@ class Data:
         # Save data to JSON file
         try:
             if self._df is not None:
-                if not Path(str(Path(json_path).parent).exists()):
-                    Path(str(Path(json_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
+                if not Path(json_path).parent.exists():
+                    Path(json_path).parent.mkdir(parents=True, exist_ok=True)
 
                 # index parameter is only allowed if orient has one of the following values:
                 if orient in ("columns", "index", "table", "split"):
@@ -3613,7 +3613,7 @@ class Data:
         self._df = self._df[~mask]
 
 
-    def get_match_mask(self, match_with: "Data" | pd.DataFrame, on_columns: list[str]) -> pd.Series:
+    def get_match_mask(self, match_with: "Data | pd.DataFrame", on_columns: list[str]) -> pd.Series:
         """Find rows in this Data object that match another Data object or DataFrame.
 
         Args:

@@ -20,14 +20,13 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import os
-from pathlib import Path
 import platform
 import sys
 import time
 import urllib.parse
 from http import HTTPStatus
 from importlib.metadata import version
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import requests

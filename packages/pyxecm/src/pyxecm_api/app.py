@@ -8,11 +8,11 @@ __email__ = "mdiefenb@opentext.com"
 
 import logging
 import os
-from pathlib import Path
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from importlib.metadata import version
+from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI
