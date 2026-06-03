@@ -222,7 +222,6 @@ class BrowserAutomation:
         self.set_timeout(wait_time=default_timeout)
         self.logger.info("Browser automation initialized.")
 
-    # end method definition
 
     def setup_playwright(self, browser: str) -> bool:
         """Initialize Playwright browser automation.
@@ -330,7 +329,6 @@ class BrowserAutomation:
 
         return result
 
-    # end method definition
 
     def install_browser(self, browser: str) -> bool:
         """Install a browser with a provided name in Playwright.
@@ -362,7 +360,6 @@ class BrowserAutomation:
 
         return True
 
-    # end method definition
 
     def sanitize_filename(self, filename: str) -> str:
         """Sanitize a string to be safe for use as a filename.
@@ -388,7 +385,6 @@ class BrowserAutomation:
 
         return filename
 
-    # end method definition
 
     def take_screenshot(self, suffix: str = "") -> bool:
         """Take a screenshot of the current browser window and save it as PNG file.
@@ -417,7 +413,6 @@ class BrowserAutomation:
 
         return True
 
-    # end method definition
 
     def get_page(self, url: str = "", wait_until: str | None = None) -> bool:
         """Load a page into the browser based on a given URL.
@@ -479,7 +474,6 @@ class BrowserAutomation:
 
         return True
 
-    # end method definition
 
     def get_title(
         self,
@@ -531,7 +525,6 @@ class BrowserAutomation:
 
         return None
 
-    # end method definition
 
     def scroll_to_element(self, element: Locator) -> None:
         """Scroll an element into view to make it clickable.
@@ -551,7 +544,6 @@ class BrowserAutomation:
         except PlaywrightError as e:
             self.logger.warning("Cannot scroll element -> %s into view; error -> %s", str(element), str(e))
 
-    # end method definition
 
     def get_locator(
         self,
@@ -665,7 +657,6 @@ class BrowserAutomation:
 
         return locator
 
-    # end method definition
 
     def find_elem(
         self,
@@ -794,7 +785,6 @@ class BrowserAutomation:
 
             return locator
 
-        # end def do_find():
 
         locator = do_find()
 
@@ -819,7 +809,6 @@ class BrowserAutomation:
 
         return locator
 
-    # end method definition
 
     def find_elem_and_click(
         self,
@@ -1051,7 +1040,6 @@ class BrowserAutomation:
 
         return success
 
-    # end method definition
 
     def find_elem_and_set(
         self,
@@ -1199,7 +1187,6 @@ class BrowserAutomation:
 
         return success
 
-    # end method definition
 
     def find_element_and_download(
         self,
@@ -1263,7 +1250,6 @@ class BrowserAutomation:
 
         return save_path
 
-    # end method definition
 
     def check_elems_exist(
         self,
@@ -1476,7 +1462,6 @@ class BrowserAutomation:
 
         return (success, matching_elements_count)
 
-    # end method definition
 
     def run_login(
         self,
@@ -1566,7 +1551,6 @@ class BrowserAutomation:
 
         return True
 
-    # end method definition
 
     def set_timeout(self, wait_time: float) -> None:
         """Wait for the browser to finish tasks (e.g. fully loading a page).
@@ -1585,7 +1569,6 @@ class BrowserAutomation:
         self.logger.debug("Setting navigation timeout to -> %.2f seconds...", wait_time)
         self.page.set_default_navigation_timeout(wait_time * 1000)
 
-    # end method definition
 
     def end_session(self) -> None:
         """End the browser session and close the browser."""
@@ -1601,14 +1584,12 @@ class BrowserAutomation:
         self.playwright.stop()
         self.logger.info("Browser automation has ended.")
 
-    # end method definition
 
     def __enter__(self) -> object:
         """Enable use with 'with' statement (context manager block)."""
 
         return self
 
-    # end method definition
 
     def __exit__(
         self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback_obj: TracebackType | None
@@ -1636,4 +1617,3 @@ class BrowserAutomation:
 
         self.end_session()
 
-    # end method definition

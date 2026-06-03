@@ -52,7 +52,6 @@ class XML:
 
         return tag.split("}", 1)[-1]
 
-    # end method definition
 
     @classmethod
     def xml_to_dict(cls, xml_string: str, encode: bool = False, include_attributes: bool = False) -> dict:
@@ -129,7 +128,6 @@ class XML:
 
         return xml_element_to_dict(root)
 
-    # end method definition
 
     @classmethod
     def load_xml_file(
@@ -201,7 +199,6 @@ class XML:
 
         return results
 
-    # end method definition
 
     @classmethod
     def load_xml_files_from_directory(
@@ -327,7 +324,6 @@ class XML:
 
         return results
 
-    # end method definition
 
     @classmethod
     def load_xml_files_from_directories(
@@ -423,7 +419,6 @@ class XML:
                     file_path,
                 )
 
-        # end method process_xml_file
 
         def process_directory_or_zip(path_to_root: str) -> list | None:
             """Process all files in a directory or zip file.
@@ -475,7 +470,6 @@ class XML:
                             zip_file_folder,
                         )
                     path_to_root = zip_file_folder
-                # end if path_to_root.endswith(".zip")
 
                 # Use inner threading to process files within the directory
                 with ThreadPoolExecutor(
@@ -507,7 +501,6 @@ class XML:
                     path_to_root,
                 )
 
-        # end method process_directory_or_zip
 
         try:
             # Resolve wildcards in the directories list
@@ -571,7 +564,6 @@ class XML:
 
         return results
 
-    # end method definition
 
     @classmethod
     def get_xml_element(
@@ -601,7 +593,6 @@ class XML:
 
         return element
 
-    # end method definition
 
     @classmethod
     def modify_xml_element(
@@ -632,7 +623,6 @@ class XML:
         else:
             logger.warning("XML Element -> %s not found.", xpath)
 
-    # end method definition
 
     @classmethod
     def search_setting(
@@ -686,7 +676,6 @@ class XML:
         else:
             return None
 
-    # end method definition
 
     @classmethod
     def replace_setting(
@@ -739,7 +728,6 @@ class XML:
 
         return new_text
 
-    # end method definition
 
     @classmethod
     def replace_in_xml_files(
@@ -1058,8 +1046,6 @@ class XML:
                             f.write(new_contents)
 
                         found = True
-                    # end if xml_modified
-                # end if xpath
 
                 # Not using xpath - do a simple search and replace:
                 else:
@@ -1080,12 +1066,9 @@ class XML:
                         with open(file_path, "w", encoding="UTF-8") as f:
                             f.write(new_contents)
                         found = True
-            # end for files
-        # end for subdir
 
         return found
 
-    # end method definition
 
     @classmethod
     def extract_from_xml_files(
@@ -1161,4 +1144,3 @@ class XML:
 
         return extracted_data_list
 
-    # end method definition

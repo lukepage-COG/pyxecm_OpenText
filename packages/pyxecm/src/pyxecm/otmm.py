@@ -169,7 +169,6 @@ class OTMM:
         self._asset_download_locks: dict = {}
         self._asset_download_locks_lock = threading.Lock()
 
-    # end method definition
 
     def thread_wrapper(self, target: Callable, *args: tuple, **kwargs: dict) -> None:
         """Wrap around threads to catch exceptions during exection.
@@ -194,7 +193,6 @@ class OTMM:
             )
             self.logger.error(traceback.format_exc())
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -207,7 +205,6 @@ class OTMM:
 
         return self._config
 
-    # end method definition
 
     def get_data(self) -> Data:
         """Get the data frame that holds all processed Media Management assets.
@@ -220,7 +217,6 @@ class OTMM:
 
         return self._data
 
-    # end method definition
 
     def authenticate(self) -> str | None:
         """Authenticate at OTMM.
@@ -275,7 +271,6 @@ class OTMM:
 
         return self._access_token
 
-    # end method definition
 
     def get_lookup_domains(self) -> dict | None:
         """Get all OTMM lookup domains.
@@ -338,7 +333,6 @@ class OTMM:
 
         return response.json()
 
-    # end method definition
 
     def get_lookup_domain(self, domain: str) -> dict | None:
         """Get OTMM lookup domain with a given name.
@@ -406,7 +400,6 @@ class OTMM:
 
         return response.json()
 
-    # end method definition
 
     def get_lookup_domain_values(self, domain: str) -> list | None:
         """Get values of an OTMM lookup domain with a given name.
@@ -433,7 +426,6 @@ class OTMM:
 
         return values
 
-    # end method definition
 
     def get_products(self, domain: str = "OTMM.DOMAIN.OTM_PRODUCT") -> dict:
         """Get a dictionary with product names (keys) and IDs (values).
@@ -461,7 +453,6 @@ class OTMM:
             for product in lookup_products
         }
 
-    # end method definition
 
     def get_business_units(
         self,
@@ -485,7 +476,6 @@ class OTMM:
         # Keys are the product names, values the product IDs:
         return {bu.get("display_value").strip(): bu.get("field_value").get("value") for bu in lookup_bus}
 
-    # end method definition
 
     def get_asset(self, asset_id: str) -> dict | None:
         """Get an asset based on its ID.
@@ -613,7 +603,6 @@ class OTMM:
 
         return response.json()
 
-    # end method definition
 
     def get_business_unit_assets(
         self,
@@ -725,7 +714,6 @@ class OTMM:
 
         return asset_list
 
-    # end method definition
 
     def get_product_assets(
         self,
@@ -832,7 +820,6 @@ class OTMM:
 
         return asset_list
 
-    # end method definition
 
     def download_asset(
         self,
@@ -921,7 +908,6 @@ class OTMM:
                     with open(file_name, "wb") as f:
                         f.writelines(response.iter_content(chunk_size=8192))
                     success = True
-            # end try:
 
             except HTTPError as http_error:
                 self.logger.error("HTTP error requesting -> %s; error -> %s", request_url, str(http_error))
@@ -933,7 +919,6 @@ class OTMM:
                 )
             except Exception:
                 self.logger.error("Unexpected error requesting -> %s!", request_url)
-        # end with asset_lock:
 
         # Cleanup: Remove the lock for this asset if it's not currently in use by any thread.
         with self._asset_download_locks_lock:
@@ -950,11 +935,9 @@ class OTMM:
                     asset_lock.release()
             # If acquire() failed, some other thread is still using or waiting for the lock,
             # so do not delete it yet.
-        # end self._asset_download_locks_lock:
 
         return success
 
-    # end method definition
 
     def remove_stale_download(
         self,
@@ -990,7 +973,6 @@ class OTMM:
 
         return False
 
-    # end method definition
 
     def search_assets(self, payload: dict) -> dict | None:
         """Search an asset based on the given parameters / criterias.
@@ -1095,7 +1077,6 @@ class OTMM:
 
         return response.json()
 
-    # end method definition
 
     def get_asset_details(
         self,
@@ -1295,7 +1276,6 @@ class OTMM:
 
         return response.json()
 
-    # end method definition
 
     def prepare_asset_data(self, asset_id: str, asset: dict | None = None) -> dict:
         """Prepare the asset data for the Pandas Data frame.
@@ -1457,7 +1437,6 @@ class OTMM:
 
         return result
 
-    # end method definition
 
     def load_assets(
         self,
@@ -1718,8 +1697,6 @@ class OTMM:
                 # attribute for this:
                 asset_list += [asset for asset in assets if "content_size" in asset]
 
-            # end for bu_name...
-        # end if load_business_units
 
         total_count = len(asset_list)
 
@@ -1769,7 +1746,6 @@ class OTMM:
 
         return True
 
-    # end method definition
 
     def load_assets_worker(
         self,
@@ -1972,7 +1948,6 @@ class OTMM:
             # have to do this AFTER calling prepare_asset_data() to
             # have the custom field available:
             asset["asset_title"] = asset.get("OTMM_CUSTOM_FIELD_TITLE") or asset_name
-        # end for asset in worker_asset_list:
 
         # Now we add the assets processed by the worker
         # to the Pandas Data Frame in the Data class:
@@ -1993,4 +1968,3 @@ class OTMM:
             else:
                 self._data.append(worker_asset_list)
 
-    # end method definition

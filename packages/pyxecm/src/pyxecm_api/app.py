@@ -98,7 +98,6 @@ async def lifespan(
     PAYLOAD_LIST.stop_payload_processing()
 
 
-# end function lifespan
 
 app = FastAPI(
     docs_url="/api",

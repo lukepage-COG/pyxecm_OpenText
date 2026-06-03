@@ -6,8 +6,6 @@ This code implements a class called "Data" which is a wrapper
 to Pandas data frame.
 """
 
-from __future__ import annotations  # to allow using `Data` within class definitions
-
 __author__ = "Dr. Marc Diefenbruch"
 __copyright__ = "Copyright (C) 2024-2025, OpenText"
 __credits__ = ["Kai-Philip Gatzweiler"]
@@ -155,7 +153,6 @@ class Data:
         else:
             self._index_columns = None
 
-    # end method definition
 
     def __len__(self) -> int:
         """Return lenght of the embedded Pandas data frame object.
@@ -172,7 +169,6 @@ class Data:
             return len(self._df)
         return 0
 
-    # end method definition
 
     def __str__(self) -> str:
         """Return the string representation of the Pandas data frame object.
@@ -191,7 +187,6 @@ class Data:
 
         return "<Data object>: internal data frame is not initialized!"
 
-    # end method definition
 
     def __repr__(self) -> str:
         """Return a technical representation of the Data object."""
@@ -201,7 +196,6 @@ class Data:
 
         return "Data(Uninitialized)"
 
-    # end method definition
 
     def __getitem__(self, column: any) -> pd.Series:
         """Return the column corresponding to the key from the data frame.
@@ -227,7 +221,6 @@ class Data:
 
         return self._df[column]
 
-    # end method definition
 
     def __setitem__(self, key: any, value: any) -> None:
         """Assign data to a column or create a new column.
@@ -253,7 +246,6 @@ class Data:
         if self._schema and key in self._schema:
             self._df[key] = self._df[key].astype(self._schema[key])
 
-    # end method definition
 
     def __delitem__(self, key: any) -> None:
         """Remove a column from the DataFrame.
@@ -274,7 +266,6 @@ class Data:
         # Protection and deletion logic...
         self._df.drop(columns=key, inplace=True)
 
-    # end method definition
 
     def __getattr__(self, attr: str) -> any:
         """Delegate attribute access to the internal pandas DataFrame.
@@ -308,7 +299,6 @@ class Data:
                 self.logger.error("Attribute -> '%s' not found in Data or internal pandas data frame", attr)
             raise AttributeError(error_message) from None
 
-    # end method definition
 
     def lock(self) -> threading.Lock:
         """Return the threading lock object.
@@ -320,7 +310,6 @@ class Data:
 
         return self._lock
 
-    # end method definition
 
     def get_data_frame(self) -> pd.DataFrame:
         """Get the Pandas data frame object.
@@ -332,7 +321,6 @@ class Data:
 
         return self._df
 
-    # end method definition
 
     def set_data_frame(self, df: pd.DataFrame) -> None:
         """Set the Pandas data frame object.
@@ -344,7 +332,6 @@ class Data:
 
         self._df = df
 
-    # end method definition
 
     def get_columns(self) -> list | None:
         """Get the list of column names of the data frame.
@@ -360,7 +347,6 @@ class Data:
 
         return self._df.columns
 
-    # end method definition
 
     def print_info(
         self,
@@ -455,7 +441,6 @@ class Data:
                 self._df.describe(include="object"),
             )
 
-    # end method definition
 
     def append(self, add_data: pd.DataFrame | list | dict | Data, enforce_schema: bool = False) -> bool:
         """Append additional data to the data frame.
@@ -581,7 +566,6 @@ class Data:
             self.logger.error("Failed to apply schema: %s", str(e))
             raise
 
-    # end method definition
 
     def merge(
         self,
@@ -657,7 +641,6 @@ class Data:
 
         return None
 
-    # end method definition
 
     def strip(self, columns: list | None = None, inplace: bool = True) -> pd.DataFrame:
         """Strip leading and trailing spaces from specified columns in a data frame.
@@ -694,7 +677,6 @@ class Data:
 
         return df
 
-    # end method definition
 
     def load_json_data(
         self,
@@ -812,7 +794,6 @@ class Data:
 
         return True
 
-    # end method definition
 
     def save_json_data(
         self,
@@ -932,7 +913,6 @@ class Data:
 
         return True
 
-    # end method definition
 
     def load_excel_data(
         self,
@@ -1056,7 +1036,6 @@ class Data:
 
         return True
 
-    # end method definition
 
     def save_excel_data(
         self,
@@ -1131,7 +1110,6 @@ class Data:
 
         return True
 
-    # end method definition
 
     def load_csv_data(
         self,
@@ -1262,7 +1240,6 @@ class Data:
 
         return True
 
-    # end method definition
 
     def load_xml_data(
         self,
@@ -1370,7 +1347,6 @@ class Data:
 
         return True
 
-    # end method definition
 
     def load_directory(self, path_to_root: str) -> bool:
         """Load directory structure into Pandas data frame.
@@ -1453,7 +1429,6 @@ class Data:
 
         return True
 
-    # end method definition
 
     def load_xml_directory(
         self,
@@ -1532,7 +1507,6 @@ class Data:
 
         return True
 
-    # end method definition
 
     def load_web_links(
         self,
@@ -1604,7 +1578,6 @@ class Data:
 
         return result_list
 
-    # end method definition
 
     def load_web(
         self,
@@ -1701,7 +1674,6 @@ class Data:
 
         return True
 
-    # end method definition
 
     def partitionate(self, number: int) -> list:
         """Partition a data frame into equally sized partitions.
@@ -1750,7 +1722,6 @@ class Data:
 
         return partitions
 
-    # end method definition
 
     def partitionate_by_column(self, column_name: str) -> list | None:
         """Partition a data frame based on equal values in a specified column.
@@ -1800,7 +1771,6 @@ class Data:
 
         return partitions
 
-    # end method definition
 
     def deduplicate(self, unique_fields: list, inplace: bool = True) -> pd.DataFrame:
         """Remove dupclicate rows that have all fields in unique_fields in common.
@@ -1827,7 +1797,6 @@ class Data:
             df = df.reset_index(drop=True, inplace=False)
             return df
 
-    # end method definition
 
     def sort(self, sort_fields: list, inplace: bool = True, ascending: bool = True) -> pd.DataFrame | None:
         """Sort the data frame based on one or multiple fields.
@@ -1875,7 +1844,6 @@ class Data:
             df = df.reset_index(drop=True, inplace=False)
             return df
 
-    # end method definition
 
     def flatten(self, parent_field: str, flatten_fields: list, concatenator: str = "_") -> None:
         """Flatten a sub-dictionary by copying selected fields to the parent dictionary.
@@ -1926,7 +1894,6 @@ class Data:
                 lambda x, sub_field=flatten_field: x.get(sub_field, None) if isinstance(x, dict) else None,
             )
 
-    # end method definition
 
     def explode_and_flatten(
         self,
@@ -1981,7 +1948,6 @@ class Data:
                 return row[sub]
             return ""
 
-        # end def update_column()
 
         def string_to_list(value: str) -> list:
             """Convert a string to a list by splitting it using a specified separator.
@@ -2016,7 +1982,6 @@ class Data:
 
             return return_list
 
-        # end def string_to_list()
 
         #
         # Start of main method:
@@ -2126,7 +2091,6 @@ class Data:
 
         return self._df
 
-    # end method definition
 
     def drop_columns(self, column_names: list, inplace: bool = True) -> pd.DataFrame:
         """Drop selected columns from the Pandas data frame.
@@ -2159,7 +2123,6 @@ class Data:
             df = self._df.drop(column_names, axis=1, inplace=False)
             return df
 
-    # end method definition
 
     def keep_columns(self, column_names: list, inplace: bool = True) -> pd.DataFrame:
         """Keep only selected columns in the data frame. Drop the rest.
@@ -2197,7 +2160,6 @@ class Data:
                 return df
             return None
 
-    # end method definition
 
     def rename_column(self, old_column_name: str, new_column_name: str) -> bool:
         """Rename a data frame column.
@@ -2238,7 +2200,6 @@ class Data:
 
         return True
 
-    # end method definition
 
     def is_dict_column(self, column: pd.Series, threshold: float = 0.5) -> bool:
         """Safely checks if a column predominantly contains dictionary-like objects.
@@ -2277,7 +2238,6 @@ class Data:
         # Else return False.
         return dict_count / len(non_null_values) > threshold if len(non_null_values) > 0 else False
 
-    # end method definition
 
     def is_list_column(self, column: pd.Series, threshold: float = 0.5) -> bool:
         """Safely checks if a column predominantly contains list-like objects.
@@ -2315,7 +2275,6 @@ class Data:
         # Else return False.
         return list_count / len(non_null_values) > threshold if len(non_null_values) > 0 else False
 
-    # end method definition
 
     def is_string_column(self, column: pd.Series) -> bool:
         """Determine if a Pandas series predominantly contains string values, ignoring NaN values.
@@ -2333,7 +2292,6 @@ class Data:
         # Drop NaN values and check if remaining values are strings
         return column.dropna().map(lambda x: isinstance(x, str)).all()
 
-    # end method definition
 
     def cleanse(self, cleansings: list) -> None:
         """Cleanse data with regular expressions and upper/lower case conversions.
@@ -2399,7 +2357,6 @@ class Data:
                         )
                     ),
                 )
-            # end if "." in column
             else:  # the else case handles strings and list columns
                 if column not in self._df.columns:
                     self.logger.error(
@@ -2471,10 +2428,8 @@ class Data:
                         "Column -> '%s' is not a string, list, or dict-like column. Skipping cleansing...",
                         column,
                     )
-            # end else handling strings and lists
         # for cleansing in cleansings
 
-    # end method definition
 
     def _cleanse_dictionary(
         self,
@@ -2581,7 +2536,6 @@ class Data:
 
         return data
 
-    # end method definition
 
     def _cleanse_subfield(
         self,
@@ -2654,7 +2608,6 @@ class Data:
 
         return data
 
-    # end method definition
 
     def _apply_string_cleansing(
         self,
@@ -2748,7 +2701,6 @@ class Data:
 
         return value
 
-    # end method definition
 
     def filter(
         self,
@@ -2982,7 +2934,6 @@ class Data:
                 str(filtered_df.shape[1]),
                 str(condition),
             )
-        # end for condition
 
         if inplace:
             self._df = filtered_df
@@ -2992,7 +2943,6 @@ class Data:
 
         return filtered_df
 
-    # end method definition
 
     def fill_na_in_column(self, column_name: str, default_value: str | int) -> None:
         """Replace NA values in a column with a defined new default value.
@@ -3014,7 +2964,6 @@ class Data:
                 str(self._df.columns),
             )
 
-    # end method definition
 
     def fill_forward(self, inplace: bool) -> pd.DataFrame:
         """Fill the missing cells appropriately by carrying forward the values from the previous rows where necessary.
@@ -3039,7 +2988,6 @@ class Data:
 
         return df_filled
 
-    # end method definition
 
     def lookup_value(
         self,
@@ -3097,7 +3045,6 @@ class Data:
 
             return lookup_value in [item.strip() for item in string_list.split(separator)]
 
-        # end method definition
 
         if self._df is None:
             return None
@@ -3140,7 +3087,6 @@ class Data:
         # Return the first matched row, if any
         return matched_rows.iloc[0]
 
-    # end method definition
 
     def set_value(self, column: str, value, condition: pd.Series | None = None) -> None:  # noqa: ANN001
         """Set the value in the data frame based on a condition.
@@ -3163,7 +3109,6 @@ class Data:
         else:
             self._df.loc[condition, column] = value  # Set value based on condition
 
-    # end method definition
 
     def add_column(
         self,
@@ -3286,7 +3231,6 @@ class Data:
 
         return True
 
-    # end method definition
 
     def convert_to_lists(self, columns: list, delimiter: str = ",") -> None:
         """Intelligently convert string values to list values, in defined data frame columns.
@@ -3329,7 +3273,6 @@ class Data:
                 lambda x: split_string_ignoring_quotes(x, delimiter) if isinstance(x, str) and delimiter in x else x,
             )
 
-    # end method definition
 
     def add_column_concat(
         self,
@@ -3386,7 +3329,6 @@ class Data:
 
             return concatenated
 
-        # end method definition
 
         #
         # Validations:
@@ -3430,7 +3372,6 @@ class Data:
 
         return True
 
-    # end method definition
 
     def add_column_list(self, source_columns: list, new_column: str) -> bool:
         """Add a column with list objects.
@@ -3488,7 +3429,6 @@ class Data:
 
         return True
 
-    # end method definition
 
     def add_column_table(
         self,
@@ -3571,7 +3511,6 @@ class Data:
 
             return lst + [None] * (max_len - len(lst))
 
-        # end sub-method
 
         def create_table(row: pd.Series) -> list:
             """Create a list of dictionaries representing the table value.
@@ -3607,7 +3546,6 @@ class Data:
 
             return table
 
-        # end sub-method
 
         #
         # Validations:
@@ -3646,7 +3584,6 @@ class Data:
 
         return True
 
-    # end method definition
 
     def drop_row(self, index: int | str) -> None:
         """Drop a single row from the DataFrame by its index.
@@ -3661,7 +3598,6 @@ class Data:
         if index in self._df.index:
             self._df.drop(index=index, inplace=True)
 
-    # end method definition
 
     def drop_rows(self, mask: pd.Series) -> None:
         """Drop rows from the DataFrame based on a boolean mask.
@@ -3674,7 +3610,6 @@ class Data:
 
         self._df = self._df[~mask]
 
-    # end method definition
 
     def get_match_mask(self, match_with: Data | pd.DataFrame, on_columns: list[str]) -> pd.Series:
         """Find rows in this Data object that match another Data object or DataFrame.
@@ -3704,4 +3639,3 @@ class Data:
             self_index = pd.MultiIndex.from_frame(self._df[on_columns])
             return self_index.isin(match_index)
 
-    # end method definition

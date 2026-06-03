@@ -101,7 +101,6 @@ class AVTS:
 
         self._session = requests.Session()
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -113,7 +112,6 @@ class AVTS:
 
         return self._config
 
-    # end method definition
 
     def request_header(self, content_type: str = "") -> dict:
         """Return the request header used for Application calls.
@@ -146,7 +144,6 @@ class AVTS:
 
         return request_header
 
-    # end method definition
 
     def do_request(
         self,
@@ -298,7 +295,6 @@ class AVTS:
                     else:
                         return None
 
-    # end method definition
 
     def parse_request_response(
         self,
@@ -351,7 +347,6 @@ class AVTS:
         else:
             return list_object
 
-    # end method definition
 
     def authenticate(self) -> str | None:
         """Authenticate at Aviator Search via OAuth.
@@ -400,7 +395,6 @@ class AVTS:
 
         return self._accesstoken
 
-    # end method definition
 
     def create_extended_ecm_repo(
         self,
@@ -622,7 +616,6 @@ class AVTS:
 
         return response
 
-    # end method definition
 
     def create_msteams_repo(
         self,
@@ -929,7 +922,6 @@ class AVTS:
 
         return response
 
-    # end method definition
 
     def create_sharepoint_repo(
         self,
@@ -1311,7 +1303,6 @@ class AVTS:
 
         return response
 
-    # end method definition
 
     def repo_admin_consent(self, repo_id: str) -> dict | None:
         """Send admin consent information for a repository.
@@ -1341,7 +1332,6 @@ class AVTS:
             ),
         )
 
-    # end method definition
 
     def start_crawling(self, repo_name: str) -> list | None:
         """Start crawling of a repository.
@@ -1375,7 +1365,6 @@ class AVTS:
             ),
         )
 
-    # end method definition
 
     def stop_crawling(self, repo_name: str) -> dict | None:
         """Stop the crawling of a repository.
@@ -1407,7 +1396,6 @@ class AVTS:
             ),
         )
 
-    # end method definition
 
     def get_repo_list(self) -> list | None:
         """Get a list of all repositories.
@@ -1429,7 +1417,6 @@ class AVTS:
             failure_message="Failed to get list of repositories to crawl",
         )
 
-    # end method definition
 
     def get_repo_by_name(self, name: str) -> dict | None:
         """Get a repository by name.
@@ -1454,7 +1441,6 @@ class AVTS:
             None,
         )
 
-    # end method definition
 
     def get_certificate_file_content_base64(self, filepath: str) -> str | None:
         """Return the certificate as a base64 string.
@@ -1492,7 +1478,6 @@ class AVTS:
                 # Convert the bytes to a base64 string
                 return base64.b64encode(file_content).decode("utf-8")
 
-    # end method definition
 
     def running_in_kubernetes_pod(self) -> bool:
         """Check if the application is running inside a Kubernetes pod.
@@ -1509,7 +1494,6 @@ class AVTS:
 
         return bool(os.getenv("KUBERNETES_SERVICE_HOST") and os.getenv("KUBERNETES_SERVICE_PORT"))
 
-    # end method definition
 
     def set_questions(self, questions: list) -> list | None:
         """Get a list of all repositories.
@@ -1536,4 +1520,3 @@ class AVTS:
             failure_message="Failed to set list of questions to ask",
         )
 
-    # end method definition

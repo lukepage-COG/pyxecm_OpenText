@@ -146,7 +146,6 @@ class ServiceNow:
         self._download_dir = download_dir
         self._product_exclusions = product_exclusions
 
-    # end method definition
 
     def thread_wrapper(self, target: Callable, *args: tuple, **kwargs: dict[str, Any]) -> None:
         """Wrap around threads to catch exceptions during exection.
@@ -170,7 +169,6 @@ class ServiceNow:
                 thread_name,
             )
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -183,7 +181,6 @@ class ServiceNow:
 
         return self._config
 
-    # end method definition
 
     def get_data(self) -> Data:
         """Get the Data object that holds all processed Knowledge base Articles.
@@ -196,7 +193,6 @@ class ServiceNow:
 
         return self._data
 
-    # end method definition
 
     def request_header(self, content_type: str = "") -> dict:
         """Return the request header used for Application calls.
@@ -229,7 +225,6 @@ class ServiceNow:
 
         return request_header
 
-    # end method definition
 
     def parse_request_response(
         self,
@@ -283,7 +278,6 @@ class ServiceNow:
         else:
             return dict_object
 
-    # end method definition
 
     def exist_result_item(self, response: dict, key: str, value: str) -> bool:
         """Check existence of key / value pair in the response properties of an ServiceNow API call.
@@ -321,7 +315,6 @@ class ServiceNow:
 
         return False
 
-    # end method definition
 
     def get_result_value(
         self,
@@ -366,7 +359,6 @@ class ServiceNow:
 
         return value
 
-    # end method definition
 
     def authenticate(self, auth_type: str) -> str | None:
         """Authenticate at ServiceNow with client ID and client secret or with basic authentication.
@@ -399,7 +391,6 @@ class ServiceNow:
             self.logger.error("Unsupported authentication type -> %s!", auth_type)
             return None
 
-    # end method definition
 
     def get_oauth_token(self) -> str:
         """Return the OAuth access token.
@@ -439,7 +430,6 @@ class ServiceNow:
 
         return self._access_token
 
-    # end method definition
 
     @cache
     def get_object(self, table_name: str, sys_id: str) -> dict | None:
@@ -499,7 +489,6 @@ class ServiceNow:
 
         return None
 
-    # end method definition
 
     def get_summary(self, summary_sys_id: str) -> dict | None:
         """Get summary object for an article.
@@ -516,7 +505,6 @@ class ServiceNow:
 
         return self.get_object(table_name="kb_knowledge_summary", sys_id=summary_sys_id)
 
-    # end method definition
 
     def get_table(
         self,
@@ -597,7 +585,6 @@ class ServiceNow:
 
         return None
 
-    # end method definition
 
     def get_table_count(
         self,
@@ -653,7 +640,6 @@ class ServiceNow:
 
         return None
 
-    # end method definition
 
     def get_categories(self) -> list | None:
         """Get the configured knowledge base categories in ServiceNow.
@@ -698,7 +684,6 @@ class ServiceNow:
             limit=50,
         )
 
-    # end method definition
 
     def get_knowledge_bases(self) -> list | None:
         """Get the configured knowledge bases in ServiceNow.
@@ -769,7 +754,6 @@ class ServiceNow:
             error_string="Cannot get Knowledge Bases; ",
         )
 
-    # end method definition
 
     def get_knowledge_base_articles(
         self,
@@ -914,7 +898,6 @@ class ServiceNow:
             error_string="Cannot get knowledge base articles; ",
         )
 
-    # end method definition
 
     def make_file_names_unique(self, file_list: list) -> None:
         """Make file names unique if required.
@@ -953,7 +936,6 @@ class ServiceNow:
             # Increment the count for this file name
             name_count[original_name] += 1
 
-    # end method definition
 
     def get_article_attachments(self, article: dict) -> list | None:
         """Get a list of attachments for an article.
@@ -1028,7 +1010,6 @@ class ServiceNow:
 
         return None
 
-    # end method definition
 
     def download_attachments(
         self,
@@ -1148,7 +1129,6 @@ class ServiceNow:
 
         return True
 
-    # end method definition
 
     def load_articles(
         self,
@@ -1231,7 +1211,6 @@ class ServiceNow:
 
         return True
 
-    # end method definition
 
     def load_articles_worker(
         self,
@@ -1298,7 +1277,6 @@ class ServiceNow:
             table_name,
         )
 
-    # end method definition
 
     def load_article(self, article: dict, skip_existing_downloads: bool = True) -> None:
         """Process a single KBA.
@@ -1473,7 +1451,6 @@ class ServiceNow:
                             article["number"],
                         )
                         break
-                # end if product_line:
                 else:
                     self.logger.warning(
                         "Article -> %s: Cannot lookup related product line name in table -> '%s' with key -> '%s'",
@@ -1577,7 +1554,6 @@ class ServiceNow:
                             article["number"],
                         )
                         break
-                # end if application
                 else:
                     self.logger.warning(
                         "Article -> %s: Cannot lookup related application name in table -> '%s' with key -> %s",
@@ -1681,7 +1657,6 @@ class ServiceNow:
                                     "u_version_name": application_version_name,
                                 },
                             )
-                    # end if application_key
 
                     # Extended ECM can only handle a maxiumum of 50 line items:
                     if len(application_version_sets) == 49:
@@ -1690,7 +1665,6 @@ class ServiceNow:
                             article["number"],
                         )
                         break
-                # end if application_version
                 else:
                     self.logger.warning(
                         "Article -> %s: Cannot lookup related application version in table -> '%s' with key -> '%s'",
@@ -1714,4 +1688,3 @@ class ServiceNow:
         with self._data.lock():
             self._data.append(article)
 
-    # end method definition

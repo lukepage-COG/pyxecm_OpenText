@@ -122,7 +122,6 @@ class OTKD:
         self._config = otkd_config
         self._otkd_token = None
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -133,7 +132,6 @@ class OTKD:
         """
         return self._config
 
-    # end method definition
 
     def hostname(self) -> str:
         """Return the Knowledge Discovery hostname.
@@ -144,7 +142,6 @@ class OTKD:
         """
         return self.config()["hostname"]
 
-    # end method definition
 
     def set_hostname(self, hostname: str) -> None:
         """Set the Knowledge Discovery hostname.
@@ -156,7 +153,6 @@ class OTKD:
         """
         self.config()["hostname"] = hostname
 
-    # end method definition
 
     def credentials(self, basic_auth: bool = False) -> dict:
         """Get credentials (username + password).
@@ -175,7 +171,6 @@ class OTKD:
             "password": self.config()["password"],
         }
 
-    # end method definition
 
     def set_credentials(
         self,
@@ -195,7 +190,6 @@ class OTKD:
         self.config()["username"] = username or "admin"
         self.config()["password"] = password or ""
 
-    # end method definition
 
     def base_url(self) -> str:
         """Return the Knowledge Discovery base URL.
@@ -207,7 +201,6 @@ class OTKD:
 
         return self.config()["baseUrl"]
 
-    # end method definition
 
     def rest_url(self) -> str:
         """Return the Knowledge Discovery REST URL.
@@ -220,7 +213,6 @@ class OTKD:
 
         return self.config()["restUrl"]
 
-    # end method definition
 
     def request_form_header(self) -> dict:
         """Deliver the FORM request header used for the SOAP calls.
@@ -243,7 +235,6 @@ class OTKD:
 
         return request_header
 
-    # end method definition
 
     def request_json_header(self) -> dict:
         """Deliver the JSON request header used for the CRUD REST API calls.
@@ -266,7 +257,6 @@ class OTKD:
 
         return request_header
 
-    # end method definition
 
     def request_upload_header(self) -> dict:
         """Deliver the upload request header used for the upload REST API calls that uses the 'file' parameter.
@@ -291,7 +281,6 @@ class OTKD:
 
         return request_header
 
-    # end method definition
 
     def do_request(
         self,
@@ -450,16 +439,13 @@ class OTKD:
                         time.sleep(REQUEST_RETRY_DELAY)  # Add a delay before retrying
                     else:
                         return None
-            # end try
             self.logger.warning(
                 "Retrying Nifi REST API %s call -> %s... (retry = %s)",
                 method,
                 url,
                 str(retries),
             )
-        # end while True
 
-    # end method definition
 
     def parse_request_response(
         self,
@@ -508,7 +494,6 @@ class OTKD:
         else:
             return dict_object
 
-    # end method definition
 
     def authenticate(self, revalidate: bool = False) -> str | None:
         """Authenticate at Knowledge Discovery and retrieve Ticket.
@@ -573,7 +558,6 @@ class OTKD:
             )
             return None
 
-    # end method definition
 
     def get_root_process_group(self) -> dict | None:
         """Get the root process group in Nifi.
@@ -594,7 +578,6 @@ class OTKD:
             failure_message="Failed to get root process group",
         )
 
-    # end method definition
 
     def get_process_groups(self, parent_process_group_id: str) -> list | None:
         """Get the (root) process groups.
@@ -692,7 +675,6 @@ class OTKD:
 
         return process_groups.get("processGroups")
 
-    # end method definition
 
     def get_process_group_by_parent_and_name(self, name: str, parent_id: str | None = None) -> dict | None:
         """Get a process group based on the parent ID and name.
@@ -796,7 +778,6 @@ class OTKD:
 
         return process_group
 
-    # end method definition
 
     def get_process_group_by_name(self, name: str) -> dict | None:
         """Get a top-level process group based on the name.
@@ -819,7 +800,6 @@ class OTKD:
         # process group in root if it exists with the given name:
         return self.get_process_group_by_parent_and_name(name=name)
 
-    # end method definition
 
     def upload_process_group(
         self, file_path: str, name: str, position_x: float = 0.0, position_y: float = 0.0
@@ -895,7 +875,6 @@ class OTKD:
 
         return None
 
-    # end method definition
 
     def get_flow_status(self) -> dict | None:
         """Get the flow status.
@@ -938,7 +917,6 @@ class OTKD:
             failure_message="Cannot get flow status!",
         )
 
-    # end method definition
 
     def get_flow_config(self) -> dict | None:
         """Get the flow configuration.
@@ -972,7 +950,6 @@ class OTKD:
             failure_message="Cannot get flow status!",
         )
 
-    # end method definition
 
     def get_parameter_contexts(self) -> list | None:
         """Get the list of parameter contexts.
@@ -998,7 +975,6 @@ class OTKD:
 
         return parameter_contexts.get("parameterContexts")
 
-    # end method definition
 
     def get_parameter_context_by_name(self, name: str) -> dict | None:
         """Get the parameter context with the given name.
@@ -1024,7 +1000,6 @@ class OTKD:
 
         return parameter_context
 
-    # end method definition
 
     def update_parameter(
         self, component: str, parameter: str, value: str | float | bool, sensitive: bool = False, description: str = ""
@@ -1160,7 +1135,6 @@ class OTKD:
 
         return None
 
-    # end method definition
 
     def start_all_processors(self, name: str) -> dict | None:
         """Start all processors in the process group given by its name.
@@ -1200,7 +1174,6 @@ class OTKD:
 
         return None
 
-    # end method definition
 
     def get_controller_services(self, process_group_id: str) -> list | None:
         """Get the list of controller services for a process group.
@@ -1313,7 +1286,6 @@ class OTKD:
 
         return controller_services.get("controllerServices", [])
 
-    # end method definition
 
     def set_controller_services_state(self, name: str, state: str = "ENABLED", components: dict | None = None) -> bool:
         """Enable or disable Controller Services in the specified Process Group.
@@ -1379,4 +1351,3 @@ class OTKD:
 
         return response
 
-    # end method definition

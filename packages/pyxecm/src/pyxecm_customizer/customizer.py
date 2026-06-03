@@ -70,7 +70,6 @@ class Customizer:
         self.otkd_object: OTKD | None = None
         self.avts_object: AVTS | None = None
 
-    # end initializer
 
     def log_header(self, text: str, char: str = "=", length: int = 120) -> None:
         """Output a section header in the log file.
@@ -109,7 +108,6 @@ class Customizer:
             char * (char_count + extra_char),
         )
 
-    # end method definition
 
     def init_m365(self) -> M365:
         """Initialize the M365 object we use to talk to the Microsoft Graph API.
@@ -374,7 +372,6 @@ class Customizer:
 
         return m365_object
 
-    # end method definition
 
     def init_otca(self) -> OTCA:
         """Initialize the Content Aviator object we use to talk to the CSAI REST API.
@@ -428,7 +425,6 @@ class Customizer:
             logger=self.logger,
         )
 
-    # end method definition
 
     def init_otkd(self) -> OTKD:
         """Initialize the Knowledge Discovery object we use to talk to the Nifi REST API.
@@ -465,7 +461,6 @@ class Customizer:
             logger=self.logger,
         )
 
-    # end method definition
 
     def init_avts(self) -> AVTS:
         """Initialize the Aviator Search object we use to talk to the REST API.
@@ -515,7 +510,6 @@ class Customizer:
             logger=self.logger,
         )
 
-    # end method definition
 
     def init_coreshare(self) -> CoreShare:
         """Initialize the Core Share object we use to talk to the Core Share API.
@@ -580,7 +574,6 @@ class Customizer:
 
         return core_share_object
 
-    # end method definition
 
     def init_k8s(self) -> K8s:
         """Initialize the Kubernetes object we use to talk to the Kubernetes API.
@@ -653,7 +646,6 @@ class Customizer:
 
         return k8s_object
 
-    # end method definition
 
     def init_otds(self) -> OTDS:
         """Initialize the OTDS object and parameters and authenticate at OTDS once it is ready.
@@ -726,7 +718,6 @@ class Customizer:
 
         return otds_object
 
-    # end method definition
 
     def init_otac(self) -> OTAC:
         """Initialize the OTAC object and parameters.
@@ -811,7 +802,6 @@ class Customizer:
 
         return otac_object
 
-    # end method definition
 
     def init_otcs(
         self,
@@ -940,7 +930,6 @@ class Customizer:
 
         return otcs_object
 
-    # end method definition
 
     def init_otiv(self) -> OTIV | None:
         """Initialize the OTIV (Intelligent Viewing) object and its OTDS settings.
@@ -1030,7 +1019,6 @@ class Customizer:
 
         return otiv_object
 
-    # end method definition
 
     def init_otpd(self) -> OTPD:
         """Initialize the OTPD (PowerDocs) object and parameters.
@@ -1094,7 +1082,6 @@ class Customizer:
 
         return otpd_object
 
-    # end method definition
 
     def init_otawp(self) -> OTAWP:
         """Initialize OTDS for Appworks Platform.
@@ -1313,7 +1300,6 @@ class Customizer:
 
         return otawp_object
 
-    # end method definition
 
     def restart_otcs_service(
         self,
@@ -1363,7 +1349,6 @@ class Customizer:
                 self.logger.error(
                     "Rolling restart failed for Distributed Agent StatefulSet -> '%s'", self.settings.k8s.sts_otcs_da
                 )
-        # end if self.settings.k8s.sts_otcs_da
 
         # ------------------------------------------------------------------
         # Frontend Pods
@@ -1381,7 +1366,6 @@ class Customizer:
                 self.logger.error(
                     "Rolling restart failed for OTCS frontend stateful set -> '%s'", self.settings.k8s.sts_otcs_frontend
                 )
-        # end if self.settings.k8s.sts_otcs_frontend
 
         # ------------------------------------------------------------------
         # Backend (Admin) Pods
@@ -1432,7 +1416,6 @@ class Customizer:
 
         self.logger.info("Zero-downtime OTCS rolling restart completed successfully.")
 
-    # end method definition
 
     def restart_otac_service(self) -> bool:
         """Restart the Archive Center spawner service in OTAC pod.
@@ -1462,14 +1445,12 @@ class Customizer:
 
         return bool(response)
 
-    # end method definition
 
     def restart_otawp_pod(self) -> None:
         """Delete the AppWorks Platform pod to make Kubernetes restart it."""
 
         self.k8s_object.delete_pod(self.settings.k8s.sts_otawp + "-0")
 
-    # end method definition
 
     def consolidate_otds(self) -> None:
         """Consolidate OTDS resources."""
@@ -1479,7 +1460,6 @@ class Customizer:
         if self.settings.otawp.enabled:  # is AppWorks Platform deployed?
             self.otds_object.consolidate(self.settings.otawp.resource_name)
 
-    # end method definition
 
     def import_powerdocs_configuration(self, otpd_object: OTPD) -> None:
         """Import a database export (zip file) into the PowerDocs database.
@@ -1526,7 +1506,6 @@ class Customizer:
             except requests.exceptions.RequestException:
                 self.logger.error("Failed to download PowerDocs database file!")
 
-    # end method definition
 
     def set_maintenance_mode(self, enable: bool = True) -> None:
         """Enable or Disable Maintenance Mode.
@@ -1570,7 +1549,6 @@ class Customizer:
             )
             self.logger.info("OTCS frontend is now back in Production Mode!")
 
-    # end method definition
 
     @tracer.start_as_current_span("init_customizer")
     def init_customizer(self) -> bool:
@@ -1728,7 +1706,6 @@ class Customizer:
 
         return True
 
-    # end method definition
 
     @tracer.start_as_current_span("customization_run")
     def customization_run(self) -> bool:
@@ -1926,7 +1903,6 @@ class Customizer:
                         duration,
                     ),
                 )
-        # end for cust_payload in cust_payload_list
 
         if self.settings.otcs.maintenance_mode:
             self.set_maintenance_mode(enable=False)
@@ -1986,4 +1962,3 @@ class Customizer:
         # Return the success status:
         return success
 
-    # end method definition

@@ -135,7 +135,6 @@ class Salesforce:
 
         self._config = salesforce_config
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -148,7 +147,6 @@ class Salesforce:
 
         return self._config
 
-    # end method definition
 
     def credentials(self) -> dict:
         """Return the login credentials.
@@ -161,7 +159,6 @@ class Salesforce:
 
         return self.config()["authenticationData"]
 
-    # end method definition
 
     def request_header(self, content_type: str = "application/json") -> dict:
         """Return the request header used for Application calls.
@@ -186,7 +183,6 @@ class Salesforce:
 
         return request_header
 
-    # end method definition
 
     def do_request(
         self,
@@ -378,16 +374,13 @@ class Salesforce:
                         time.sleep(REQUEST_RETRY_DELAY)  # Add a delay before retrying
                     else:
                         return None
-            # end try
             self.logger.debug(
                 "Retrying REST API %s call -> %s... (retry = %s)",
                 method,
                 url,
                 str(retries),
             )
-        # end while True
 
-    # end method definition
 
     def parse_request_response(
         self,
@@ -440,7 +433,6 @@ class Salesforce:
         else:
             return dict_object
 
-    # end method definition
 
     def exist_result_item(self, response: dict, key: str, value: str) -> bool:
         """Check existence of key / value pair in the response properties of a Salesforce API call.
@@ -478,7 +470,6 @@ class Salesforce:
 
         return False
 
-    # end method definition
 
     def get_result_value(
         self,
@@ -521,7 +512,6 @@ class Salesforce:
 
         return value
 
-    # end method definition
 
     def authenticate(self, revalidate: bool = False) -> str | None:
         """Authenticate at Salesforce with client ID and client secret.
@@ -591,7 +581,6 @@ class Salesforce:
 
         return self._access_token
 
-    # end method definition
 
     def get_object_id_by_name(
         self,
@@ -639,7 +628,6 @@ class Salesforce:
 
         return self.get_result_value(response, "Id")
 
-    # end method definition
 
     def get_object(
         self,
@@ -733,7 +721,6 @@ class Salesforce:
             ),
         )
 
-    # end method definition
 
     def add_object(self, object_type: str, **kwargs: dict[str, str]) -> dict | None:
         """Add object to Salesforce.
@@ -825,7 +812,6 @@ class Salesforce:
 
         return None
 
-    # end method definition
 
     def get_group_id(self, group_name: str) -> str | None:
         """Get a group ID by group name.
@@ -846,7 +832,6 @@ class Salesforce:
             name_field="Name",
         )
 
-    # end method definition
 
     def get_group(self, group_id: str) -> dict | None:
         """Get a Salesforce group based on its ID.
@@ -883,7 +868,6 @@ class Salesforce:
             ),
         )
 
-    # end method definition
 
     def add_group(
         self,
@@ -934,7 +918,6 @@ class Salesforce:
             failure_message="Failed to add Salesforce group -> '{}'".format(group_name),
         )
 
-    # end method definition
 
     def update_group(
         self,
@@ -979,7 +962,6 @@ class Salesforce:
             ),
         )
 
-    # end method definition
 
     def get_group_members(self, group_id: str) -> list | None:
         """Get Salesforce group members.
@@ -1036,7 +1018,6 @@ class Salesforce:
             ),
         )
 
-    # end method definition
 
     def add_group_member(self, group_id: str, member_id: str) -> dict | None:
         """Add a user or group to a Salesforce group.
@@ -1088,7 +1069,6 @@ class Salesforce:
             ),
         )
 
-    # end method definition
 
     def get_all_user_profiles(self) -> dict | None:
         """Get all user profiles.
@@ -1141,7 +1121,6 @@ class Salesforce:
             failure_message="Failed to get Salesforce user profiles",
         )
 
-    # end method definition
 
     def get_user_profile_id(self, profile_name: str) -> str | None:
         """Get a user profile ID by profile name.
@@ -1158,7 +1137,6 @@ class Salesforce:
 
         return self.get_object_id_by_name(object_type="Profile", name=profile_name)
 
-    # end method definition
 
     def get_user_id(self, username: str) -> str | None:
         """Get a user ID by user name.
@@ -1177,7 +1155,6 @@ class Salesforce:
             name_field="Username",
         )
 
-    # end method definition
 
     def get_user(self, user_id: str) -> dict | None:
         """Get a Salesforce user based on its ID.
@@ -1214,7 +1191,6 @@ class Salesforce:
             ),
         )
 
-    # end method definition
 
     def add_user(
         self,
@@ -1311,7 +1287,6 @@ class Salesforce:
             failure_message="Failed to add Salesforce user -> {}".format(username),
         )
 
-    # end method definition
 
     def update_user(
         self,
@@ -1356,7 +1331,6 @@ class Salesforce:
             ),
         )
 
-    # end method definition
 
     def update_user_password(
         self,
@@ -1403,7 +1377,6 @@ class Salesforce:
             ),
         )
 
-    # end method definition
 
     def update_user_photo(
         self,
@@ -1477,7 +1450,6 @@ class Salesforce:
             verify=False,
         )
 
-    # end method definition
 
     def add_account(
         self,
@@ -1552,7 +1524,6 @@ class Salesforce:
             ),
         )
 
-    # end method definition
 
     def add_product(
         self,
@@ -1615,7 +1586,6 @@ class Salesforce:
             ),
         )
 
-    # end method definition
 
     def add_opportunity(
         self,
@@ -1690,7 +1660,6 @@ class Salesforce:
             failure_message="Failed to add Salesforce opportunity -> '{}'".format(name),
         )
 
-    # end method definition
 
     def add_case(
         self,
@@ -1774,7 +1743,6 @@ class Salesforce:
             failure_message="Failed to add Salesforce case -> '{}'".format(subject),
         )
 
-    # end method definition
 
     def add_asset(
         self,
@@ -1847,7 +1815,6 @@ class Salesforce:
             failure_message="Failed to add Salesforce asset -> '{}'".format(asset_name),
         )
 
-    # end method definition
 
     def add_contract(
         self,
@@ -1929,4 +1896,3 @@ class Salesforce:
             ),
         )
 
-    # end method definition

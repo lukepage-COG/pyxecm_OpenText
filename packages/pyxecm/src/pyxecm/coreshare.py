@@ -168,7 +168,6 @@ class CoreShare:
 
         self._config = core_share_config
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -181,7 +180,6 @@ class CoreShare:
 
         return self._config
 
-    # end method definition
 
     def credentials(self) -> dict:
         """Get credentials (username + password).
@@ -197,7 +195,6 @@ class CoreShare:
             "password": self.config()["password"],
         }
 
-    # end method definition
 
     def set_credentials(self, username: str = "admin", password: str = "") -> None:
         """Set the credentials for Core Share based on username and password.
@@ -237,7 +234,6 @@ class CoreShare:
             + urllib.parse.quote(password)
         )
 
-    # end method definition
 
     def request_header_admin(self, content_type: str = "application/json") -> dict:
         """Return the request header used for application calls that require administrator credentials.
@@ -268,7 +264,6 @@ class CoreShare:
 
         return request_header
 
-    # end method definition
 
     def request_header_user(self, content_type: str = "application/json") -> dict:
         """Return the request header used for Application calls that require user (non-admin) credentials.
@@ -294,7 +289,6 @@ class CoreShare:
 
         return request_header
 
-    # end method definition
 
     def do_request(
         self,
@@ -493,16 +487,13 @@ class CoreShare:
                         time.sleep(REQUEST_RETRY_DELAY)  # Add a delay before retrying
                     else:
                         return None
-            # end try
             self.logger.debug(
                 "Retrying REST API %s call -> %s... (retry = %s)",
                 method,
                 url,
                 str(retries),
             )
-        # end while True
 
-    # end method definition
 
     def parse_request_response(
         self,
@@ -555,7 +546,6 @@ class CoreShare:
         else:
             return dict_object
 
-    # end method definition
 
     def lookup_result_value(
         self,
@@ -598,7 +588,6 @@ class CoreShare:
                 return result[return_key]
         return None
 
-    # end method definition
 
     def exist_result_item(
         self,
@@ -644,7 +633,6 @@ class CoreShare:
 
         return False
 
-    # end method definition
 
     def get_result_value(
         self,
@@ -700,7 +688,6 @@ class CoreShare:
 
         return None
 
-    # end method definition
 
     def authenticate_admin(
         self,
@@ -785,7 +772,6 @@ class CoreShare:
 
         return self._access_token_admin
 
-    # end method definition
 
     def authenticate_user(
         self,
@@ -872,7 +858,6 @@ class CoreShare:
 
         return self._access_token_user
 
-    # end method definition
 
     def get_groups(self, offset: int = 0, count: int = 25) -> dict | None:
         """Get Core Share groups.
@@ -933,7 +918,6 @@ class CoreShare:
             user_credentials=True,
         )
 
-    # end method definition
 
     def get_groups_iterator(
         self,
@@ -998,7 +982,6 @@ class CoreShare:
             # Get the 'offset' value as an integer (it's a list by default)
             offset = int(params.get("offset", [0])[0])
 
-    # end method definition
 
     def add_group(
         self,
@@ -1062,7 +1045,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def get_group_members(self, group_id: str) -> dict | None:
         """Get Core Share group members.
@@ -1128,7 +1110,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def add_group_member(
         self,
@@ -1219,7 +1200,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def remove_group_member(
         self,
@@ -1292,7 +1272,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def get_group_by_id(self, group_id: str) -> dict | None:
         """Get a Core Share group by its ID.
@@ -1330,7 +1309,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def get_group_by_name(self, name: str) -> dict | None:
         """Get Core Share group by its name.
@@ -1372,7 +1350,6 @@ class CoreShare:
 
         return groups
 
-    # end method definition
 
     def search_groups(self, query_string: str) -> dict | None:
         """Search Core Share group(s) using a query string.
@@ -1408,7 +1385,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def get_users(self) -> list | None:
         """Get Core Share users.
@@ -1503,7 +1479,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def get_user_by_id(self, user_id: str) -> dict | None:
         """Get a Core Share user by its ID.
@@ -1601,7 +1576,6 @@ class CoreShare:
             user_credentials=True,
         )
 
-    # end method definition
 
     def get_user_by_name(
         self,
@@ -1638,7 +1612,6 @@ class CoreShare:
 
         return users
 
-    # end method definition
 
     def get_user_by_email(
         self,
@@ -1672,7 +1645,6 @@ class CoreShare:
 
         return users
 
-    # end method definition
 
     def search_users(
         self,
@@ -1765,7 +1737,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def add_user(
         self,
@@ -1877,7 +1848,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def resend_user_invite(self, user_id: str) -> dict:
         """Resend the invite for a Core Share user.
@@ -1919,7 +1889,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def update_user(self, user_id: str, update_data: dict) -> dict:
         """Update a Core Share user.
@@ -1966,7 +1935,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def add_user_access_role(self, user_id: str, role_id: int) -> dict:
         """Add an access role to a Core Share user.
@@ -2011,7 +1979,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def remove_user_access_role(self, user_id: str, role_id: int) -> dict:
         """Remove an access role from a Core Share user.
@@ -2056,7 +2023,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def update_user_access_roles(
         self,
@@ -2127,7 +2093,6 @@ class CoreShare:
 
         return response
 
-    # end method definition
 
     def update_user_password(
         self,
@@ -2178,7 +2143,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def update_user_photo(
         self,
@@ -2245,7 +2209,6 @@ class CoreShare:
             verify=False,
         )
 
-    # end method definition
 
     def get_folders(self, parent_id: str) -> list | None:
         """Get Core Share folders under a given parent ID.
@@ -2343,7 +2306,6 @@ class CoreShare:
             user_credentials=True,
         )
 
-    # end method definition
 
     def unshare_folder(self, resource_id: str) -> dict | None:
         """Unshare Core Share folder with a given resource ID.
@@ -2381,7 +2343,6 @@ class CoreShare:
             user_credentials=True,
         )
 
-    # end method definition
 
     def delete_folder(self, resource_id: str) -> dict | None:
         """Delete Core Share folder with a given resource ID.
@@ -2422,7 +2383,6 @@ class CoreShare:
             user_credentials=True,
         )
 
-    # end method definition
 
     def delete_document(self, resource_id: str) -> dict | None:
         """Delete Core Share document with a given resource ID.
@@ -2463,7 +2423,6 @@ class CoreShare:
             user_credentials=True,
         )
 
-    # end method definition
 
     def leave_share(self, user_id: str, resource_id: str) -> dict | None:
         """Remove a Core Share user from a share (i.e. the user leaves the share).
@@ -2509,7 +2468,6 @@ class CoreShare:
             user_credentials=True,
         )
 
-    # end method definition
 
     def stop_share(self, user_id: str, resource_id: str) -> dict | None:
         """Stop of share of a user.
@@ -2552,7 +2510,6 @@ class CoreShare:
             user_credentials=True,
         )
 
-    # end method definition
 
     def cleanup_user_files(
         self,
@@ -2690,7 +2647,6 @@ class CoreShare:
 
         return success
 
-    # end method definition
 
     def get_group_shares(self, group_id: str) -> dict | None:
         """Get (incoming) shares of a Core Share group.
@@ -2729,7 +2685,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def revoke_group_share(self, group_id: str, resource_id: str) -> dict | None:
         """Revoke sharing of a folder with a group.
@@ -2774,7 +2729,6 @@ class CoreShare:
             user_credentials=False,
         )
 
-    # end method definition
 
     def cleanup_group_shares(self, group_id: str) -> bool:
         """Cleanup all incoming shares of a group.
@@ -2816,4 +2770,3 @@ class CoreShare:
 
         return success
 
-    # end method definition

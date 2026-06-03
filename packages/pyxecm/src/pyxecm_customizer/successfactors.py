@@ -136,7 +136,6 @@ class SuccessFactors:
         self._access_token = None
         self._assertion = None
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -148,7 +147,6 @@ class SuccessFactors:
         """
         return self._config
 
-    # end method definition
 
     def credentials(self) -> dict:
         """Return the login credentials.
@@ -160,7 +158,6 @@ class SuccessFactors:
         """
         return self.config()["authenticationData"]
 
-    # end method definition
 
     def idp_data(self) -> dict:
         """Return the IDP data used to request the SAML assertion.
@@ -172,7 +169,6 @@ class SuccessFactors:
         """
         return self.config()["idpData"]
 
-    # end method definition
 
     def request_header(self, content_type: str = "application/json") -> dict:
         """Return the request header used for Application calls.
@@ -196,7 +192,6 @@ class SuccessFactors:
         }
         return request_header
 
-    # end method definition
 
     def do_request(
         self,
@@ -341,7 +336,6 @@ class SuccessFactors:
         )
         return None
 
-    # end method definition
 
     def parse_request_response(
         self,
@@ -394,7 +388,6 @@ class SuccessFactors:
         else:
             return dict_object
 
-    # end method definition
 
     def exist_result_item(self, response: dict, key: str, value: str) -> bool:
         """Check existence of key / value pair in the response properties of an SuccessFactors API call.
@@ -430,7 +423,6 @@ class SuccessFactors:
 
         return False
 
-    # end method definition
 
     def get_result_value(
         self,
@@ -489,7 +481,6 @@ class SuccessFactors:
 
         return value
 
-    # end method definition
 
     def get_saml_assertion(self) -> str | None:
         """Get SAML Assertion for SuccessFactors authentication.
@@ -531,7 +522,6 @@ class SuccessFactors:
         self.logger.debug("Assertion -> %s", self._assertion)
         return assertion
 
-    # end method definition
 
     def authenticate(self, revalidate: bool = False) -> str | None:
         """Authenticate at SuccessFactors with client ID and client secret.
@@ -596,7 +586,6 @@ class SuccessFactors:
 
         return self._access_token
 
-    # end method definition
 
     def get_country(self, code: str = "") -> dict | None:
         """Get information for a country / countries.
@@ -658,7 +647,6 @@ class SuccessFactors:
         )
         return response
 
-    # end method definition
 
     def get_user(
         self,
@@ -792,7 +780,6 @@ class SuccessFactors:
         )
         return response
 
-    # end method definition
 
     def get_user_account(self, username: str) -> dict | None:
         """Get information for a SuccessFactors User Account.
@@ -853,7 +840,6 @@ class SuccessFactors:
         )
         return response
 
-    # end method definition
 
     def update_user(
         self,
@@ -900,7 +886,6 @@ class SuccessFactors:
         else:
             return None
 
-    # end method definition
 
     def get_employee(
         self,
@@ -1055,7 +1040,6 @@ class SuccessFactors:
         )
         return response
 
-    # end method definition
 
     def get_entities_metadata(self, entities: list | None = None) -> dict | None:
         """Get the schema (metadata) for a list of entities (list can be empty to get it for all).
@@ -1098,7 +1082,6 @@ class SuccessFactors:
         else:
             return None
 
-    # end method definition
 
     def get_entity_metadata(self, entity: str) -> dict | None:
         """Get the schema (metadata) for an entity.
@@ -1134,7 +1117,6 @@ class SuccessFactors:
         )
         return response
 
-    # end method definition
 
     def update_user_email(
         self,
@@ -1196,4 +1178,3 @@ class SuccessFactors:
         else:
             return None
 
-    # end method definition

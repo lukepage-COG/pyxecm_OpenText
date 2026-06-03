@@ -162,7 +162,6 @@ class OTCA:
         self._studio_token: str | None = None
         self._node_dictionary: dict = {}
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -174,7 +173,6 @@ class OTCA:
 
         return self._config
 
-    # end method definition
 
     def get_context(self) -> str:
         """Return the current chat context (history).
@@ -187,7 +185,6 @@ class OTCA:
 
         return self._context
 
-    # end method definition
 
     def get_synonyms(self) -> list:
         """Get configured synonyms.
@@ -203,7 +200,6 @@ class OTCA:
 
         return self.config()["synonyms"]
 
-    # end method definition
 
     def add_synonyms(self, synonyms: list) -> None:
         """Add synonyms to the existing synonyms.
@@ -216,7 +212,6 @@ class OTCA:
 
         self.config()["synonyms"].extend(synonyms)
 
-    # end method definition
 
     def request_header(self, service_type: str = "chat", content_type: str = "application/json") -> dict:
         """Return the request header used for requests.
@@ -274,7 +269,6 @@ class OTCA:
 
         return request_header
 
-    # end method definition
 
     def do_request(
         self,
@@ -440,7 +434,6 @@ class OTCA:
                     else:
                         return None
 
-    # end method definition
 
     def parse_request_response(
         self,
@@ -493,7 +486,6 @@ class OTCA:
         else:
             return list_object
 
-    # end method definition
 
     def exist_result_item(
         self,
@@ -530,7 +522,6 @@ class OTCA:
 
         return any(key in result and result[key] == value for result in results)
 
-    # end method definition
 
     def authenticate_chat(self) -> str:
         """Authenticate for Chat service at Content Aviator / CSAI.
@@ -574,7 +565,6 @@ class OTCA:
 
             return None
 
-    # end method definition
 
     def authenticate_embed(self) -> str | None:
         """Authenticate as embedding service at Content Aviator / CSAI.
@@ -604,7 +594,6 @@ class OTCA:
             )
             return None
 
-    # end method definition
 
     def authenticate_studio(self) -> str | None:
         """Authenticate at Aviator Studio.
@@ -634,7 +623,6 @@ class OTCA:
             )
             return None
 
-    # end method definition
 
     def chat(self, context: str | None, messages: list, where: list | None = None, service_type: str = "chat") -> dict:
         """Process a chat interaction with Content Aviator.
@@ -760,7 +748,6 @@ class OTCA:
             failure_message="Failed to chat with Content Aviator",
         )
 
-    # end method definition
 
     def context(
         self, query: str, document_ids: list, workspace_ids: list, threshold: float = 0.5, num_results: int = 10
@@ -842,7 +829,6 @@ class OTCA:
             failure_message="Failed to to do a semantic search with query -> '{}' !".format(query),
         )
 
-    # end method definition
 
     def embed(
         self,
@@ -909,7 +895,6 @@ class OTCA:
             failure_message="Failed to embed content",
         )
 
-    # end method definition
 
     def direct_embed(
         self,
@@ -959,7 +944,6 @@ class OTCA:
             failure_message="Failed to embed content",
         )
 
-    # end method definition
 
     def get_graphs(self) -> list | None:
         """Get all graphs.
@@ -1027,7 +1011,6 @@ class OTCA:
 
         return response.get("results", [])
 
-    # end method definition
 
     def get_graphs_iterator(self) -> iter:
         """Get an iterator object that can be used to traverse graphs.
@@ -1047,7 +1030,6 @@ class OTCA:
 
         yield from graphs
 
-    # end method definition
 
     def get_graph(
         self, graph_id: str | None = None, graph_name: str | None = None, show_error: bool = False
@@ -1111,7 +1093,6 @@ class OTCA:
             show_error=show_error,
         )
 
-    # end method definition
 
     def get_graph_nodes(
         self,
@@ -1205,7 +1186,6 @@ class OTCA:
 
         return response
 
-    # end method definition
 
     def get_graph_nodes_iterator(
         self,
@@ -1249,7 +1229,6 @@ class OTCA:
             yield from nodes
             offset += limit
 
-    # end method definition
 
     def get_graph_edges(
         self,
@@ -1336,7 +1315,6 @@ class OTCA:
 
         return response.get("results", [])
 
-    # end method definition
 
     def get_graph_edges_iterator(
         self, graph_id: str | None = None, graph_name: str | None = None, limit: int = 100
@@ -1378,7 +1356,6 @@ class OTCA:
             yield from edges
             offset += limit
 
-    # end method definition
 
     def get_model_types(self) -> list:
         """Get a list of all model types. Hardcoded.
@@ -1391,7 +1368,6 @@ class OTCA:
 
         return ["tenants", "graphs", "nodes", "edges", "actions", "tools", "prompts", "rules", "klasses"]
 
-    # end method definition
 
     def import_configuration(self, json_data: dict | None = None) -> bool:
         """Import Aviator Studio default configuration.
@@ -1424,7 +1400,6 @@ class OTCA:
 
         return True
 
-    # end method definition
 
     def export_configuration(self, show_ids: bool = False) -> dict | None:
         """Export the current Aviator Studio configuration.
@@ -1584,7 +1559,6 @@ class OTCA:
 
         return response
 
-    # end method definition
 
     def get_scratchpad(self, chat_id: str) -> dict | None:
         """Get the current scratchpad content.
@@ -1619,7 +1593,6 @@ class OTCA:
 
         return response
 
-    # end method definition
 
     def get_tenants(self) -> list | None:
         """Get list of Aviator Studio tenants.
@@ -1657,7 +1630,6 @@ class OTCA:
 
         return response.get("results", [])
 
-    # end method definition
 
     def get_llms(self, attributes: str | None = None) -> dict | None:
         """Get a list of configured LLMs in Aviator Studio.
@@ -1727,7 +1699,6 @@ class OTCA:
 
         return response
 
-    # end method definition
 
     def add_llm(
         self,
@@ -1833,7 +1804,6 @@ class OTCA:
 
         return response
 
-    # end method definition
 
     def add_graph_node(
         self,
@@ -1915,7 +1885,6 @@ class OTCA:
 
         return response
 
-    # end method definition
 
     def add_graph_edge(
         self,
@@ -2024,7 +1993,6 @@ class OTCA:
 
         return response
 
-    # end method definition
 
     def direct_chat(
         self,
@@ -2074,7 +2042,6 @@ class OTCA:
 
         return response
 
-    # end method definition
 
     def get_models(self, model_type: str, limit: int = 100, offset: int = 0, where: dict | None = None) -> list | None:
         """Get all model details by type.
@@ -2128,7 +2095,6 @@ class OTCA:
 
         return response.get("results", [])
 
-    # end method definition
 
     def get_models_iterator(self, model_type: str, where: dict | None = None) -> iter:
         """Get an iterator object that can be used to traverse models.
@@ -2172,7 +2138,6 @@ class OTCA:
             yield from models
             offset += limit
 
-    # end method definition
 
     def get_model(self, model_type: str, model_id: str) -> dict | None:
         """Get a specific model based on its type and ID.
@@ -2210,7 +2175,6 @@ class OTCA:
             failure_message="Failed to get models with type -> '{}' and ID -> {}!".format(model_type, model_id),
         )
 
-    # end method definition
 
     def get_model_by_type_and_name(self, model_type: str, name: str) -> dict | None:
         """Get model details by model type and name.
@@ -2233,9 +2197,7 @@ class OTCA:
 
         return None
 
-    # end method definition
 
-    # end method definition
 
     def delete_model(self, model_type: str, model_id: str) -> dict | None:
         """Delete a model by type and id.
@@ -2265,7 +2227,6 @@ class OTCA:
             failure_message="Failed to delete model -> '{}' ({})!".format(model_type, model_id),
         )
 
-    # end method definition
 
     def update_model(self, model_type: str, model_id: str, request_body: dict) -> dict | None:
         """Update a model with a given type and ID.
@@ -2298,7 +2259,6 @@ class OTCA:
             failure_message="Failed to update model -> '{}' ({}).".format(model_type, model_id),
         )
 
-    # end method definition
 
     def get_tools(self) -> list | None:
         """Get all tools.
@@ -2332,7 +2292,6 @@ class OTCA:
 
         return self.get_models(model_type="tools")
 
-    # end method definition
 
     def get_tools_iterator(self) -> iter:
         """Get an iterator object that can be used to traverse tools.
@@ -2352,7 +2311,6 @@ class OTCA:
 
         yield from tools
 
-    # end method definition
 
     def get_tool(self, tool_id: str) -> dict | None:
         r"""Get a tool by its ID.
@@ -2386,7 +2344,6 @@ class OTCA:
 
         return tool
 
-    # end method definition
 
     def register_tool(
         self,
@@ -2582,7 +2539,6 @@ class OTCA:
 
         return response
 
-    # end method definition
 
     def register_prompt(
         self,
@@ -2640,7 +2596,6 @@ class OTCA:
                 prompt = self.update_model(model_type="prompts", model_id=prompt["id"], request_body=prompt)
 
             return prompt
-        # end if prompt:
 
         self.logger.info("Register new AI prompt -> '%s'...", name)
 
@@ -2659,7 +2614,6 @@ class OTCA:
 
         return response
 
-    # end method definition
 
     def register_agent(
         self,
@@ -2728,7 +2682,6 @@ class OTCA:
                 agent = self.update_model(model_type="nodes", model_id=agent["id"], request_body=agent)
 
             return agent
-        # end if agent:
 
         self.logger.info("Register new AI agent -> '%s'...", name)
 
@@ -2746,7 +2699,6 @@ class OTCA:
         )
         return response
 
-    # end method definition
 
     def get_rules(self) -> list | None:
         r"""Get all rules.
@@ -2797,7 +2749,6 @@ class OTCA:
 
         return response.get("results", [])
 
-    # end method definition
 
     def get_rules_iterator(self) -> iter:
         """Get an iterator object that can be used to traverse rules.
@@ -2817,7 +2768,6 @@ class OTCA:
 
         yield from rules
 
-    # end method definition
 
     def get_rule(self, rule_id: str) -> dict | None:
         r"""Get a rule by its ID.
@@ -2857,7 +2807,6 @@ class OTCA:
 
         return rule
 
-    # end method definition
 
     def get_prompts(self) -> list | None:
         r"""Get all prompts.
@@ -2888,7 +2837,6 @@ class OTCA:
 
         return self.get_models(model_type="prompts")
 
-    # end method definition
 
     def get_prompts_iterator(self) -> iter:
         """Get an iterator object that can be used to traverse prompts.
@@ -2908,7 +2856,6 @@ class OTCA:
 
         yield from prompts
 
-    # end method definition
 
     def get_prompt(self, prompt_id: str) -> dict | None:
         r"""Get a prompt by its ID.
@@ -2942,7 +2889,6 @@ class OTCA:
 
         return prompt
 
-    # end method definition
 
     def add_prompt(
         self,
@@ -3006,7 +2952,6 @@ class OTCA:
 
         return response
 
-    # end method definition
 
     def update_prompt(self, name: str, instructions: list[str] | str) -> dict | None:
         """Update an existing prompt with additional instructions.
@@ -3045,7 +2990,6 @@ class OTCA:
             self.logger.error("Prompt -> '%s' not found, cannot update!", name)
             return None
 
-    # end method definition
 
     def get_actions(self) -> list | None:
         """Get all actions.
@@ -3076,7 +3020,6 @@ class OTCA:
 
         return self.get_models(model_type="actions")
 
-    # end method definition
 
     def get_actions_iterator(self) -> iter:
         """Get an iterator object that can be used to traverse actions.
@@ -3096,7 +3039,6 @@ class OTCA:
 
         yield from actions
 
-    # end method definition
 
     def get_action(self, action_id: str) -> dict | None:
         r"""Get a action by its ID.
@@ -3130,7 +3072,6 @@ class OTCA:
 
         return action
 
-    # end method definition
 
     def get_klasses(self) -> list | None:
         r"""Get all klasses.
@@ -3158,7 +3099,6 @@ class OTCA:
 
         return self.get_models(model_type="klasses")
 
-    # end method definition
 
     def get_klasses_iterator(self) -> iter:
         """Get an iterator object that can be used to traverse klasses.
@@ -3178,7 +3118,6 @@ class OTCA:
 
         yield from klasses
 
-    # end method definition
 
     def get_klass(self, klass_id: str) -> dict | None:
         r"""Get a klass by its ID.
@@ -3209,7 +3148,6 @@ class OTCA:
 
         return klass
 
-    # end method definition
 
     def get_graph_node_relationships(self, graph_id: str, node_id: str, relation_type: str) -> list | None:
         """Get all relations to prompts or rules for a graph node.
@@ -3249,7 +3187,6 @@ class OTCA:
 
         return response.get("results", [])
 
-    # end method definition
 
     def get_graph_node_relationships_iterator(
         self, graph_id: str, node_id: str, relation_type: str | list = "prompts"
@@ -3283,7 +3220,6 @@ class OTCA:
 
         yield from relationships
 
-    # end method definition
 
     def is_ready(self, service: str, wait: bool = False) -> bool | None:
         """Check if service is ready to be used.
@@ -3333,4 +3269,3 @@ class OTCA:
         # Return True if we got a response, False if not:
         return response is not None
 
-    # end method definition

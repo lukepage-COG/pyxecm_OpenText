@@ -121,7 +121,6 @@ class Translator:
 
         return translated_text
 
-    # end method definition
 
     def translate_v3(self, source_language: str, target_language: str, text: str) -> str:
         """Translate a string from one language to another using the Google Translate V3 API.
@@ -168,4 +167,3 @@ class Translator:
 
         return translated_text
 
-    # end method definition

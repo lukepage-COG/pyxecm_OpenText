@@ -144,7 +144,6 @@ class OTPD:
         self._config = otpd_config
         self._jsessionid = None
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -156,7 +155,6 @@ class OTPD:
 
         return self._config
 
-    # end method definition
 
     def credentials(self) -> dict:
         """Get credentials (username + password).
@@ -170,7 +168,6 @@ class OTPD:
             "password": self.config()["password"],
         }
 
-    # end method definition
 
     def set_credentials(self, username: str = "admin", password: str = "") -> None:
         """Set the credentials for PowerDocs for the based on user name and password.
@@ -186,7 +183,6 @@ class OTPD:
         self.config()["username"] = username
         self.config()["password"] = password
 
-    # end method definition
 
     def hostname(self) -> str:
         """Return the hostname of PowerDocs (e.g. "otpd").
@@ -198,7 +194,6 @@ class OTPD:
 
         return self.config()["hostname"]
 
-    # end method definition
 
     def set_hostname(self, hostname: str) -> None:
         """Set the hostname of PowerDocs.
@@ -211,7 +206,6 @@ class OTPD:
 
         self.config()["hostname"] = hostname
 
-    # end method definition
 
     def parse_request_response(
         self,
@@ -258,7 +252,6 @@ class OTPD:
         else:
             return dict_object
 
-    # end method definition
 
     # This method is currently not used and not working...
     # It cannot handle the Request - ServerManager returns an
@@ -343,7 +336,6 @@ class OTPD:
             )
         return None
 
-    # end method definition
 
     def import_database(self, file_path: str) -> dict | None:
         """Import PowerDocs database backup from a zip file.
@@ -421,7 +413,6 @@ class OTPD:
 
         return None
 
-    # end method definition
 
     def apply_setting(
         self,
@@ -504,7 +495,6 @@ class OTPD:
                     retries += 1
                     time.sleep(REQUEST_RETRY_DELAY * retries)  # Add a delay before retrying
 
-    # end method definition
 
     def do_request(
         self,
@@ -667,16 +657,13 @@ class OTPD:
                         time.sleep(REQUEST_RETRY_DELAY)  # Add a delay before retrying
                     else:
                         return None
-            # end try
             self.logger.info(
                 "Retrying REST API %s call -> %s... (retry = %s)",
                 method,
                 url,
                 str(retries),
             )
-        # end while True
 
-    # end method definition
 
     def generate_document(self, payload: str) -> dict | None:
         """Generate a PowerDocs document based on the provided XML payload.

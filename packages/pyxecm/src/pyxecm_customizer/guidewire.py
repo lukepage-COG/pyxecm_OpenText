@@ -141,7 +141,6 @@ class Guidewire:
 
         self._session = requests.Session()
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -154,7 +153,6 @@ class Guidewire:
 
         return self._config
 
-    # end method definition
 
     def authenticate(self, auth_type: str | None = None) -> HTTPBasicAuth | str | None:
         """Authenticate with the Guidewire API using either client credentials or username/password.
@@ -245,7 +243,6 @@ class Guidewire:
 
         return None
 
-    # end method definition
 
     def request_header(self, content_type: str = "application/json") -> dict:
         """Generate request headers including authentication token.
@@ -271,7 +268,6 @@ class Guidewire:
 
         return request_header
 
-    # end method definition
 
     def do_request(
         self, method: str, url: str, data: dict | None = None, json_data: dict | None = None, params: dict | None = None
@@ -324,7 +320,6 @@ class Guidewire:
 
         return response.json() if response.content else {}
 
-    # end method definition
 
     def process_parameters(
         self, fields: list | None = None, filters: list | None = None, page_size: int | None = 25
@@ -373,7 +368,6 @@ class Guidewire:
 
         return encoded_query
 
-    # end method definition
 
     def get_result_value(
         self,
@@ -459,7 +453,6 @@ class Guidewire:
             )
             return None
 
-    # end method definition
 
     def get_groups(
         self,
@@ -562,7 +555,6 @@ class Guidewire:
 
         return self.do_request(method="GET", url=request_url)
 
-    # end method definition
 
     def get_groups_iterator(self, fields: list | None = None, filters: list | None = None, page_size: int = 25) -> iter:
         """Get an iterator object that can be used to traverse all Guidewire groups.
@@ -641,7 +633,6 @@ class Guidewire:
                 # like an empty iterable when used in a loop or converted to a list:
                 return
 
-    # end method definition
 
     def get_group(self, group_id: str) -> dict:
         """Retrieve details of a specific group.
@@ -700,7 +691,6 @@ class Guidewire:
 
         return self.do_request(method="GET", url=request_url)
 
-    # end method definition
 
     def get_users(
         self,
@@ -851,7 +841,6 @@ class Guidewire:
 
         return self.do_request(method="GET", url=request_url)
 
-    # end method definition
 
     def get_users_iterator(self, fields: list | None = None, filters: list | None = None, page_size: int = 25) -> iter:
         """Get an iterator object that can be used to traverse all Guidewire users.
@@ -934,7 +923,6 @@ class Guidewire:
                 # like an empty iterable when used in a loop or converted to a list:
                 return
 
-    # end method definition
 
     def get_user(self, user_id: str) -> dict:
         """Retrieve details of a specific user.
@@ -1002,7 +990,6 @@ class Guidewire:
 
         return self.do_request(method="GET", url=request_url)
 
-    # end method definition
 
     def update_user(self, user_id: str, user_data: dict) -> dict:
         """Update an existing user.
@@ -1023,7 +1010,6 @@ class Guidewire:
 
         return self.do_request(method="PUT", url=request_url, data=user_data)
 
-    # end method definition
 
     def get_accounts(
         self,
@@ -1096,7 +1082,6 @@ class Guidewire:
 
         return self.do_request(method="GET", url=request_url)
 
-    # end method definition
 
     def get_accounts_iterator(
         self, fields: list | None = None, filters: list | None = None, page_size: int = 25
@@ -1185,7 +1170,6 @@ class Guidewire:
                 # like an empty iterable when used in a loop or converted to a list:
                 return
 
-    # end method definition
 
     def get_account(self, account_id: str) -> dict:
         """Retrieve details of a specific account.
@@ -1204,7 +1188,6 @@ class Guidewire:
 
         return self.do_request(method="GET", url=request_url)
 
-    # end method definition
 
     def search_account(self, attributes: dict) -> dict:
         """Search accounts based on its attributes.
@@ -1277,7 +1260,6 @@ class Guidewire:
 
         return self.do_request(method="POST", json_data=body, url=request_url)
 
-    # end method definition
 
     def add_account(self, account_data: dict) -> dict:
         """Create a new account.
@@ -1296,7 +1278,6 @@ class Guidewire:
 
         return self.do_request(method="POST", url=request_url, data=account_data)
 
-    # end method definition
 
     def update_account(self, account_id: str, account_data: dict) -> dict:
         """Update an existing account.
@@ -1317,7 +1298,6 @@ class Guidewire:
 
         return self.do_request(method="PUT", url=request_url, data=account_data)
 
-    # end method definition
 
     def delete_account(self, account_id: str) -> dict:
         """Delete an account.
@@ -1336,7 +1316,6 @@ class Guidewire:
 
         return self.do_request(method="DELETE", url=request_url)
 
-    # end method definition
 
     def get_policies(
         self,
@@ -1403,7 +1382,6 @@ class Guidewire:
 
         return self.do_request(method="GET", url=request_url)
 
-    # end method definition
 
     def get_policies_iterator(
         self, fields: list | None = None, filters: list | None = None, page_size: int = 25
@@ -1486,7 +1464,6 @@ class Guidewire:
                 # like an empty iterable when used in a loop or converted to a list:
                 return
 
-    # end method definition
 
     def search_policy(self, attributes: dict) -> dict:
         """Search a specific policy based on its attributes.
@@ -1548,7 +1525,6 @@ class Guidewire:
 
         return self.do_request(method="POST", json_data=body, url=request_url)
 
-    # end method definition
 
     def get_claims(
         self,
@@ -1615,7 +1591,6 @@ class Guidewire:
 
         return self.do_request(method="GET", url=request_url)
 
-    # end method definition
 
     def get_claims_iterator(self, fields: list | None = None, filters: list | None = None, page_size: int = 25) -> iter:
         """Get an iterator object that can be used to traverse all Guidewire claims.
@@ -1694,7 +1669,6 @@ class Guidewire:
                 # like an empty iterable when used in a loop or converted to a list:
                 return
 
-    # end method definition
 
     def get_claim(self, claim_id: str) -> dict:
         """Retrieve details of a specific claim.
@@ -1713,7 +1687,6 @@ class Guidewire:
 
         return self.do_request(method="GET", url=request_url)
 
-    # end method definition
 
     def search_claim(self, attributes: dict) -> dict:
         """Search a specific claim based on its attributes.
@@ -1735,7 +1708,6 @@ class Guidewire:
 
         return self.do_request(method="POST", json_data=body, url=request_url)
 
-    # end method definition
 
     def add_claim(self, claim_data: dict) -> dict:
         """Create a new claim.
@@ -1754,7 +1726,6 @@ class Guidewire:
 
         return self.do_request(method="POST", url=request_url, data=claim_data)
 
-    # end method definition
 
     def update_claim(self, claim_id: str, claim_data: dict) -> dict:
         """Update an existing claim.
@@ -1775,7 +1746,6 @@ class Guidewire:
 
         return self.do_request(method="PUT", url=request_url, data=claim_data)
 
-    # end method definition
 
     def delete_claim(self, claim_id: str) -> dict:
         """Delete a claim.
@@ -1794,4 +1764,3 @@ class Guidewire:
 
         return self.do_request(method="DELETE", url=request_url)
 
-    # end method definition

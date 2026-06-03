@@ -147,7 +147,6 @@ class OTAC:
         self._otac_ticket = otds_ticket
         self._soap_token: str = ""
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -158,7 +157,6 @@ class OTAC:
         """
         return self._config
 
-    # end method definition
 
     def hostname(self) -> str:
         """Return the Archive Center hostname.
@@ -169,7 +167,6 @@ class OTAC:
         """
         return self.config()["hostname"]
 
-    # end method definition
 
     def set_hostname(self, hostname: str) -> None:
         """Set the Archive Center hostname.
@@ -181,7 +178,6 @@ class OTAC:
         """
         self.config()["hostname"] = hostname
 
-    # end method definition
 
     def credentials(self) -> dict:
         """Get credentials (username + password).
@@ -195,7 +191,6 @@ class OTAC:
             "password": self.config()["admin_password"],
         }
 
-    # end method definition
 
     def set_credentials(
         self,
@@ -233,7 +228,6 @@ class OTAC:
         else:
             self.config()["admin_password"] = ""
 
-    # end method definition
 
     def base_url(self) -> str:
         """Return the Archive Center base URL.
@@ -245,7 +239,6 @@ class OTAC:
 
         return self.config()["baseUrl"]
 
-    # end method definition
 
     def exec_url(self) -> str:
         """Return the Archive Center URL to execute commands.
@@ -256,7 +249,6 @@ class OTAC:
         """
         return self.config()["execUrl"]
 
-    # end method definition
 
     def request_form_header(self) -> dict:
         """Deliver the FORM request header used for the SOAP calls.
@@ -280,7 +272,6 @@ class OTAC:
 
         return request_header
 
-    # end method definition
 
     def request_json_header(self) -> dict:
         """Deliver the JSON request header used for the CRUD REST API calls.
@@ -308,7 +299,6 @@ class OTAC:
 
         return request_header
 
-    # end method definition
 
     def parse_request_response(
         self,
@@ -357,7 +347,6 @@ class OTAC:
         else:
             return dict_object
 
-    # end method definition
 
     def authenticate(self, revalidate: bool = False) -> dict | None:
         """Authenticate at Archive Center and retrieve Ticket.
@@ -437,7 +426,6 @@ class OTAC:
 
         return self._otac_ticket
 
-    # end method definition
 
     def authenticate_soap(self) -> str:
         """Authenticate via SOAP with admin User.
@@ -460,7 +448,6 @@ class OTAC:
 
         return self._soap_token
 
-    # end method definition
 
     def exec_command(self, command: str) -> dict:
         """Execute a command on Archive Center.
@@ -503,7 +490,6 @@ class OTAC:
 
         return response
 
-    # end method definition
 
     def put_cert(
         self,
@@ -593,7 +579,6 @@ class OTAC:
 
         return response
 
-    # end method definition
 
     def enable_cert(
         self,
@@ -660,7 +645,6 @@ class OTAC:
             )
             return False
 
-    # end method definition
 
     def enable_certificate(
         self,
@@ -741,4 +725,3 @@ class OTAC:
                 )
                 return None
 
-    # end method definition

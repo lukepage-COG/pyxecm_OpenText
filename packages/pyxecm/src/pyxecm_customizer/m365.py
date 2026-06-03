@@ -153,7 +153,6 @@ class M365:
         self._access_token: str | None = None
         self._user_access_token: str | None = None
 
-    # end method definition
 
     def config(self) -> dict:
         """Return the configuration dictionary.
@@ -165,7 +164,6 @@ class M365:
 
         return self._config
 
-    # end method definition
 
     def credentials(self) -> dict:
         """Return the login credentials.
@@ -178,7 +176,6 @@ class M365:
 
         return self.config()["tokenData"]
 
-    # end method definition
 
     def credentials_user(self, username: str, password: str, scope: str = "Files.ReadWrite") -> dict:
         """Get user credentials.
@@ -219,7 +216,6 @@ class M365:
 
         return credentials
 
-    # end method definition
 
     def request_header(self, content_type: str = "application/json") -> dict:
         """Return the request header used for Application calls.
@@ -248,7 +244,6 @@ class M365:
 
         return request_header
 
-    # end method definition
 
     def request_header_user(self, content_type: str = "application/json") -> dict:
         """Return the request header used for user specific calls.
@@ -277,7 +272,6 @@ class M365:
 
         return request_header
 
-    # end method definition
 
     def _log_response_error(
         self,
@@ -326,7 +320,6 @@ class M365:
                 response.text,
             )
 
-    # end method definition
 
     def do_request(
         self,
@@ -522,16 +515,13 @@ class M365:
                         time.sleep(REQUEST_RETRY_DELAY)  # Add a delay before retrying
                     else:
                         return None
-            # end try
             self.logger.debug(
                 "Retrying REST API %s call -> %s... (retry = %s)",
                 method,
                 url,
                 str(retries),
             )
-        # end while True
 
-    # end method definition
 
     def parse_request_response(
         self,
@@ -583,7 +573,6 @@ class M365:
         else:
             return dict_object
 
-    # end method definition
 
     def exist_result_item(
         self,
@@ -634,7 +623,6 @@ class M365:
 
         return False
 
-    # end method definition
 
     def get_result_value(
         self,
@@ -695,7 +683,6 @@ class M365:
                 sub_structure = sub_structure[0]
             return sub_structure[key]
 
-    # end method definition
 
     def lookup_result_value(
         self,
@@ -758,7 +745,6 @@ class M365:
             )
             return None
 
-    # end method definition
 
     def authenticate(self, revalidate: bool = False) -> str | None:
         """Authenticate at M365 Graph API with client ID and client secret.
@@ -824,7 +810,6 @@ class M365:
 
         return self._access_token
 
-    # end method definition
 
     def authenticate_user(self, username: str, password: str, scope: str | None = None) -> str | None:
         """Authenticate at M365 Graph API with username and password.
@@ -903,7 +888,6 @@ class M365:
 
         return self._user_access_token
 
-    # end method definition
 
     def get_users(
         self,
@@ -967,7 +951,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def get_users_iterator(
         self,
@@ -1032,7 +1015,6 @@ class M365:
                 # like an empty iterable when used in a loop or converted to a list:
                 return
 
-    # end method definition
 
     def get_user(self, user_email: str, user_id: str | None = None, show_error: bool = False) -> dict | None:
         """Get a M365 User based on its email or ID.
@@ -1115,7 +1097,6 @@ class M365:
             show_error=show_error,
         )
 
-    # end method definition
 
     def add_user(
         self,
@@ -1184,7 +1165,6 @@ class M365:
             failure_message="Failed to add M365 user -> '{}'".format(email),
         )
 
-    # end method definition
 
     def update_user(self, user_id: str, updated_settings: dict) -> dict | None:
         """Update selected properties of an M365 user.
@@ -1225,7 +1205,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def get_user_licenses(self, user_id: str) -> dict | None:
         """Get the assigned license SKUs of a user.
@@ -1264,7 +1243,6 @@ class M365:
             failure_message="Failed to get M365 licenses of M365 user -> {}".format(user_id),
         )
 
-    # end method definition
 
     def assign_license_to_user(self, user_id: str, sku_id: str) -> dict | None:
         """Add an M365 license to a user (e.g. to use Office 365).
@@ -1316,7 +1294,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def get_user_photo(self, user_id: str, show_error: bool = True) -> bytes | None:
         """Get the photo of a M365 user.
@@ -1362,7 +1339,6 @@ class M365:
 
         return None
 
-    # end method definition
 
     def download_user_photo(self, user_id: str, photo_path: str) -> str | None:
         """Download the M365 user photo and save it to the local file system.
@@ -1432,7 +1408,6 @@ class M365:
 
         return None
 
-    # end method definition
 
     def update_user_photo(self, user_id: str, photo_path: str) -> dict | None:
         """Update the M365 user photo.
@@ -1491,7 +1466,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def get_user_drive(self, user_id: str, me: bool = False) -> dict | None:
         """Get the mysite (OneDrive) of the user.
@@ -1559,7 +1533,6 @@ class M365:
             failure_message="Failed to get mySite (drive) of M365 user -> {}".format(user_id),
         )
 
-    # end method definition
 
     def get_groups(
         self,
@@ -1623,7 +1596,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def get_groups_iterator(
         self,
@@ -1688,7 +1660,6 @@ class M365:
                 # like an empty iterable when used in a loop or converted to a list:
                 return
 
-    # end method definition
 
     def get_group(self, group_name: str, show_error: bool = False) -> dict | None:
         """Get a M365 Group based on its name.
@@ -1771,7 +1742,6 @@ class M365:
             show_error=show_error,
         )
 
-    # end method definition
 
     def add_group(
         self,
@@ -1891,7 +1861,6 @@ class M365:
             failure_message="Failed to add M365 group -> '{}'".format(name),
         )
 
-    # end method definition
 
     def get_group_members(self, group_name: str) -> dict | None:
         """Get members (users and groups) of the specified group.
@@ -1939,7 +1908,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def add_group_member(self, group_id: str, member_id: str) -> dict | None:
         """Add a member (user or group) to a (parent) group.
@@ -1982,7 +1950,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def is_member(self, group_id: str, member_id: str, show_error: bool = True) -> bool:
         """Check whether a M365 user is already in a M365 group.
@@ -2027,7 +1994,6 @@ class M365:
 
         return bool(response and response.get("value"))
 
-    # end method definition
 
     def get_group_owners(self, group_name: str) -> dict | None:
         """Get owners (users) of the specified group.
@@ -2075,7 +2041,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def add_group_owner(self, group_id: str, owner_id: str) -> dict | None:
         """Add an owner (user) to a group.
@@ -2118,7 +2083,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def purge_deleted_items(self) -> None:
         """Purge all deleted users and groups.
@@ -2157,7 +2121,6 @@ class M365:
             user_id = user["id"]
             self.purge_deleted_item(user_id)
 
-    # end method definition
 
     def purge_deleted_item(self, item_id: str) -> dict | None:
         """Purge a single deleted user or group.
@@ -2192,7 +2155,6 @@ class M365:
             failure_message="Failed to purge deleted item -> {}".format(item_id),
         )
 
-    # end method definition
 
     def has_team(self, group_name: str) -> bool:
         """Check if a M365 Group has a M365 Team connected or not.
@@ -2248,7 +2210,6 @@ class M365:
 
         return False
 
-    # end method definition
 
     def get_team(self, name: str) -> dict | None:
         """Get a M365 Team based on its name.
@@ -2318,7 +2279,6 @@ class M365:
             failure_message="Failed to get M365 Team -> '{}'".format(name),
         )
 
-    # end method definition
 
     def add_team(
         self,
@@ -2431,7 +2391,6 @@ class M365:
             failure_message="Failed to add M365 Team -> '{}'".format(name),
         )
 
-    # end method definition
 
     def delete_team(self, team_id: str, show_error: bool = True) -> dict | None:
         """Delete Microsoft 365 Team with a specific ID.
@@ -2468,7 +2427,6 @@ class M365:
             show_error=show_error,
         )
 
-    # end method definition
 
     def delete_teams(self, name: str) -> bool:
         """Delete Microsoft 365 Teams with a specific name.
@@ -2540,7 +2498,6 @@ class M365:
             self.logger.error("Failed to retrieve M365 Teams with name -> '%s'!", name)
             return False
 
-    # end method definition
 
     def delete_all_teams(self, exception_list: list | None = None, pattern_list: list | None = None) -> bool:
         """Delete all teams (groups) based on patterns and exceptions.
@@ -2629,7 +2586,6 @@ class M365:
         )
         return True
 
-    # end method definition
 
     def get_team_channels(
         self,
@@ -2713,7 +2669,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def get_team_channel_tabs(self, team_name: str, channel_name: str) -> dict | None:
         """Get tabs of an M365 Team channel based on the team and channel names.
@@ -2799,7 +2754,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def get_teams_apps(self, filter_expression: str = "") -> dict | None:
         """Get a list of MS Teams apps in catalog that match a given filter criterium.
@@ -2879,7 +2833,6 @@ class M365:
             failure_message=failure_message,
         )
 
-    # end method definition
 
     def get_teams_app(self, app_id: str) -> dict | None:
         """Get a specific MS Teams app in catalog based on the known (internal) app ID.
@@ -2940,7 +2893,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def get_teams_apps_of_user(
         self,
@@ -2989,7 +2941,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def get_teams_apps_of_team(
         self,
@@ -3036,7 +2987,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def extract_version_from_app_manifest(self, app_path: str) -> str | None:
         """Extract the version number from the MS Teams app manifest file.
@@ -3062,7 +3012,6 @@ class M365:
 
             return version
 
-    # end method definition
 
     def upload_teams_app(
         self,
@@ -3176,7 +3125,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def remove_teams_app(self, app_id: str) -> None:
         """Remove MS Teams App from the app catalog.
@@ -3215,7 +3163,6 @@ class M365:
                 response.text,
             )
 
-    # end method definition
 
     def assign_teams_app_to_user(
         self,
@@ -3301,7 +3248,6 @@ class M365:
             show_error=show_error,
         )
 
-    # end method definition
 
     def upgrade_teams_app_of_user(
         self,
@@ -3373,7 +3319,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def remove_teams_app_from_user(
         self,
@@ -3439,7 +3384,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def assign_teams_app_to_team(self, team_id: str, app_id: str) -> dict | None:
         """Assign (add) a MS Teams app to a M365 team.
@@ -3486,7 +3430,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def upgrade_teams_app_of_team(self, team_id: str, app_name: str) -> dict | None:
         """Upgrade a MS teams app for a specific team.
@@ -3545,7 +3488,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def add_teams_app_to_channel(
         self,
@@ -3643,7 +3585,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def update_teams_app_of_channel(
         self,
@@ -3763,7 +3704,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def delete_teams_app_from_channel(
         self,
@@ -3869,11 +3809,9 @@ class M365:
             if response and response.ok:
                 break
             return False
-        # end for tab in tab_list
 
         return True
 
-    # end method definition
 
     def add_sensitivity_label(
         self,
@@ -3959,7 +3897,6 @@ class M365:
             )
             return None
 
-    # end method definition
 
     def assign_sensitivity_label_to_user(self, user_email: str, label_name: str) -> dict | None:
         """Assign a existing sensitivity label to a user.
@@ -4003,7 +3940,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def upload_outlook_app(
         self,
@@ -4035,7 +3971,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def get_app_registration(
         self,
@@ -4072,7 +4007,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def add_app_registration(
         self,
@@ -4159,7 +4093,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def update_app_registration(
         self,
@@ -4216,7 +4149,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def get_mail(
         self,
@@ -4377,7 +4309,6 @@ class M365:
 
         return None
 
-    # end method definition
 
     def get_mail_body(self, user_id: str, email_id: str) -> str | None:
         """Get full email body for a given email ID.
@@ -4417,7 +4348,6 @@ class M365:
 
         return None
 
-    # end method definition
 
     def extract_url_from_message_body(
         self,
@@ -4496,7 +4426,6 @@ class M365:
 
         return url
 
-    # end method definition
 
     def delete_mail(self, user_id: str, email_id: str) -> dict | None:
         """Delete email from inbox of a given user and a given email ID.
@@ -4530,7 +4459,6 @@ class M365:
             ),
         )
 
-    # end method definition
 
     def email_verification(
         self,
@@ -4773,9 +4701,6 @@ class M365:
                                 self.logger.info(
                                     "No Terms of Service acceptance required.",
                                 )
-                        # end if user_interaction_required and password_submit_xpath:
-                    # end if success:
-                # end if use_browser_automation
                 else:
                     # Salesforce (other than Core Share) is OK with the simple HTTP GET request:
                     self.logger.info(
@@ -4804,7 +4729,6 @@ class M365:
                         user_email,
                     )
                     return False
-            # end if response and response["value"]
             else:
                 self.logger.info(
                     "Verification email not yet received (no mails with sender -> %s and subject -> '%s' found). Waiting %s seconds...",
@@ -4814,7 +4738,6 @@ class M365:
                 )
                 time.sleep(10 * (retries + 1))
                 retries += 1
-        # end while
 
         self.logger.warning(
             "Verification mail for user -> %s has not arrived in time.",
@@ -4823,7 +4746,6 @@ class M365:
 
         return False
 
-    # end method definition
 
     def get_sharepoint_sites(
         self,
@@ -4916,7 +4838,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def get_sharepoint_root_sites(self) -> dict | None:
         """Get all SharePoint root sites.
@@ -4934,7 +4855,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def get_sharepoint_sites_iterator(
         self,
@@ -5001,7 +4921,6 @@ class M365:
                 # like an empty iterable when used in a loop or converted to a list:
                 return
 
-    # end method definition
 
     def get_sharepoint_site(self, site_id: str) -> dict | None:
         """Retrieve a SharePoint site by its ID.
@@ -5046,7 +4965,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def get_sharepoint_site_by_name(self, site_name: str) -> dict | None:
         """Retrieve a SharePoint site by its name.
@@ -5100,7 +5018,6 @@ class M365:
 
         return None
 
-    # end method definition
 
     def get_sharepoint_site_for_group(self, group_id: str) -> dict:
         """Retrieve a SharePoint site for a M365 group.
@@ -5144,7 +5061,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def get_sharepoint_pages(self, site_id: str) -> dict:
         """Retrieve a list of SharePoint site pages accessible to the authenticated user.
@@ -5206,7 +5122,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def get_sharepoint_page(self, site_id: str, page_id: str) -> dict | None:
         """Retrieve a page of a SharePoint site accessible to the authenticated user.
@@ -5273,7 +5188,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def add_sharepoint_page(self, site_id: str, page_name: str, publish: bool = True) -> dict:
         """Add a new SharePoint site page using Microsoft Graph API.
@@ -5324,7 +5238,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def publish_sharepoint_page(self, site_id: str, page_id: str) -> bool:
         """Publish a page of a SharePoint site.
@@ -5361,7 +5274,6 @@ class M365:
 
         return bool(response.ok)
 
-    # end method definition
 
     def get_sharepoint_sections(
         self,
@@ -5448,7 +5360,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def get_sharepoint_section(
         self,
@@ -5499,7 +5410,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def add_sharepoint_section(
         self,
@@ -5594,7 +5504,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def delete_sharepoint_section(
         self,
@@ -5675,7 +5584,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def get_sharepoint_webparts(
         self,
@@ -5837,7 +5745,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def get_sharepoint_webpart(self, site_id: str, page_id: str, webpart_id: str) -> dict | None:
         """Retrieve a page of a SharePoint site accessible to the authenticated user.
@@ -5931,7 +5838,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def add_sharepoint_webpart(
         self,
@@ -6043,7 +5949,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def update_sharepoint_webpart(
         self,
@@ -6102,7 +6007,6 @@ class M365:
                     destination.setdefault(key, value)
             return destination
 
-        # end deep_merge()
 
         webpart = self.get_sharepoint_webpart(site_id=site_id, page_id=page_id, webpart_id=webpart_id)
         if not webpart:
@@ -6156,7 +6060,6 @@ class M365:
 
         return response
 
-    # end method definition
 
     def follow_sharepoint_site(
         self,
@@ -6236,4 +6139,3 @@ class M365:
 
         return response
 
-    # end method definition

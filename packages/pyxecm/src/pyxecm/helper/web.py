@@ -59,7 +59,6 @@ class HTTP:
             for logfilter in logger.filters:
                 self.logger.addFilter(logfilter)
 
-    # end method definition
 
     def check_host_reachable(self, hostname: str, port: int = 80) -> bool:
         """Check if a server / web address is reachable.
@@ -101,7 +100,6 @@ class HTTP:
             self.logger.debug("Host is reachable at -> %s:%s", hostname, str(port))
             return True
 
-    # end method definition
 
     def http_request(
         self,
@@ -232,7 +230,6 @@ class HTTP:
                         self.logger.error(message)
                     else:
                         self.logger.warning(message)
-            # end if response is not None
 
             # Check if another retry is allowed, if not return None
             if retries == 0:
@@ -247,9 +244,7 @@ class HTTP:
 
             retries -= 1
             try_counter += 1
-        # end while True:
 
-    # end method definition
 
     def download_file(
         self,
@@ -342,7 +337,6 @@ class HTTP:
         else:
             return True
 
-    # end method definition
 
     def human_readable_size(self, size_in_bytes: int) -> str:
         """Return a file size in human readable form.
@@ -364,7 +358,6 @@ class HTTP:
         # We should never get here but linter wants it:
         return "{:.2f}".format(size_in_bytes)
 
-    # end method definition
 
     def extract_content(self, url: str, xpath: str) -> str | None:
         """Extract a string from a response of a HTTP request based on an XPath.
