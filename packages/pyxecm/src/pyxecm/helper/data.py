@@ -510,7 +510,7 @@ class Data:
                 ignore_idx = not enforce_schema
                 self._df = pd.concat([self._df, new_df], ignore_index=ignore_idx)
 
-        except Exception as e:
+        except (ValueError, TypeError, KeyError) as e:
             self.logger.error("Append failed; error -> %s", str(e))
             return False
         else:

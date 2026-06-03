@@ -1061,7 +1061,7 @@ class OTCS:
                     "Cannot load ontology from JSON document -> %s (%s)", self.ONTOLOGY_FILE_NAME, document_id
                 )
                 return False
-        except Exception as json_error:
+        except (json.JSONDecodeError, KeyError, TypeError, ValueError) as json_error:
             self.logger.error(
                 "Invalid JSON input in document -> %s (%s); error -> %s",
                 self.ONTOLOGY_FILE_NAME,
@@ -7907,7 +7907,7 @@ class OTCS:
             try:
                 mime = magic.Magic(mime=True)
                 mime_type = mime.from_file(path_or_url)
-            except Exception:
+            except (OSError, ValueError):
                 self.logger.error(
                     "Unknown mime type for document -> '%s' for upload to volume -> %s",
                     file_name,
@@ -8192,7 +8192,7 @@ class OTCS:
             try:
                 mime = magic.Magic(mime=True)
                 mime_type = mime.from_file(file_url)
-            except Exception:
+            except (OSError, ValueError):
                 self.logger.error(
                     "Unknown mime type for upload of document -> '%s' to parent ID -> %d",
                     file_name,
@@ -8554,7 +8554,7 @@ class OTCS:
             try:
                 mime = magic.Magic(mime=True)
                 mime_type = mime.from_file(file_url)
-            except Exception:
+            except (OSError, ValueError):
                 self.logger.error(
                     "Unknown mime type for new version of document -> '%s' (%d)",
                     file_name,
@@ -9026,7 +9026,7 @@ class OTCS:
                         download_file.write(chunk)
                         bytes_downloaded += len(chunk)
 
-        except Exception as e:
+        except OSError as e:
             self.logger.error(
                 "Error while writing content to file -> %s after %d bytes downloaded; error -> %s",
                 file_path,
@@ -15919,7 +15919,7 @@ class OTCS:
 
             try:
                 attr_cls = soap_client.get_type(f"ns1:{soap_type}")
-            except Exception:
+            except Exception:  # Zeep type lookup can fail with various errors
                 attr_cls = soap_client.get_type(f"ns0:{soap_type}")
 
             soap_attributes.append(
@@ -21737,7 +21737,7 @@ class OTCS:
                     file_path,
                 )
 
-            except Exception:
+            except (OSError, zipfile.BadZipFile):
                 self.logger.error(
                     "Failed to unzip node (%d) -> %s",
                     node_id,
@@ -21755,7 +21755,7 @@ class OTCS:
                                     filename,
                                 )
                                 zip_file.extractall(Path(root) / filename[:-4])
-                        except Exception:
+                        except (OSError, zipfile.BadZipFile):
                             self.logger.error(
                                 "Failed to unzip nested ZIP file -> '%s'!",
                                 filename,
