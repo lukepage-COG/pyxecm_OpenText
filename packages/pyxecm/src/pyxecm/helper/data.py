@@ -6,8 +6,6 @@ This code implements a class called "Data" which is a wrapper
 to Pandas data frame.
 """
 
-from __future__ import annotations  # to allow using `Data` within class definitions
-
 __author__ = "Dr. Marc Diefenbruch"
 __copyright__ = "Copyright (C) 2024-2025, OpenText"
 __credits__ = ["Kai-Philip Gatzweiler"]
@@ -20,6 +18,7 @@ import os
 import re
 import threading
 from io import StringIO
+from typing import Any
 
 import pandas as pd
 import requests
@@ -38,7 +37,7 @@ class Data:
     def read_sql(
         cls,
         sql: str,
-        con: any,
+        con: Any,
         columns: list[str] | None = None,
         dtypes: dict[str, type | str] | None = None,
         index_columns: str | list[str] | None = None,
@@ -203,7 +202,7 @@ class Data:
 
     # end method definition
 
-    def __getitem__(self, column: any) -> pd.Series:
+    def __getitem__(self, column: Any) -> pd.Series:
         """Return the column corresponding to the key from the data frame.
 
         NOTE: This operates on the COLUMN axis. To retrieve specific rows,
@@ -229,7 +228,7 @@ class Data:
 
     # end method definition
 
-    def __setitem__(self, key: any, value: any) -> None:
+    def __setitem__(self, key: Any, value: Any) -> None:
         """Assign data to a column or create a new column.
 
         NOTE: This operates on the COLUMN axis. Assignments will modify
@@ -255,7 +254,7 @@ class Data:
 
     # end method definition
 
-    def __delitem__(self, key: any) -> None:
+    def __delitem__(self, key: Any) -> None:
         """Remove a column from the DataFrame.
 
         NOTE: This operates on the COLUMN axis. To delete rows (nodes/edges),

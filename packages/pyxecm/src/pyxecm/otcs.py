@@ -38,7 +38,8 @@ from functools import cache
 from http import HTTPStatus
 from importlib.metadata import version
 from queue import Empty, LifoQueue, Queue
-from typing import Literal
+from collections.abc import Iterator
+from typing import Any, Literal
 
 import requests
 import websockets
@@ -408,7 +409,7 @@ class OTCS:
         download_dir: str | None = None,
         feme_uri: str | None = None,
         use_numeric_category_identifier: bool = True,
-        workspace_ontology: dict[str] | None = None,
+        workspace_ontology: dict[str, Any] | None = None,
         logger: logging.Logger = default_logger,
     ) -> None:
         """Initialize the OTCS object.
@@ -618,7 +619,7 @@ class OTCS:
 
     # end method definition
 
-    def config(self) -> dict:
+    def config(self) -> dict[str, Any]:
         """Return the configuration dictionary.
 
         Returns:
@@ -629,7 +630,7 @@ class OTCS:
 
     # end method definition
 
-    def cookie(self) -> dict | None:
+    def cookie(self) -> dict[str, Any] | None:
         """Return the login cookie of Content Server.
 
         This is set by the authenticate() method
@@ -754,7 +755,7 @@ class OTCS:
 
     # end method definition
 
-    def credentials(self) -> dict:
+    def credentials(self) -> dict[str, Any]:
         """Get credentials (username + password).
 
         Returns:
@@ -993,14 +994,14 @@ class OTCS:
 
     # end method definition
 
-    def get_workspace_ontology(self, force_reload: bool = False) -> dict[str] | None:
+    def get_workspace_ontology(self, force_reload: bool = False) -> dict[str, Any] | None:
         """Get the relationship model for workspace types (ontology).
 
         TODO: currently we cannot derive it from the workspace type definitions
         as this information is not managed in OTCS - this will change with 26.2.
 
         Returns:
-            dict[str] | None:
+            dict[str, Any] | None:
                 Workspace ontology or None in case it is not provided via
                 the class __init__ method or not found as a JSON file in admin
                 Personal Workspace.
@@ -1181,7 +1182,7 @@ class OTCS:
 
     # end method definition
 
-    def request_form_header(self) -> dict:
+    def request_form_header(self) -> dict[str, Any]:
         """Deliver the request header used for the CRUD REST API calls.
 
         Consists of Cookie + Form Headers (see global variable).
@@ -1202,7 +1203,7 @@ class OTCS:
 
     # end method definition
 
-    def request_json_header(self) -> dict:
+    def request_json_header(self) -> dict[str, Any]:
         """Deliver the request header for REST calls that require content type application/json.
 
         Consists of Cookie + Json Headers (see global variable).
@@ -1223,7 +1224,7 @@ class OTCS:
 
     # end method definition
 
-    def request_download_header(self) -> dict:
+    def request_download_header(self) -> dict[str, Any]:
         """Deliver the request header used for the CRUD REST API calls.
 
         Consists Form Headers (see global variable).
@@ -1248,10 +1249,10 @@ class OTCS:
         self,
         url: str,
         method: str = "GET",
-        headers: dict | None = None,
-        data: dict | None = None,
-        json_data: dict | None = None,
-        files: dict | None = None,
+        headers: dict[str, str] | None = None,
+        data: dict[str, Any] | None = None,
+        json_data: dict[str, Any] | None = None,
+        files: dict[str, Any] | None = None,
         timeout: float | None = REQUEST_TIMEOUT,
         show_error: bool = True,
         show_warning: bool = False,
@@ -1263,7 +1264,7 @@ class OTCS:
         parse_request_response: bool = True,
         stream: bool = False,
         parse_error_response: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Call an OTCS REST API in a safe way.
 
         Args:
@@ -1527,7 +1528,7 @@ class OTCS:
         response_object: object,
         additional_error_message: str = "",
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Convert the text property of a request response object to a Python dict safely.
 
         Handles exceptions to prevent fatal errors caused by corrupt responses,
@@ -1589,7 +1590,7 @@ class OTCS:
         response_object: object,
         additional_error_message: str = "",
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Convert the text property of a request response object to a Python dict safely.
 
         Handles exceptions to prevent fatal errors caused by corrupt responses,
@@ -1645,7 +1646,7 @@ class OTCS:
 
     def lookup_result_value(
         self,
-        response: dict,
+        response: dict[str, Any],
         key: str,
         value: str,
         return_key: str,
@@ -1731,7 +1732,7 @@ class OTCS:
 
     def exist_result_item(
         self,
-        response: dict,
+        response: dict[str, Any],
         key: str,
         value: str,
         property_name: str = "properties",
@@ -1849,7 +1850,7 @@ class OTCS:
 
     def get_result_value(
         self,
-        response: dict | None,
+        response: dict[str, Any] | None,
         key: str,
         index: int = 0,
         property_name: str = "properties",
@@ -1994,11 +1995,11 @@ class OTCS:
 
     def get_result_values(
         self,
-        response: dict,
+        response: dict[str, Any],
         key: str,
         property_name: str = "properties",
         data_name: str = "data",
-    ) -> list | None:
+    ) -> list[Any] | None:
         """Read all values with a given key from the REST API response.
 
         This method handles the most common response structures delivered by the
@@ -2095,10 +2096,10 @@ class OTCS:
 
     def get_result_values_iterator(
         self,
-        response: dict,
+        response: dict[str, Any],
         property_name: str = "properties",
         data_name: str = "data",
-    ) -> iter:
+    ) -> Iterator:
         """Get an iterator object that can be used to traverse through OTCS responses.
 
         This method handles the most common response structures delivered by the
@@ -2242,7 +2243,7 @@ class OTCS:
         self,
         revalidate: bool = False,
         wait_for_ready: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Authenticate with Content Server and retrieves an OTCS ticket.
 
         This method supports 3 ways of authentication (in this order):
@@ -2457,9 +2458,9 @@ class OTCS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="reauthenticate")
     def reauthenticate(
         self,
-        request_cookie: dict,
+        request_cookie: dict[str, Any],
         thread_safe: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Re-authenticates after a session timeout.
 
         This implementation supports thread-safe reauthentication, ensuring that
@@ -2588,7 +2589,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_server_info")
-    def get_server_info(self) -> dict | None:
+    def get_server_info(self) -> dict[str, Any] | None:
         """Retrieve Content Server information.
 
         Fetches detailed server information, including mobile support, server
@@ -2692,7 +2693,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="apply_config")
-    def apply_config(self, xml_file_path: str) -> dict | None:
+    def apply_config(self, xml_file_path: str) -> dict[str, Any] | None:
         """Apply Content Server administration settings from XML file.
 
         Args:
@@ -2760,7 +2761,7 @@ class OTCS:
         limit: int = 20,
         page: int = 1,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a Content Server users based on different criterias.
 
         The criterias can be combined.
@@ -2959,7 +2960,7 @@ class OTCS:
         query_string: str | None = None,
         sort: str | None = None,
         limit: int = 20,
-    ) -> iter:
+    ) -> Iterator:
         """Get an iterator object that can be used to traverse OTCS users.
 
         Filters can be applied that are given by the "where" and "query" parameters.
@@ -3084,7 +3085,7 @@ class OTCS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user")
     def get_user(
         self, name: str | None = None, user_id: int | None = None, user_type: int = 0, show_error: bool = False
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a Content Server user based on the login name and type.
 
         Args:
@@ -3239,11 +3240,11 @@ class OTCS:
         self,
         value: str,
         field: str = "where_name",
-        fields: dict | None = None,
+        fields: dict[str, str] | None = None,
         query_string: str | None = None,
         limit: int = 20,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Find a user based on search criteria.
 
         This method is just a wrapper for get_users() for more simple use cases.
@@ -3310,7 +3311,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_current_user")
-    def get_current_user(self) -> dict | None:
+    def get_current_user(self) -> dict[str, Any] | None:
         """Get the current authenticated user.
 
         Returns:
@@ -3349,9 +3350,9 @@ class OTCS:
         title: str,
         base_group: int,
         phone: str = "",
-        privileges: list | None = None,
+        privileges: list[str] | None = None,
         user_type: int = 0,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add Content Server user.
 
         Args:
@@ -3428,7 +3429,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_user")
-    def update_user(self, user_id: int, field: str, value: str) -> dict | None:
+    def update_user(self, user_id: int, field: str, value: str) -> dict[str, Any] | None:
         """Update a defined field for a user.
 
         Args:
@@ -3474,7 +3475,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user_profile")
-    def get_user_profile(self) -> dict | None:
+    def get_user_profile(self) -> dict[str, Any] | None:
         """Get the user profile.
 
         IMPORTANT: this method needs to be called by the authenticated user
@@ -3513,7 +3514,7 @@ class OTCS:
         field: str,
         value: str,
         config_section: str = "SmartUI",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update a defined field for a user profile.
 
         IMPORTANT: This method must be called by the authenticated user.
@@ -3571,7 +3572,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user_photo")
-    def get_user_photo(self, user_id: int) -> dict | None:
+    def get_user_photo(self, user_id: int) -> dict[str, Any] | None:
         """Get the profile photo of a user.
 
         Args:
@@ -3604,7 +3605,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_user_photo")
-    def update_user_photo(self, user_id: int, photo_id: int) -> dict | None:
+    def update_user_photo(self, user_id: int, photo_id: int) -> dict[str, Any] | None:
         """Update a user with a profile photo (which must be an existing node).
 
         Args:
@@ -3690,7 +3691,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user_proxies")
-    def get_user_proxies(self, use_v2: bool = False) -> dict | None:
+    def get_user_proxies(self, use_v2: bool = False) -> dict[str, Any] | None:
         """Get list of user proxies for the current user.
 
         This method needs to be called as the user the proxy is acting for.
@@ -3730,7 +3731,7 @@ class OTCS:
         proxy_user_id: int,
         from_date: str | None = None,
         to_date: str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a user as a proxy to the current user.
 
         IMPORTANT: This method must be called as the user the proxy is acting for.
@@ -3825,12 +3826,12 @@ class OTCS:
         self,
         where_name: str | None = None,
         expand: str | None = None,
-        fields: str | list = "properties",  # per default we just get the most important information
+        fields: str | list[str] = "properties",  # per default we just get the most important information
         metadata: bool = False,
         sort: str | None = None,
         limit: int = 20,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the favorites for the current (authenticated) user.
 
         Args:
@@ -3914,7 +3915,7 @@ class OTCS:
 
     # end method definition
 
-    def add_favorite(self, node_id: int) -> dict | None:
+    def add_favorite(self, node_id: int) -> dict[str, Any] | None:
         """Add a favorite for the current (authenticated) user.
 
         Deprecated: use add_user_favorite() instead.
@@ -3930,7 +3931,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_favorite")
-    def add_user_favorite(self, node_id: int) -> dict | None:
+    def add_user_favorite(self, node_id: int) -> dict[str, Any] | None:
         """Add a favorite for the current (authenticated) user.
 
         Args:
@@ -3962,7 +3963,7 @@ class OTCS:
 
     # end method definition
 
-    def add_favorite_tab(self, tab_name: str, order: int) -> dict | None:
+    def add_favorite_tab(self, tab_name: str, order: int) -> dict[str, Any] | None:
         """Add a favorite for the current (authenticated) user.
 
         Deprecated: use add_user_favorite_tab() instead.
@@ -3978,7 +3979,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_favorite_tab")
-    def add_user_favorite_tab(self, tab_name: str, order: int) -> dict | None:
+    def add_user_favorite_tab(self, tab_name: str, order: int) -> dict[str, Any] | None:
         """Add a favorite tab for the current (authenticated) user.
 
         Args:
@@ -4022,12 +4023,12 @@ class OTCS:
         where_type: list[int] | None = None,
         where_parent_id: int | None = None,
         expand: str | None = None,
-        fields: str | list = "properties",  # per default we just get the most important information
+        fields: str | list[str] = "properties",  # per default we just get the most important information
         metadata: bool = False,
         sort: str | None = None,
         limit: int = 20,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the recently accessed items for the current (authenticated) user.
 
         Args:
@@ -4124,7 +4125,7 @@ class OTCS:
     def get_user_mytodo(
         self,
         expand: str = "",
-        fields: str | list = "assignments",  # per default
+        fields: str | list[str] = "assignments",  # per default
         metadata: bool | None = None,
         sort_column: str | None = "date_due",
         sort_type: str | None = "asc",
@@ -4132,7 +4133,7 @@ class OTCS:
         page: int = 1,
         where_location_name: str | None = None,
         where_name: str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the user's mytodo workflow assignment items.
 
         Args:
@@ -4217,12 +4218,12 @@ class OTCS:
         self,
         where_name: str | None = None,
         expand: str | None = None,
-        fields: str | list = "properties",  # per default we just get the most important information
+        fields: str | list[str] = "properties",  # per default we just get the most important information
         metadata: bool = False,
         sort: str | None = None,
         limit: int = 20,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the reserved nodes for the current (authenticated) user.
 
         Args:
@@ -4310,11 +4311,11 @@ class OTCS:
     def get_user_memberof(
         self,
         expand: str | None = None,
-        fields: str | list = "properties",  # per default we just get the most important information
+        fields: str | list[str] = "properties",  # per default we just get the most important information
         metadata: bool = False,
         limit: int = 20,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the groups the current (authenticated) user is a member of.
 
         Args:
@@ -4428,7 +4429,7 @@ class OTCS:
         limit: int = 20,
         page: int = 1,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a list of Content Server groups.
 
         Args:
@@ -4559,7 +4560,7 @@ class OTCS:
         where_type: int | None = 1,
         sort: str | None = None,
         limit: int = 20,
-    ) -> iter:
+    ) -> Iterator:
         """Get an iterator object that can be used to traverse OTCS groups.
 
         Filters can be applied that are given by the "where" and "query" parameters.
@@ -4655,7 +4656,7 @@ class OTCS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_group")
     def get_group(
         self, name: str | None = None, group_id: int | None = None, group_type: int = 1, show_error: bool = False
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the Content Server group with a given name.
 
         Args:
@@ -4767,7 +4768,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_group")
-    def add_group(self, name: str, group_type: int = 1) -> dict | None:
+    def add_group(self, name: str, group_type: int = 1) -> dict[str, Any] | None:
         """Add Content Server group.
 
         Args:
@@ -4815,7 +4816,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_signing_group")
-    def add_signing_group(self, name: str) -> dict | None:
+    def add_signing_group(self, name: str) -> dict[str, Any] | None:
         """Add a Signing Group (eSignature) to Content Server.
 
         Signing Groups (type 101) cannot be created via the REST API
@@ -4951,7 +4952,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_signing_groups")
-    def get_signing_groups(self, query: str = "", limit: int = 20) -> dict | None:
+    def get_signing_groups(self, query: str = "", limit: int = 20) -> dict[str, Any] | None:
         """Get Signing Groups (eSignature) from Content Server.
 
         This method calls the signingusers endpoint and filters
@@ -5008,10 +5009,10 @@ class OTCS:
         where_first_name: str | None = None,
         where_last_name: str | None = None,
         where_business_email: str | None = None,
-        fields: str | list | None = None,  # per default we get all member properties
+        fields: str | list[str] | None = None,  # per default we get all member properties
         limit: int = 100,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get Content Server group members.
 
         Args:
@@ -5093,7 +5094,7 @@ class OTCS:
         where_last_name: str | None = None,
         where_business_email: str | None = None,
         page_size: int = 100,
-    ) -> iter:
+    ) -> Iterator:
         """Get an iterator object that can be used to traverse group members.
 
         Filters can be applied that are given by the "where" parameters.
@@ -5200,7 +5201,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_group_member")
-    def add_group_member(self, member_id: int | list, group_id: int) -> dict | None:
+    def add_group_member(self, member_id: int | list[int], group_id: int) -> dict[str, Any] | None:
         """Add a user or group to a target group.
 
         Args:
@@ -5243,7 +5244,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_privilege")
-    def update_privilege(self, privilege_id: str, restricted: bool) -> dict | None:
+    def update_privilege(self, privilege_id: str, restricted: bool) -> dict[str, Any] | None:
         """Update a usage privilege.
 
         Args:
@@ -5350,7 +5351,7 @@ class OTCS:
         usage_id: str | None = None,
         usage_name: str | None = None,
         update_cache: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the usage privilege either based on ID or based on a name.
 
         The returned values are cached, as they will not change for the lifetime of the system.
@@ -5421,7 +5422,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_usage_privilege")
-    def assign_usage_privilege(self, usage_privilege: str, member_id: int, auto_restrict: bool = True) -> dict | None:
+    def assign_usage_privilege(self, usage_privilege: str, member_id: int, auto_restrict: bool = True) -> dict[str, Any] | None:
         """Assign a usage privilege to a user or group.
 
         Args:
@@ -5553,7 +5554,7 @@ class OTCS:
         self,
         object_type: int,
         update_cache: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the usage privilege either based on ID or based on a name.
 
         The returned values are cached, as they will not change for the lifetime of the system.
@@ -5604,7 +5605,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_object_privilege")
-    def assign_object_privilege(self, object_type: str, member_id: int, auto_restrict: bool = True) -> dict | None:
+    def assign_object_privilege(self, object_type: str, member_id: int, auto_restrict: bool = True) -> dict[str, Any] | None:
         """Assign a usage privilege to a user or group.
 
         Args:
@@ -5684,11 +5685,11 @@ class OTCS:
     def get_node(
         self,
         node_id: int,
-        fields: str | list = "properties",  # per default we just get the most important information
-        expand: str | list = "",
+        fields: str | list[str] = "properties",  # per default we just get the most important information
+        expand: str | list[str] = "",
         metadata: bool = False,
         timeout: float = REQUEST_TIMEOUT,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a node based on the node ID.
 
         Args:
@@ -5836,11 +5837,11 @@ class OTCS:
         self,
         parent_id: int,
         name: str,
-        fields: str | list = "properties",
+        fields: str | list[str] = "properties",
         metadata: bool = False,
         show_error: bool = False,
         exact_match: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a node based on the parent ID and name.
 
         This method queries using "where_name", and the result is returned as a list.
@@ -5952,12 +5953,12 @@ class OTCS:
     def get_node_by_workspace_and_path(
         self,
         workspace_id: int,
-        path: list,
+        path: list[str],
         create_path: bool = False,
-        fields: str | list = "properties",
+        fields: str | list[str] = "properties",
         metadata: bool = False,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a node based on the workspace ID (= node ID) and path (list of folder names).
 
         Args:
@@ -6094,12 +6095,12 @@ class OTCS:
     def get_node_by_volume_and_path(
         self,
         volume_type: int,
-        path: list | None = None,
+        path: list[str] | None = None,
         create_path: bool = False,
-        fields: str | list = "properties",
+        fields: str | list[str] = "properties",
         metadata: bool = False,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a node based on the volume and path (list of container items).
 
         Args:
@@ -6226,7 +6227,7 @@ class OTCS:
         self,
         nickname: str,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a node based on the nickname.
 
         Args:
@@ -6270,7 +6271,7 @@ class OTCS:
         node_id: int,
         nickname: str,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Assign a nickname to an OTCS node (e.g. workspace).
 
         Some naming conventions for the nickname are automatically applied:
@@ -6345,9 +6346,9 @@ class OTCS:
         show_hidden: bool = False,
         limit: int = 100,
         page: int = 1,
-        fields: (str | list) = "properties",  # per default we just get the most important information
+        fields: str | list[str] = "properties",  # per default we just get the most important information
         metadata: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the subnodes of a given parent node ID.
 
         Args:
@@ -6505,10 +6506,10 @@ class OTCS:
         filter_node_types: int = -2,
         filter_name: str = "",
         show_hidden: bool = False,
-        fields: (str | list) = "properties",  # per default we just get the most important information
+        fields: str | list[str] = "properties",  # per default we just get the most important information
         metadata: bool = False,
         page_size: int = 25,
-    ) -> iter:
+    ) -> Iterator:
         """Get an iterator object that can be used to traverse subnodes.
 
         Filters can be applied that are given by the "filter" parameters.
@@ -6667,7 +6668,7 @@ class OTCS:
         sort: str | None = None,
         page_size: int = 100,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the nodes under a given parent node ID with defined facet values.
 
         NOTE: This is a V3 REST API that may not be aviable in older OTCS versions!
@@ -6757,7 +6758,7 @@ class OTCS:
         result_field: str = "contents",
         page_size: int = 100,
         limit: int | None = None,
-    ) -> iter:
+    ) -> Iterator:
         """Get an iterator object that can be used to traverse the filtered nodes.
 
         NOTE: This is a V3 REST API that may not be aviable in older OTCS versions!
@@ -6904,10 +6905,10 @@ class OTCS:
         value: str,
         attribute_set: str | None = None,
         substring: bool = False,
-        fields: str | list | None = None,
+        fields: str | list[str] | None = None,
         page_size: int = 25,
         stop_at_first_match: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Lookup nodes under a parent node that have a specified value in a category attribute.
 
         Args:
@@ -7119,8 +7120,8 @@ class OTCS:
     def lookup_node_by_regex(
         self,
         parent_node_id: int,
-        regex_list: list,
-    ) -> dict | None:
+        regex_list: list[str],
+    ) -> dict[str, Any] | None:
         """Lookup the node under a parent node that has a name that matches on of the given regular expressions.
 
         Args:
@@ -7168,7 +7169,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_columns")
-    def get_node_columns(self, node_id: int) -> dict | None:
+    def get_node_columns(self, node_id: int) -> dict[str, Any] | None:
         """Get custom columns configured / enabled for a node.
 
         Args:
@@ -7295,7 +7296,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_ancestors")
-    def get_node_ancestors(self, node_id: int) -> dict | None:
+    def get_node_ancestors(self, node_id: int) -> dict[str, Any] | None:
         """Get ancestors of a node.
 
         Args:
@@ -7387,7 +7388,7 @@ class OTCS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_facets")
     def get_node_facets(
         self, node_id: int, facet_values: dict[int, str] | None = None, facet_values_limit: int | None = None
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get facets configured / enabled for a node.
 
         Args:
@@ -7516,9 +7517,9 @@ class OTCS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_actions")
     def get_node_actions(
         self,
-        node_id: int | list,
-        filter_actions: list | None = None,
-    ) -> dict | None:
+        node_id: int | list[int],
+        filter_actions: list[str] | None = None,
+    ) -> dict[str, Any] | None:
         """Get allowed actions for a node.
 
         Args:
@@ -7670,10 +7671,10 @@ class OTCS:
         node_id: int,
         name: str,
         description: str | None = None,
-        name_multilingual: dict | None = None,
-        description_multilingual: dict | None = None,
+        name_multilingual: dict[str, str] | None = None,
+        description_multilingual: dict[str, str] | None = None,
         parse_error_response: bool | None = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Change the name and description of a node.
 
         Args:
@@ -7732,7 +7733,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="delete_node")
-    def delete_node(self, node_id: int, purge: bool = False) -> dict | None:
+    def delete_node(self, node_id: int, purge: bool = False) -> dict[str, Any] | None:
         """Delete an existing node.
 
         Args:
@@ -7792,7 +7793,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="purge_node")
-    def purge_node(self, node_id: int | list) -> dict | None:
+    def purge_node(self, node_id: int | list[int]) -> dict[str, Any] | None:
         """Purge an item in the recycle bin (final destruction).
 
         Args:
@@ -7831,7 +7832,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="restore_node")
-    def restore_node(self, node_id: int | list) -> dict | None:
+    def restore_node(self, node_id: int | list[int]) -> dict[str, Any] | None:
         """Restore an item from the recycle bin (undo deletion).
 
         Args:
@@ -7892,7 +7893,7 @@ class OTCS:
         page: int = 1,
         sort: str = "desc_audit_date",
         expand: str = "audit{user_id,target_user_id}",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the audit information for a given node ID.
 
         Args:
@@ -8049,7 +8050,7 @@ class OTCS:
         filter_date_end: str | None = None,
         page_size: int = 25,
         sort: str = "desc_audit_date",
-    ) -> iter:
+    ) -> Iterator:
         """Get an iterator object that can be used to traverse subnodes.
 
         Filters can be applied that are given by the "filter" parameters.
@@ -8164,7 +8165,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_volumes")
-    def get_volumes(self) -> dict | None:
+    def get_volumes(self) -> dict[str, Any] | None:
         """Get all Volumes.
 
         Args:
@@ -8240,7 +8241,7 @@ class OTCS:
         self,
         volume_type: int,
         timeout: float = REQUEST_TIMEOUT,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get Volume information based on the volume type ID.
 
         Args:
@@ -8278,7 +8279,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="check_node_name")
-    def check_node_name(self, parent_id: int, node_name: str) -> dict | None:
+    def check_node_name(self, parent_id: int, node_name: str) -> dict[str, Any] | None:
         """Check if a node with a given name already exists under a specified parent node.
 
         Args:
@@ -8341,7 +8342,7 @@ class OTCS:
         path_or_url: str,
         file_name: str,
         mime_type: str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Fetch a file from a URL or local filesystem and upload it to a Content Server volume.
 
         Args:
@@ -8455,7 +8456,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="flatten_categories_dict")
-    def flatten_categories_dict(self, categories_dict: dict) -> dict:
+    def flatten_categories_dict(self, categories_dict: dict[str, Any]) -> dict[str, Any]:
         """Return flattened categories dict.
 
         This is a helper method.
@@ -8479,7 +8480,7 @@ class OTCS:
 
         items = {}
 
-        def recurse(current_dict: dict) -> dict:
+        def recurse(current_dict: dict[str, Any]) -> dict[str, Any]:
             for k, v in current_dict.items():
                 # Attribute 1 stands for the category itself
                 # and we don't want to modify it:
@@ -8505,15 +8506,15 @@ class OTCS:
         mime_type: str | None = None,
         file_content: str | bytes | None = None,
         encoding: str = "utf-8",
-        category_data: dict | None = None,
-        classifications: list | None = None,
+        category_data: dict[str, Any] | None = None,
+        classifications: list[str] | None = None,
         description: str = "",
         external_modify_date: str | None = None,
         external_create_date: str | None = None,
         extract_zip: bool = False,
         replace_existing: bool = False,
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Fetch a file from a URL or local filesystem and uploads it to a OTCS parent.
 
         The parent should be a container item such as a folder or business workspace.
@@ -8757,7 +8758,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="upload_directory_to_parent")
-    def upload_directory_to_parent(self, parent_id: int, file_path: str, replace_existing: bool = True) -> dict | None:
+    def upload_directory_to_parent(self, parent_id: int, file_path: str, replace_existing: bool = True) -> dict[str, Any] | None:
         """Upload a directory or an uncompressed zip file to Content Server.
 
         IMPORTANT: if the path ends in a file then we assume it is a ZIP file!
@@ -8937,7 +8938,7 @@ class OTCS:
         file_content: str | bytes | None = None,
         encoding: str = "utf-8",
         description: str = "",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Fetch file from URL or local filesystem and upload it as a document version.
 
         The version data can be provided in one of three ways:
@@ -9115,7 +9116,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_document_versions")
-    def get_document_versions(self, node_id: str) -> list | None:
+    def get_document_versions(self, node_id: str) -> list[Any] | None:
         """Get a list of the document versions of a document node.
 
         Args:
@@ -9190,7 +9191,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_document_version")
-    def get_document_version(self, node_id: str, version_number: int) -> dict | None:
+    def get_document_version(self, node_id: str, version_number: int) -> dict[str, Any] | None:
         """Get a particular version of a document based on the version number.
 
         The first version (oldest) typically has the number 1.
@@ -9269,7 +9270,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_latest_document_version")
-    def get_latest_document_version(self, node_id: int) -> dict | None:
+    def get_latest_document_version(self, node_id: int) -> dict[str, Any] | None:
         """Get latest version of a document node based on the node ID.
 
         Args:
@@ -9305,7 +9306,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="purge_document_versions")
-    def purge_document_versions(self, node_id: int, versions_to_keep: int = 1) -> dict | None:
+    def purge_document_versions(self, node_id: int, versions_to_keep: int = 1) -> dict[str, Any] | None:
         """Purge versions of a document based on the node ID of the document.
 
         Args:
@@ -9368,7 +9369,7 @@ class OTCS:
         node_id: int,
         version_number: str = "",
         parse_request_response: bool = False,
-    ) -> bytes | dict | None:
+    ) -> bytes | dict[str, Any] | None:
         """Get document content from Content Server.
 
         Args:
@@ -9438,7 +9439,7 @@ class OTCS:
         self,
         node_id: int,
         version_number: str = "",
-    ) -> list | dict | None:
+    ) -> list[Any] | dict[str, Any] | None:
         """Get document content from Content Server and parse content as JSON.
 
         Args:
@@ -9688,7 +9689,7 @@ class OTCS:
         location_id: int | list[int] | None = None,
         limit: int = 100,
         page: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Search for a search term using Content Server Search.
 
         Args:
@@ -9960,7 +9961,7 @@ class OTCS:
         location_id: int | list[int] | None = None,
         page_size: int = 100,
         limit: int | None = None,
-    ) -> iter:
+    ) -> Iterator:
         """Get an iterator object to traverse all search results for a given search.
 
         Using a generator avoids loading a large number of nodes into memory at once.
@@ -10064,7 +10065,7 @@ class OTCS:
     def get_external_system_connections(
         self,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get all external system connections.
 
         NOTE: This method only delivers all details of an external system connection with OTCM 26.1 and newer.
@@ -10117,10 +10118,10 @@ class OTCS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_external_system_connection")
     def get_external_system_connection(
         self,
-        connection_name: str | list | None = None,
-        connection_types: str | list | None = None,
+        connection_name: str | list[str] | None = None,
+        connection_types: str | list[str] | None = None,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get external system connection (e.g. SAP, Salesforce, SuccessFactors).
 
         This method supports the legacy (pre 26.1 "/externalsystems/<name>/config" endpoint) and the new
@@ -10295,8 +10296,8 @@ class OTCS:
         client_id: str | None = None,
         client_secret: str | None = None,
         comment: str | None = None,
-        display_names: dict | None = None,
-    ) -> dict | None:
+        display_names: dict[str, str] | None = None,
+    ) -> dict[str, Any] | None:
         """Add an external system connection (e.g. SAP, Salesforce, SuccessFactors).
 
         Args:
@@ -10404,7 +10405,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="create_transport_workbench")
-    def create_transport_workbench(self, workbench_name: str) -> dict | None:
+    def create_transport_workbench(self, workbench_name: str) -> dict[str, Any] | None:
         """Create a Workbench in the Transport Volume.
 
         Args:
@@ -10449,7 +10450,7 @@ class OTCS:
         self,
         package_id: int,
         workbench_id: int,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Unpack an existing Transport Package into an existing Workbench.
 
         Args:
@@ -10622,9 +10623,9 @@ class OTCS:
         package_url: str,
         package_name: str,
         package_description: str = "",
-        replacements: list | None = None,
-        extractions: list | None = None,
-    ) -> dict | None:
+        replacements: list[dict[str, Any]] | None = None,
+        extractions: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any] | None:
         """Deploy a transport.
 
         This uses subfunctions to upload, unpackage and deploy the transport,
@@ -10885,7 +10886,7 @@ class OTCS:
     def replace_transport_placeholders(
         self,
         zip_file_path: str,
-        replacements: list,
+        replacements: list[dict[str, Any]],
     ) -> bool:
         """Search and replace strings in the XML files of the transport package.
 
@@ -11038,7 +11039,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="extract_transport_data")
-    def extract_transport_data(self, zip_file_path: str, extractions: list) -> bool:
+    def extract_transport_data(self, zip_file_path: str, extractions: list[dict[str, Any]]) -> bool:
         """Search and extract XML data from the transport package.
 
         Args:
@@ -11116,7 +11117,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_business_object_types")
-    def get_business_object_types(self) -> dict | None:
+    def get_business_object_types(self) -> dict[str, Any] | None:
         """Get information for all configured business object types.
 
         Args:
@@ -11178,7 +11179,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_business_object_types_iterator")
-    def get_business_object_types_iterator(self) -> iter:
+    def get_business_object_types_iterator(self) -> Iterator:
         """Get an iterator object to traverse all business object types.
 
         Returning a generator avoids loading a large number of workspace instances
@@ -11234,7 +11235,7 @@ class OTCS:
         type_name: str,
         expand_workspace_type: bool = True,
         expand_external_system: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get business object type information.
 
         This REST API is pretty much limited.
@@ -11352,7 +11353,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_business_object_type")
-    def get_business_object_type(self, type_id: int) -> dict | None:
+    def get_business_object_type(self, type_id: int) -> dict[str, Any] | None:
         """Get information for all configured business object types.
 
         This method uses an REST endpoint that was only introduced in OTCS 25.3.
@@ -11478,10 +11479,10 @@ class OTCS:
         external_system_id: str,
         type_name: str | None = None,
         type_id: int | None = None,
-        where_clauses: dict | None = None,
+        where_clauses: dict[str, Any] | None = None,
         limit: int | None = None,
         page: int | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get all business objects for an external system and a business object type.
 
         Args:
@@ -11615,7 +11616,7 @@ class OTCS:
         external_system_id: str,
         type_name: str | None = None,
         type_id: int | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get information about search fields for a business objects of a given type.
 
         This information can be used to fill the where_clauses parameter of the
@@ -11847,7 +11848,7 @@ class OTCS:
         classification_id: int,
         description: str = "",
         inactive: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a Smart Document Type.
 
         This internally reuses create_item() with type 877 (Smart Document Type)
@@ -11897,7 +11898,7 @@ class OTCS:
         parent_id: int,
         name: str,
         description: str = "",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add a Smart Document Type Folder.
 
         This internally reuses create_item() with type 878 (Smart Document Type Folder)
@@ -11934,7 +11935,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_smart_document_types")
-    def get_smart_document_types(self) -> dict | None:
+    def get_smart_document_types(self) -> dict[str, Any] | None:
         """Get Smart Document Types.
 
         REST operation: GET /v2/smartdocumenttypes
@@ -12015,7 +12016,7 @@ class OTCS:
 
     # end method definition
 
-    def get_smart_document_types_iterator(self) -> iter:
+    def get_smart_document_types_iterator(self) -> Iterator:
         """Get an iterator object to traverse all Smart Document Types.
 
         Returning a generator avoids loading a large number of Smart Document Types
@@ -12051,7 +12052,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_smart_document_type")
-    def get_smart_document_type(self, smart_document_type_id: int) -> dict | None:
+    def get_smart_document_type(self, smart_document_type_id: int) -> dict[str, Any] | None:
         """Get Smart Document Type details.
 
         REST operation: GET /v2/smartdocumenttypes/smartdocumenttypedetails
@@ -12144,7 +12145,7 @@ class OTCS:
         self,
         smart_document_type_id: int,
         template_id: int,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Delete a template link from a Smart Document Type.
 
         REST operation: DELETE /v2/smartdocumenttypes/{smart_document_type_id}/template/{template_id}
@@ -12213,7 +12214,7 @@ class OTCS:
         delete_review_workflow_map_id: int | None = None,
         delete_review_member: str | None = None,
         delete_review_dynperm: str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a Smart Document Type rule.
 
         Swagger operation: POST /v2/smartdocumenttypes/rules
@@ -12342,7 +12343,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="delete_smart_document_type_rule")
-    def delete_smart_document_type_rule(self, rule_id: int) -> dict | None:
+    def delete_smart_document_type_rule(self, rule_id: int) -> dict[str, Any] | None:
         """Delete a Smart Document Type rule.
 
         REST operation: DELETE /v2/smartdocumenttypes/rules/{rule_id}
@@ -12382,7 +12383,7 @@ class OTCS:
         rule_id: int,
         bot_key: str | None = None,
         action: str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get bot forms for a Smart Document Type rule.
 
         REST operation: GET /v2/smartdocumenttypes/rules/{rule_id}/bots
@@ -12438,7 +12439,7 @@ class OTCS:
         rule_id: int,
         bot_key: str,
         body: str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Save a Smart Document Type rule bot.
 
         REST operation: PUT /v2/smartdocumenttypes/rules/{rule_id}/bots/{bot_key}
@@ -12489,7 +12490,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="delete_smart_document_type_rule_bot")
-    def delete_smart_document_type_rule_bot(self, rule_id: int, bot_key: str) -> dict | None:
+    def delete_smart_document_type_rule_bot(self, rule_id: int, bot_key: str) -> dict[str, Any] | None:
         """Delete a Smart Document Type rule bot.
 
         REST operation: DELETE /v2/smartdocumenttypes/rules/{rule_id}/bots/{bot_key}
@@ -12535,7 +12536,7 @@ class OTCS:
         usage_type: int,
         subtype: int,
         key: str,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get Expression Builder data.
 
         REST operation: GET /v2/expressionbuilder/expressiondata
@@ -12582,7 +12583,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_expression_builder_data")
-    def update_expression_builder_data(self, expression_data: dict) -> dict | None:
+    def update_expression_builder_data(self, expression_data: dict[str, Any]) -> dict[str, Any] | None:
         """Update Expression Builder data.
 
         REST operation: POST /v2/expressionbuilder/saveexpressiondata
@@ -12629,7 +12630,7 @@ class OTCS:
         expand_workspace_info: bool = True,
         expand_templates: bool = True,
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get all workspace types configured in OTCS.
 
         This REST API is very limited. It does not return all workspace type properties
@@ -12708,7 +12709,7 @@ class OTCS:
 
     def get_workspace_types_iterator(
         self, expand_workspace_info: bool = True, expand_templates: bool = True, show_error: bool = True
-    ) -> iter:
+    ) -> Iterator:
         """Get an iterator object to traverse all workspace types.
 
         Args:
@@ -12745,7 +12746,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_type_by_name")
-    def get_workspace_type_by_name(self, type_name: str) -> dict | None:
+    def get_workspace_type_by_name(self, type_name: str) -> dict[str, Any] | None:
         """Get information for a given workspace type.
 
         This is a convinience method. It's implementation is potentially
@@ -12777,7 +12778,7 @@ class OTCS:
     def get_workspace_type(
         self,
         type_id: int,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get workspace type configured in OTCS.
 
         This REST API is very basic. It mainly delivers the type name for the type ID.
@@ -12897,7 +12898,7 @@ class OTCS:
         self,
         type_id: int,
         relations: list[dict],
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update workspace type configured in OTCS.
 
         Currently its main purpose is to update the ontology relations
@@ -12994,7 +12995,7 @@ class OTCS:
         bo_type: str | None = None,
         bo_id: str | None = None,
         parent_id: int | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the Workspace create form.
 
         Args:
@@ -13066,9 +13067,9 @@ class OTCS:
     def get_workspace(
         self,
         node_id: int,
-        fields: str | list = "properties",  # per default we just get the most important information
+        fields: str | list[str] = "properties",  # per default we just get the most important information
         metadata: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a workspace based on the node ID.
 
         Args:
@@ -13274,9 +13275,9 @@ class OTCS:
         sort: str | None = None,
         page: int | None = None,
         limit: int | None = None,
-        fields: str | list = "properties",  # per default we just get the most important information
+        fields: str | list[str] = "properties",  # per default we just get the most important information
         metadata: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get all workspace instances of a given type.
 
         This is a convenience wrapper method for get_workspace_by_type_and_name()
@@ -13375,9 +13376,9 @@ class OTCS:
         sort: str | None = None,
         page_size: int = 100,
         limit: int | None = None,
-        fields: str | list = "properties",  # per default we just get the most important information
+        fields: str | list[str] = "properties",  # per default we just get the most important information
         metadata: bool = False,
-    ) -> iter:
+    ) -> Iterator:
         """Get an iterator object to traverse all workspace instances of a workspace type.
 
         Returning a generator avoids loading a large number of workspace instances
@@ -13506,10 +13507,10 @@ class OTCS:
         sort: str | None = None,
         limit: int | None = None,
         page: int | None = None,
-        fields: str | list = "properties",  # per default we just get the most important information
+        fields: str | list[str] = "properties",  # per default we just get the most important information
         metadata: bool = False,
         timeout: float = REQUEST_TIMEOUT,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Lookup workspaces based on workspace type and workspace name.
 
         There can be multiple workspaces in the result. This depends on
@@ -13809,7 +13810,7 @@ class OTCS:
         business_object_id: str,
         metadata: bool = False,
         show_error: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a workspace based on the business object of an external system.
 
         Args:
@@ -13943,10 +13944,10 @@ class OTCS:
         value: str,
         attribute_set: str | None = None,
         substring: bool = False,
-        fields: str | list | None = None,
+        fields: str | list[str] | None = None,
         page_size: int = 25,
         stop_at_first_match: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Lookup workspaces that have a specified value in a category attribute.
 
         Args:
@@ -14022,7 +14023,7 @@ class OTCS:
     def get_workspace_references(
         self,
         node_id: int,
-    ) -> list | None:
+    ) -> list[Any] | None:
         """Get a workspace references to business objects in external systems.
 
         Args:
@@ -14071,7 +14072,7 @@ class OTCS:
         bo_type: str | None = None,
         bo_id: str | None = None,
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Set reference of workspace to a business object in an external system.
 
         Args:
@@ -14146,7 +14147,7 @@ class OTCS:
         bo_type: str | None = None,
         bo_id: str | None = None,
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Delete reference of workspace to a business object in an external system.
 
         Args:
@@ -14222,8 +14223,8 @@ class OTCS:
         workspace_name: str,
         workspace_description: str,
         workspace_type: int,
-        category_data: dict | None = None,
-        classifications: list | None = None,
+        category_data: dict[str, Any] | None = None,
+        classifications: list[str] | None = None,
         external_system_id: str | None = None,
         bo_type: str | None = None,
         bo_id: str | None = None,
@@ -14232,7 +14233,7 @@ class OTCS:
         external_modify_date: str | None = None,
         external_create_date: str | None = None,
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a new business workspace.
 
         This method creates a new workspace based on the provided
@@ -14417,7 +14418,7 @@ class OTCS:
         workspace_id: int,
         workspace_name: str | None = None,
         workspace_description: str | None = None,
-        category_data: dict | None = None,
+        category_data: dict[str, Any] | None = None,
         external_system_id: str | None = None,
         bo_type: str | None = None,
         bo_id: str | None = None,
@@ -14501,7 +14502,7 @@ class OTCS:
         related_workspace_id: int,
         relationship_type: str = "child",
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a relationship between two workspaces.
 
         A workspace relationship always works two ways: if the relationship
@@ -14581,14 +14582,14 @@ class OTCS:
     def get_workspace_relationships(
         self,
         workspace_id: int,
-        relationship_type: str | list = "child",
+        relationship_type: str | list[str] = "child",
         related_workspace_name: str | None = None,
-        related_workspace_type_id: int | list | None = None,
+        related_workspace_type_id: int | list[int] | None = None,
         limit: int | None = None,
         page: int | None = None,
-        fields: str | list = "properties",  # per default we just get the most important information
+        fields: str | list[str] = "properties",  # per default we just get the most important information
         metadata: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the Workspace relationships to other workspaces.
 
         Optionally, filter criterias can be provided
@@ -14794,14 +14795,14 @@ class OTCS:
     def get_workspace_relationships_iterator(
         self,
         workspace_id: int,
-        relationship_type: str | list = "child",
+        relationship_type: str | list[str] = "child",
         related_workspace_name: str | None = None,
-        related_workspace_type_id: int | list | None = None,
-        fields: str | list = "properties",  # per default we just get the most important information
+        related_workspace_type_id: int | list[int] | None = None,
+        fields: str | list[str] = "properties",  # per default we just get the most important information
         page_size: int = 100,
         limit: int | None = None,
         metadata: bool = False,
-    ) -> iter:
+    ) -> Iterator:
         """Get an iterator object to traverse all related workspaces for a workspace.
 
         Filter criterias can be provided by the parameters.
@@ -14908,7 +14909,7 @@ class OTCS:
         related_workspace_id: int,
         relationship_type: str = "child",
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Delete a relationship between two workspaces.
 
         Args:
@@ -14966,7 +14967,7 @@ class OTCS:
         workspace_id: int,
         relationship_type: str = "child",
         related_workspace_name: str | None = None,
-        related_workspace_type_id: int | list | None = None,
+        related_workspace_type_id: int | list[int] | None = None,
     ) -> bool:
         """Delete all relationships of a given workspace to related workspaces.
 
@@ -15020,7 +15021,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_roles")
-    def get_workspace_roles(self, workspace_id: int) -> dict | None:
+    def get_workspace_roles(self, workspace_id: int) -> dict[str, Any] | None:
         """Get the Workspace roles.
 
         Args:
@@ -15055,7 +15056,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_members")
-    def get_workspace_members(self, workspace_id: int, role_id: int) -> dict | None:
+    def get_workspace_members(self, workspace_id: int, role_id: int) -> dict[str, Any] | None:
         """Get the Workspace members of a given role.
 
         Args:
@@ -15099,7 +15100,7 @@ class OTCS:
         role_id: int,
         member_id: int,
         show_warning: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Add member to a workspace role. Check that the user/group is not yet a member.
 
         Args:
@@ -15219,7 +15220,7 @@ class OTCS:
         role_id: int,
         member_id: int,
         show_warning: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Remove a member from a workspace role. Check that the user is currently a member.
 
         Args:
@@ -15346,9 +15347,9 @@ class OTCS:
         self,
         workspace_id: int,
         role_id: int,
-        permissions: list,
+        permissions: list[str],
         apply_to: int = 2,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update the permissions for a specific role within a workspace.
 
         This method assigns specified permissions to a role for a given workspace. It also allows
@@ -15428,7 +15429,7 @@ class OTCS:
         workspace_id: int,
         file_path: str,
         file_mimetype: str = "image/*",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update a workspace with a with a new icon (which is uploaded).
 
         Args:
@@ -15493,7 +15494,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_unique_names")
-    def get_unique_names(self, names: list, subtype: int | None = None) -> dict | None:
+    def get_unique_names(self, names: list[str], subtype: int | None = None) -> dict[str, Any] | None:
         """Get definition information for Unique Names.
 
         Args:
@@ -15582,13 +15583,13 @@ class OTCS:
         item_description: str = "",
         url: str = "",
         original_id: int = 0,
-        category_data: dict | None = None,
-        classifications: list | None = None,
+        category_data: dict[str, Any] | None = None,
+        classifications: list[str] | None = None,
         body: bool = True,
         show_error: bool = True,
         parse_error_response: bool | None = False,
-        **kwargs: dict,
-    ) -> dict | None:
+        **kwargs: Any,
+    ) -> dict[str, Any] | None:
         """Create a Content Server item.
 
         This REST call is somewhat limited. It cannot set featured item or hidden item.
@@ -15746,7 +15747,7 @@ class OTCS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="copy_node")
     def copy_node(
         self, node_id: int, parent_id: int, new_name: str, parse_error_response: bool | None = False
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a copy of a node based on an existing, specified node to a specified destination, optionally with as a new name.
 
         Args:
@@ -15799,11 +15800,11 @@ class OTCS:
         item_name: str | None = None,
         item_description: str | None = None,
         url: str = "",
-        category_data: dict | None = None,
-        classifications: list | None = None,
+        category_data: dict[str, Any] | None = None,
+        classifications: list[str] | None = None,
         body: bool = True,
-        **kwargs: dict | None,
-    ) -> dict | None:
+        **kwargs: Any,
+    ) -> dict[str, Any] | None:
         """Update a Content Server item (parent, name, description, metadata).
 
         Changing the parent ID is a move operation. If parent ID = 0 or None the item will not be moved.
@@ -15911,7 +15912,7 @@ class OTCS:
         parent_id: int,
         subtype: int = ITEM_TYPE_DOCUMENT,
         category_ids: int | list[int] | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the node create form.
 
         Args:
@@ -15965,7 +15966,7 @@ class OTCS:
         node_id: int,
         category_id: int | None = None,
         operation: str = "update",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the node category update form.
 
         Args:
@@ -16108,8 +16109,8 @@ class OTCS:
     def set_system_attributes(
         self,
         node_id: int,
-        system_attributes: dict,
-    ) -> dict | None:
+        system_attributes: dict[str, Any],
+    ) -> dict[str, Any] | None:
         """Change custom system attributes of a node.
 
         These are NOT the normal node attributres like name or create date! In a standard
@@ -16143,7 +16144,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_document_templates")
-    def get_document_templates(self, parent_id: int) -> dict | None:
+    def get_document_templates(self, parent_id: int) -> dict[str, Any] | None:
         """Get all document templates for a given target location.
 
         Args:
@@ -16222,10 +16223,10 @@ class OTCS:
         template_id: int,
         parent_id: int,
         classification_id: int,
-        category_data: dict | None,
+        category_data: dict[str, Any] | None,
         doc_name: str,
         doc_description: str = "",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a document based on a document template.
 
         Args:
@@ -16308,7 +16309,7 @@ class OTCS:
         name: str,
         description: str = "",
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a Content Server wiki.
 
         Args:
@@ -16368,7 +16369,7 @@ class OTCS:
         content: str = "",
         description: str = "",
         show_error: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create an OTCS wiki page.
 
         Args:
@@ -16423,7 +16424,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_web_report_parameters")
-    def get_web_report_parameters(self, nickname: str) -> list | None:
+    def get_web_report_parameters(self, nickname: str) -> list[Any] | None:
         """Retrieve parameters of a Web Report in OTCS.
 
         These parameters are defined on the Web Report node (Properties -> Parameters).
@@ -16480,8 +16481,8 @@ class OTCS:
     def run_web_report(
         self,
         nickname: str,
-        web_report_parameters: dict | None = None,
-    ) -> dict | None:
+        web_report_parameters: dict[str, Any] | None = None,
+    ) -> dict[str, Any] | None:
         """Run a Web Report that is identified by its nickname.
 
         Args:
@@ -16523,7 +16524,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="install_cs_application")
-    def install_cs_application(self, application_name: str) -> dict | None:
+    def install_cs_application(self, application_name: str) -> dict[str, Any] | None:
         """Install a CS Application (based on WebReports).
 
         Args:
@@ -16566,8 +16567,8 @@ class OTCS:
         node_id: int,
         subject: str,
         instruction: str,
-        assignees: list,
-    ) -> dict | None:
+        assignees: list[int],
+    ) -> dict[str, Any] | None:
         """Assign an Content Server item to users and groups.
 
         This is a function used by OT Content Management for Government.
@@ -16621,7 +16622,7 @@ class OTCS:
 
     # end method definition
 
-    def convert_permission_string_to_permission_value(self, permissions: list) -> int:
+    def convert_permission_string_to_permission_value(self, permissions: list[str]) -> int:
         """Convert a list of permission names (strongs) to a bit-mask.
 
         Args:
@@ -16662,7 +16663,7 @@ class OTCS:
     def convert_permission_value_to_permission_string(
         self,
         permission_value: int,
-    ) -> list:
+    ) -> list[Any]:
         """Convert a bit-encoded permission value to a list of permission names (strings).
 
         Args:
@@ -16702,11 +16703,11 @@ class OTCS:
     def assign_permission(
         self,
         node_id: int,
-        permissions: list,
+        permissions: list[str],
         assignee_type: str,
         assignee: int = 0,
         apply_to: int = 0,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Assign permissions to a user or group for an Content Server item.
 
         This method allows you to assign specified permissions to a user or group for a given
@@ -16827,7 +16828,7 @@ class OTCS:
         self,
         node_id: int,
         assignee: int = 0,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get permissions for a user or group for a Content Server item.
 
         This method allows you to retrieve the permissions for a user or group for a given
@@ -16867,7 +16868,7 @@ class OTCS:
         assignee_type: str,
         assignee: int = 0,
         apply_to: int = 0,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Delete permissions from a user or group for an Content Server item.
 
         This method allows you to delete specified permissions from a user or group for a given
@@ -16960,7 +16961,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="check_user_node_permissions")
-    def check_user_node_permissions(self, node_ids: list[int], user_id: int | None = None) -> dict | None:
+    def check_user_node_permissions(self, node_ids: list[int], user_id: int | None = None) -> dict[str, Any] | None:
         """Check if the current user (or a specified user) has permissions to access a given list of Content Server nodes.
 
         This is using the AI endpoint as this method is typically used in Aviator use cases.
@@ -17033,7 +17034,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_context")
-    def get_node_context(self, node_ids: list[int], attributes: int = -1, environment: bool = True) -> dict | None:
+    def get_node_context(self, node_ids: list[int], attributes: int = -1, environment: bool = True) -> dict[str, Any] | None:
         """Retrieve metadata for the IDs passed in to provide context for Aviator.
 
         Args:
@@ -17091,7 +17092,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_categories")
-    def get_node_categories(self, node_id: int, metadata: bool = True) -> dict | None:
+    def get_node_categories(self, node_id: int, metadata: bool = True) -> dict[str, Any] | None:
         """Get categories assigned to a node.
 
         Args:
@@ -17240,7 +17241,7 @@ class OTCS:
         node_id: int,
         category_id: int,
         metadata: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a specific category assigned to a node.
 
         Args:
@@ -17286,8 +17287,8 @@ class OTCS:
     def get_node_category_ids(
         self,
         node_id: int,
-        node_categories: dict | None = None,
-    ) -> list:
+        node_categories: dict[str, Any] | None = None,
+    ) -> list[Any]:
         """Get list of all category definition IDs that are assigned to the node.
 
         Args:
@@ -17327,8 +17328,8 @@ class OTCS:
     def get_node_category_names(
         self,
         node_id: int,
-        node_categories: dict | None = None,
-    ) -> list | None:
+        node_categories: dict[str, Any] | None = None,
+    ) -> list[Any] | None:
         """Get list of all category names that are assigned to the node.
 
         Args:
@@ -17368,7 +17369,7 @@ class OTCS:
         self,
         node_id: int,
         category_name: str,
-        node_categories: dict | None = None,
+        node_categories: dict[str, Any] | None = None,
     ) -> tuple[int, dict]:
         """Get category definition (category id and attribute names, IDs and types).
 
@@ -17781,7 +17782,7 @@ class OTCS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_category_as_dictionary")
     def get_node_category_as_dictionary(
         self, node_id: int, category_id: int | None = None, category_name: str | None = None
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get a specific category assigned to a node in a streamlined Python dictionary form.
 
         * The whole category data of a node is embedded into a python dict.
@@ -17876,13 +17877,13 @@ class OTCS:
     def assign_category(
         self,
         node_id: int,
-        category_id: list,
+        category_id: list[int],
         inheritance: bool | None = False,
         apply_to_sub_items: bool = False,
         apply_action: str = "add_upgrade",
         add_version: bool = False,
         clear_existing_categories: bool = False,
-        attribute_values: dict | None = None,
+        attribute_values: dict[str, Any] | None = None,
     ) -> bool:
         """Assign a category to a Content Server node.
 
@@ -18024,9 +18025,9 @@ class OTCS:
         attribute_name: str,
         set_name: str | None = None,
         set_row: int = 1,
-        cat_definitions: dict | None = None,
-        node_categories: dict | None = None,
-    ) -> str | list | None:
+        cat_definitions: dict[str, Any] | None = None,
+        node_categories: dict[str, Any] | None = None,
+    ) -> str | list[Any] | None:
         """Lookup the value of an attribute if names of category, set, and attribute are known.
 
         Args:
@@ -18109,7 +18110,7 @@ class OTCS:
         attribute_id: int,
         set_id: int | None = None,
         set_row: int = 1,
-    ) -> str | list | None:
+    ) -> str | list[Any] | None:
         """Lookup the value of an attribute if IDs of category, set, and attribute are known.
 
         If you only have the names use get_category_value_by_name() instead!
@@ -18157,12 +18158,12 @@ class OTCS:
     def set_category_value(
         self,
         node_id: int,
-        value: str | int | list,
+        value: str | int | list[str | int],
         category_id: int,
         attribute_id: int,
         set_id: int = 0,
         set_row: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Set a value to a specific attribute in a category.
 
         Categories and have sets (groupings), multi-line sets (matrix),
@@ -18254,9 +18255,9 @@ class OTCS:
         self,
         node_id: int,
         category_id: int,
-        category_data: dict,
+        category_data: dict[str, Any],
         inheritance: bool | None = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Set values of a category.
 
         Categories can have sets (groupings), multi-line sets (matrix), and
@@ -18280,7 +18281,7 @@ class OTCS:
 
         """
 
-        def set_category_values_sub(show_error: bool = False) -> None | dict:
+        def set_category_values_sub(show_error: bool = False) -> None | dict[str, Any]:
             return self.do_request(
                 url=request_url,
                 method="PUT",
@@ -18341,7 +18342,7 @@ class OTCS:
         node_id: int,
         category_id: int,
         enable: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Set category inheritance of a container item (e.g. a folder or workspace) to sub-items.
 
         Args:
@@ -18407,7 +18408,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="extract_category_data")
-    def extract_category_data(self, node: dict) -> dict | None:
+    def extract_category_data(self, node: dict[str, Any]) -> dict[str, Any] | None:
         """Extract category information into a clean python data structure.
 
         * The whole category data of a node is embedded into a python dict.
@@ -18720,9 +18721,9 @@ class OTCS:
     def collection_operation(
         self,
         collection_id: int,
-        node_ids: list | int,
+        node_ids: list[int] | int,
         operation: str = "add",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Apply a collection operation (add or remove) to a list of node(s).
 
         Args:
@@ -18774,8 +18775,8 @@ class OTCS:
     def add_node_to_collection(
         self,
         collection_id: int,
-        node_ids: int | list,
-    ) -> dict | None:
+        node_ids: int | list[int],
+    ) -> dict[str, Any] | None:
         """Add node(s) to a collection.
 
         Args:
@@ -18802,8 +18803,8 @@ class OTCS:
     def remove_node_from_collection(
         self,
         collection_id: int,
-        node_ids: int | list,
-    ) -> dict | None:
+        node_ids: int | list[int],
+    ) -> dict[str, Any] | None:
         """Remove node(s) from a collection.
 
         Args:
@@ -18827,7 +18828,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_classifications")
-    def get_node_classifications(self, node_id: int) -> dict | None:
+    def get_node_classifications(self, node_id: int) -> dict[str, Any] | None:
         """Assign one or multiple classifications to a Content Server item.
 
         Args:
@@ -18956,10 +18957,10 @@ class OTCS:
     def assign_classifications(
         self,
         node_id: int,
-        classifications: list,
+        classifications: list[str],
         apply_to_sub_items: bool = False,
         remove_existing: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Assign one or multiple classifications to a Content Server item.
 
         The method supports the removal of existing classification
@@ -19041,7 +19042,7 @@ class OTCS:
         rm_classification: int,
         apply_to_sub_items: bool = False,
         metadata_token: str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Assign a RM classification to a Content Server item.
 
         Args:
@@ -19096,7 +19097,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_hold_by_name")
-    def get_hold_by_name(self, holdname: str) -> dict | None:
+    def get_hold_by_name(self, holdname: str) -> dict[str, Any] | None:
         """Get information about a hold by its name.
 
         Args:
@@ -19157,7 +19158,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="assign_hold")
-    def assign_hold(self, node_id: int, hold_id: int) -> dict | None:
+    def assign_hold(self, node_id: int, hold_id: int) -> dict[str, Any] | None:
         """Assign a hold to a Content Server item.
 
         Args:
@@ -19200,7 +19201,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_records_management_rsis")
-    def get_records_management_rsis(self, limit: int = 100) -> list | None:
+    def get_records_management_rsis(self, limit: int = 100) -> list[Any] | None:
         """Get all Records management RSIs together with their RSI Schedules.
 
         Args:
@@ -19279,7 +19280,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="search_records_management_rsis")
-    def search_records_management_rsis(self, querystring: str = "") -> list | None:
+    def search_records_management_rsis(self, querystring: str = "") -> list[Any] | None:
         """Get a list of Records management RSIs where 'querystring' is a sub-string of the RSI.
 
         Args:
@@ -19318,7 +19319,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_records_management_codes")
-    def get_records_management_codes(self) -> dict | None:
+    def get_records_management_codes(self) -> dict[str, Any] | None:
         """Get Records Management Codes.
 
         These are the most basic data types of the Records Management configuration
@@ -19358,7 +19359,7 @@ class OTCS:
 
     # This is not yet working. REST API endpoint seems not to be in 22.4. Retest with 23.1
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="update_records_management_codes")
-    def update_records_management_codes(self, rm_codes: dict) -> dict | None:
+    def update_records_management_codes(self, rm_codes: dict[str, Any]) -> dict[str, Any] | None:
         """Update Records Management Codes.
 
         These are the most basic data types of the Records Management configuration
@@ -19415,7 +19416,7 @@ class OTCS:
         subject: str,
         title: str,
         dispcontrol: bool,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a new Records Management RSI.
 
         Args:
@@ -19507,7 +19508,7 @@ class OTCS:
         purge_superseded: bool = False,
         purge_majors: bool = False,
         mark_official_rendition: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a new Records Management RSI Schedule for an existing RSI.
 
         Args:
@@ -19653,7 +19654,7 @@ class OTCS:
         parent_id: int = 0,
         date_applied: str = "",
         date_to_remove: str = "",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a new Records Management Hold.
 
         Args:
@@ -19719,7 +19720,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_records_management_holds")
-    def get_records_management_holds(self) -> dict | None:
+    def get_records_management_holds(self) -> dict[str, Any] | None:
         """Get a list of all Records Management holds in the system.
 
         Even though there are folders in the holds management area in RM these
@@ -20251,7 +20252,7 @@ class OTCS:
     def get_node_records_details(
         self,
         node_id: int,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the records details for the node with the given ID.
 
         Args:
@@ -20377,7 +20378,7 @@ class OTCS:
         essential: str | None = None,
         storage: str | None = None,
         official: bool | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Set records details for the node with the given ID.
 
         Args:
@@ -20440,7 +20441,7 @@ class OTCS:
     def get_node_security_clearance(
         self,
         node_id: int,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the Security Clearance Level and Supplemental Markings for the node with the given ID.
 
         Args:
@@ -20478,7 +20479,7 @@ class OTCS:
         node_id: int,
         clearance_level: int,
         supplemental_markings: list[str],
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Set Security Clearance Level and Supplemental Markings for the node with the given ID.
 
         Args:
@@ -20528,7 +20529,7 @@ class OTCS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user_security_clearance")
     def get_user_security_clearance(
         self,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the Security Clearance level of the current (authenticated) Content Server user.
 
         Returns:
@@ -20560,7 +20561,7 @@ class OTCS:
         self,
         user_id: int,
         security_clearance: int,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Assign a Security Clearance level to a Content Server user.
 
         Args:
@@ -20607,8 +20608,8 @@ class OTCS:
     def assign_user_supplemental_markings(
         self,
         user_id: int,
-        supplemental_markings: list,
-    ) -> dict | None:
+        supplemental_markings: list[str],
+    ) -> dict[str, Any] | None:
         """Assign a list of Supplemental Markings to a Content Server user.
 
         Args:
@@ -20656,7 +20657,7 @@ class OTCS:
         self,
         user_id: int,
         enable: bool = True,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Assign or revoke the Signing Authority Admin role for a Content Server user.
 
         REST operation: PUT /v2/fdausers/{user_id}/signingauthorityadmin/{on_off}
@@ -20703,7 +20704,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="create_viewx_transform")
-    def create_viewx_transform(self, transform: dict) -> dict | None:
+    def create_viewx_transform(self, transform: dict[str, Any]) -> dict[str, Any] | None:
         """Create and queue a viewx Transformation (POST /v1/viewx/transform).
 
         Args:
@@ -20996,7 +20997,7 @@ class OTCS:
         )
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workflow_definition")
-    def get_workflow_definition(self, workflow_id: int) -> dict | None:
+    def get_workflow_definition(self, workflow_id: int) -> dict[str, Any] | None:
         """Get the workflow definition.
 
         Args:
@@ -21111,7 +21112,7 @@ class OTCS:
         self,
         workflow_id: int,
         form_prefix: str = "WorkflowForm",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get workflow attribute definition.
 
         It returns a dictionary to allow looking up attribute IDs based on the attribute names.
@@ -21207,7 +21208,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_document_workflows")
-    def get_document_workflows(self, node_id: int, parent_id: int, node_ids: list[int] | None = None) -> list:
+    def get_document_workflows(self, node_id: int, parent_id: int, node_ids: list[int] | None = None) -> list[Any]:
         """Get a list of available workflows for a document ID and a parent ID.
 
         Args:
@@ -21284,9 +21285,9 @@ class OTCS:
     def get_workflows_by_kind_and_status(
         self,
         kind: str | None = None,
-        status: str | list | None = None,
+        status: str | list[str] | None = None,
         sort: str | None = None,
-    ) -> list | None:
+    ) -> list[Any] | None:
         """Get a list of workflows with a defined kind and status.
 
         IMPORTANT: This method is personlalized, you
@@ -21564,7 +21565,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workflow_status")
-    def get_workflow_status(self, process_id: int) -> dict | None:
+    def get_workflow_status(self, process_id: int) -> dict[str, Any] | None:
         """Get the status (task list) of a workflow instance (process).
 
         Args:
@@ -21693,7 +21694,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="create_draft_process")
-    def create_draft_process(self, workflow_id: int, documents: list | None = None) -> dict | None:
+    def create_draft_process(self, workflow_id: int, documents: list[int] | None = None) -> dict[str, Any] | None:
         """Initiate a draft process. This is the first step to start a process (workflow instance).
 
         Args:
@@ -21750,7 +21751,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="initiate_workflow")
-    def initiate_workflow(self, workflow_id: int, documents: list | None = None) -> dict | None:
+    def initiate_workflow(self, workflow_id: int, documents: list[int] | None = None) -> dict[str, Any] | None:
         """Initiate a workflow with skip start step.
 
         Args:
@@ -21794,7 +21795,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_draft_process")
-    def get_draft_process(self, draftprocess_id: int) -> dict | None:
+    def get_draft_process(self, draftprocess_id: int) -> dict[str, Any] | None:
         r"""Get draft process data.
 
         Args:
@@ -21862,8 +21863,8 @@ class OTCS:
         draftprocess_id: int,
         title: str = "",
         due_date: str = "",
-        values: dict | None = None,
-    ) -> dict | None:
+        values: dict[str, Any] | None = None,
+    ) -> dict[str, Any] | None:
         """Update a draft process with values.
 
         These can either be given via dedicated parameters
@@ -21925,7 +21926,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="initiate_draft_process")
-    def initiate_draft_process(self, draftprocess_id: int) -> dict | None:
+    def initiate_draft_process(self, draftprocess_id: int) -> dict[str, Any] | None:
         """Initiate a process (workflow instance) from a draft process.
 
         Args:
@@ -21993,7 +21994,7 @@ class OTCS:
         process_id: int,
         subprocess_id: int | None = None,
         task_id: int = 1,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         r"""Get the task information of a workflow assignment.
 
         This method must be called with the user authenticated
@@ -22098,12 +22099,12 @@ class OTCS:
         process_id: int,
         subprocess_id: int | None = None,
         task_id: int = 1,
-        values: dict | None = None,
+        values: dict[str, Any] | None = None,
         action: str = "formUpdate",
         assignee: int | None = None,
         custom_action: str = "",
         comment: str = "",
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update a process with values in a task.
 
         This method needs to be called with the user that has the task in its inbox
@@ -22212,7 +22213,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="register_workspace_template")
-    def register_workspace_template(self, node_id: int) -> dict | None:
+    def register_workspace_template(self, node_id: int) -> dict[str, Any] | None:
         """Register a workspace template as project template for Extended ECM for Engineering.
 
         Args:
@@ -22298,7 +22299,7 @@ class OTCS:
         self,
         workspace_id: int,
         status: bool,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Enable or disable the Content Aviator for a workspace.
 
         Args:
@@ -22352,7 +22353,7 @@ class OTCS:
         where: list[dict] | None = None,
         inline_citation: bool = True,
         parse_request_response: bool = True,
-    ) -> dict | requests.Response | None:
+    ) -> dict[str, Any] | requests.Response | None:
         """Process a chat interaction with Content Aviator.
 
         Args:
@@ -22466,8 +22467,8 @@ class OTCS:
     # end method definition
 
     def aviator_context(
-        self, query: str, threshold: float = 0.5, limit: int = 10, data: list | None = None
-    ) -> dict | None:
+        self, query: str, threshold: float = 0.5, limit: int = 10, data: list[dict[str, Any]] | None = None
+    ) -> dict[str, Any] | None:
         """Get context based on the query text from Aviator's vector database.
 
         Results are text-chunks and they will be permission-checked for the authenticated user.
@@ -22529,11 +22530,11 @@ class OTCS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="traverse_node")
     def traverse_node(
         self,
-        node: dict | int,
+        node: dict[str, Any] | int,
         executables: list[callable],
         current_depth: int = 0,
-        **kwargs: dict,
-    ) -> dict | None:
+        **kwargs: Any,
+    ) -> dict[str, Any] | None:
         """Recursively traverse the node an its subnodes.
 
         This method is preferred for CPU intensive traversals.
@@ -22626,14 +22627,14 @@ class OTCS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="traverse_node_parallel")
     def traverse_node_parallel(
         self,
-        node: dict | int,
+        node: dict[str, Any] | int,
         executables: list[callable],
         workers: int = 3,
         workers_name: str = "TraverseNodeWorker",
         strategy: str = "BFS",
         timeout: float = 1.0,
-        **kwargs: dict,
-    ) -> dict:
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         """Traverse nodes using a queue and thread pool (BFS-style).
 
         This method is preferred for I/O or API intensive traversals.
@@ -22798,7 +22799,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="translate_node")
-    def translate_node(self, node: dict | int, **kwargs: dict) -> bool:
+    def translate_node(self, node: dict[str, Any] | int, **kwargs: Any) -> bool:
         """Translate a node.
 
         The actual translation is done by a tranlator object. This recursive method just
@@ -22910,8 +22911,8 @@ class OTCS:
         self,
         workspace_type_name: str,
         workspace_type_id: int,
-        workspace_type_exclusions: str | list | None = None,
-        workspace_type_inclusions: str | list | None = None,
+        workspace_type_exclusions: str | list[str] | None = None,
+        workspace_type_inclusions: str | list[str] | None = None,
     ) -> bool:
         """Check the workspace type filters.
 
@@ -22968,17 +22969,17 @@ class OTCS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="traverse_workspaces")
     def traverse_workspaces(
         self,
-        workspace_type_exclusions: str | list | None = None,
-        workspace_type_inclusions: str | list | None = None,
+        workspace_type_exclusions: str | list[str] | None = None,
+        workspace_type_inclusions: str | list[str] | None = None,
         filter_at_traversal: bool = False,
         node_executables: list[callable] | None = None,
         relationship_executables: list[callable] | None = None,
-        relationship_types: list | None = None,
+        relationship_types: list[str] | None = None,
         max_depth: int | None = None,
-        fields: str | list = "properties",  # per default we just get the most important information
+        fields: str | list[str] = "properties",  # per default we just get the most important information
         metadata: bool = False,
-        **kwargs: dict,
-    ) -> dict:
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         """Traverse all workspaces of a given type and execute executables.
 
         Args:
@@ -23074,20 +23075,20 @@ class OTCS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="traverse_workspace")
     def traverse_workspace(
         self,
-        workspace_node: dict | int,
-        processed_workspaces: dict,
+        workspace_node: dict[str, Any] | int,
+        processed_workspaces: dict[str, Any],
         current_depth: int,
-        workspace_type_exclusions: str | list | None = None,
-        workspace_type_inclusions: str | list | None = None,
+        workspace_type_exclusions: str | list[str] | None = None,
+        workspace_type_inclusions: str | list[str] | None = None,
         filter_at_traversal: bool = False,
         node_executables: list[callable] | None = None,
         relationship_executables: list[callable] | None = None,
-        relationship_types: list | None = None,
+        relationship_types: list[str] | None = None,
         max_depth: int | None = None,
-        fields: str | list = "properties",  # per default we just get the most important information
+        fields: str | list[str] = "properties",  # per default we just get the most important information
         metadata: bool = False,
-        **kwargs: dict,
-    ) -> dict:
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         """Recursively traverse all workspaces and relationships.
 
         This method is preferred for CPU intensive traversals.
@@ -23268,22 +23269,22 @@ class OTCS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="traverse_workspaces_parallel")
     def traverse_workspaces_parallel(
         self,
-        workspace_type_exclusions: str | list | None = None,
-        workspace_type_inclusions: str | list | None = None,
+        workspace_type_exclusions: str | list[str] | None = None,
+        workspace_type_inclusions: str | list[str] | None = None,
         filter_at_traversal: bool = False,
         node_executables: list[callable] | None = None,
         relationship_executables: list[callable] | None = None,
-        relationship_types: list | None = None,
+        relationship_types: list[str] | None = None,
         workers: int = 3,
         workers_name: str = "TraverseWorkspaceWorker",
         strategy: str = "BFS",
         max_depth: int | None = None,
         timeout: float = 60.0,
-        fields: str | list = "properties",
+        fields: str | list[str] = "properties",
         metadata: bool = False,
         business_objects: bool = False,
-        **kwargs: dict,
-    ) -> dict:
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         """Traverse nodes using a queue and thread pool (BFS-style).
 
         This method is preferred for I/O or API intensive traversals.
@@ -23711,13 +23712,13 @@ class OTCS:
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="apply_filter")
     def apply_filter(
         self,
-        node: dict,
-        node_categories: dict | None = None,
+        node: dict[str, Any],
+        node_categories: dict[str, Any] | None = None,
         current_depth: int = 0,
         filter_depth: int | None = None,
-        filter_subtypes: list | None = None,
+        filter_subtypes: list[int] | None = None,
         filter_category: str | None = None,
-        filter_attributes: dict | list | None = None,
+        filter_attributes: dict[str, Any] | list[dict[str, Any]] | None = None,
     ) -> bool:
         """Check all defined filters for the given node.
 
@@ -23955,7 +23956,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="add_attribute_columns")
-    def add_attribute_columns(self, row: dict, categories: dict, prefix: str) -> bool:
+    def add_attribute_columns(self, row: dict[str, Any], categories: dict[str, Any], prefix: str) -> bool:
         """Add attributes for all categories to the row dictionary.
 
         The resulting row will be added by the calling load_items() method
@@ -24068,22 +24069,22 @@ class OTCS:
         workspaces: bool = True,
         items: bool = True,
         filter_workspace_depth: int | None = None,
-        filter_workspace_subtypes: list | None = None,
+        filter_workspace_subtypes: list[int] | None = None,
         filter_workspace_category: str | None = None,
-        filter_workspace_attributes: dict | list | None = None,
+        filter_workspace_attributes: dict[str, Any] | list[dict[str, Any]] | None = None,
         filter_item_depth: int | None = None,
-        filter_item_subtypes: list | None = None,
+        filter_item_subtypes: list[int] | None = None,
         filter_item_category: str | None = None,
-        filter_item_attributes: dict | list | None = None,
+        filter_item_attributes: dict[str, Any] | list[dict[str, Any]] | None = None,
         filter_item_in_workspace: bool = True,
-        exclude_node_ids: list | None = None,
+        exclude_node_ids: list[int] | None = None,
         workspace_metadata: bool = True,
         item_metadata: bool = True,
         download_documents: bool = True,
         skip_existing_downloads: bool = True,
         extract_zip: bool = False,
         workers: int = 3,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a Pandas Data Frame by traversing a given Content Server hierarchy.
 
         This method collects workspace and document items.
@@ -24173,7 +24174,7 @@ class OTCS:
         # Initiaze download threads for document items:
         download_threads = []
 
-        def check_node_exclusions(node: dict, **kwargs: dict) -> tuple[bool, bool]:
+        def check_node_exclusions(node: dict[str, Any], **kwargs: dict[str, Any]) -> tuple[bool, bool]:
             """Check if the processed node is on the exclusion list.
 
             Stop processing and traversing if the node is excluded.
@@ -24209,7 +24210,7 @@ class OTCS:
 
         # end check_node_exclusions()
 
-        def check_node_workspace(node: dict, **kwargs: dict) -> tuple[bool, bool]:
+        def check_node_workspace(node: dict[str, Any], **kwargs: dict[str, Any]) -> tuple[bool, bool]:
             """Check if the processed node should be recorded as a workspace in the data frame.
 
             Args:
@@ -24364,7 +24365,7 @@ class OTCS:
 
         # end check_node_workspace()
 
-        def check_node_item(node: dict, **kwargs: dict) -> tuple[bool, bool]:
+        def check_node_item(node: dict[str, Any], **kwargs: dict[str, Any]) -> tuple[bool, bool]:
             """Check if the processed node should be recorded as an item in the data frame.
 
             Args:
@@ -24650,10 +24651,10 @@ class OTCS:
     def aviator_embed_metadata(
         self,
         node_id: int,
-        node: dict | None = None,
+        node: dict[str, Any] | None = None,
         crawl: bool = False,
         wait_for_completion: bool = True,
-        message_override: dict | None = None,
+        message_override: dict[str, Any] | None = None,
         timeout: float = 30.0,
         document_metadata: bool = False,
         images: bool = False,
@@ -24694,10 +24695,10 @@ class OTCS:
 
         async def _inner(
             uri: str,
-            node_properties: dict,
+            node_properties: dict[str, Any],
             crawl: bool,
             wait_for_completion: bool,
-            message_override: dict | None,
+            message_override: dict[str, Any] | None,
             timeout: float,  # noqa: ASYNC109
             document_metadata: bool = False,
             images: bool = False,
@@ -25014,7 +25015,7 @@ class OTCS:
     # end method definition
 
     def get_document_template(
-        self, workspace_id: int, template_name: str, input_values: dict | None = None
+        self, workspace_id: int, template_name: str, input_values: dict[str, Any] | None = None
     ) -> str | None:
         """Get the template XML payload from a workspace and a given template name.
 
@@ -25125,7 +25126,7 @@ class OTCS:
 
         """
 
-        def _extract_field_mappings(form_item: dict, field_name: str) -> list[dict]:
+        def _extract_field_mappings(form_item: dict[str, Any], field_name: str) -> list[dict[str, Any]]:
             """Extract value/label mappings for a specific field from options and schema."""
 
             options_values = []
@@ -25431,7 +25432,7 @@ class OTCS:
         self,
         client_id: int | None = None,
         type_id: int | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the available reminder types .
 
         REST API endpoint: GET /v1/forms/nodes/followup/getClientTypes
@@ -25495,7 +25496,7 @@ class OTCS:
         node_id: int,
         actions: bool = False,
         escalation: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get all reminders for a given node.
 
         REST API endpoint: GET /v2/nodes/{node_id}/followups
@@ -25637,7 +25638,7 @@ class OTCS:
         node_id: int,
         actions: bool = False,
         escalation: bool = False,
-    ) -> iter:
+    ) -> Iterator:
         """Get an iterator object that can be used to traverse reminders of a node.
 
         Using a generator avoids additional list processing in caller code.
@@ -25682,7 +25683,7 @@ class OTCS:
         reminder_id: int,
         actions: bool = False,
         escalation: bool = False,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get details of a specific reminder for a given node.
 
         REST API endpoint: GET /v2/nodes/{node_id}/followups/{reminder_id}
@@ -25862,7 +25863,7 @@ class OTCS:
         self,
         node_id: int,
         reminder_id: int,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the reminder view form for a given node and reminder.
 
         Args:
@@ -25992,7 +25993,7 @@ class OTCS:
         node_id: int,
         client_id: int | None = None,
         reminder_id: int | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Get the reminder creation form.
 
         Args:
@@ -26088,7 +26089,7 @@ class OTCS:
         reminder_status: int | str | None = None,
         node_id: int | None = None,
         reminder_id: int | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Validate reminder parameters and build the shared payload dictionary.
 
         This is a private helper used by ``add_reminder`` and ``update_reminder``
@@ -26450,7 +26451,7 @@ class OTCS:
             "day", "week", "month", "year"
         ] = "day",  # the UI does only allow to specify "day" so we make it the default
         escalation_business_day: bool | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Create a new reminder for a given node.
 
         Args:
@@ -26597,7 +26598,7 @@ class OTCS:
         node_id: int,
         reminder_id: int,
         status: int | str,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update the status of a reminder for a given node.
 
         REST API endpoint: PUT /v2/nodes/{node_id}/followups/{reminder_id}
@@ -26747,7 +26748,7 @@ class OTCS:
         escalation_unit: Literal["day", "week", "month", "year"] | None = None,
         escalation_business_day: bool | None = None,
         reminder_status: int | str | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Update an existing reminder for a given node.
 
         REST API endpoint: PUT /v2/nodes/{node_id}/updatereminder

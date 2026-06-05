@@ -3,7 +3,7 @@
 import os
 import tempfile
 import uuid
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field
 from pydantic_settings import (
@@ -127,7 +127,7 @@ class CustomizerAPISettings(BaseSettings):
 
     model_config = SettingsConfigDict(env_prefix="CUSTOMIZER_")
 
-    def __init__(self, **data: any) -> None:
+    def __init__(self, **data: Any) -> None:
         """Class initializer."""
 
         super().__init__(**data)
