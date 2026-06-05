@@ -226,7 +226,7 @@ class Guidewire:
             # Either username/password AND client credentials (for ROPC)
             # OR just client credentials (for Client Credentials Grant)
             self.logger.error(
-                "Authentication of type -> '%s' requires either client credentials or username/password.", auth_type
+                "Authentication of type -> '%s' requires either client credentials or username/password.", auth_type,
             )
             return None
 
@@ -238,8 +238,7 @@ class Guidewire:
             if response.status_code == 200:
                 self._access_token = response.json().get("access_token")
                 return self._access_token
-            else:
-                self.logger.error("OAuth2 authentication failed: %s - %s", response.status_code, response.text)
+            self.logger.error("OAuth2 authentication failed: %s - %s", response.status_code, response.text)
         except requests.RequestException as e:
             self.logger.error("OAuth2 token request failed; error -> %s", str(e))
 
@@ -267,14 +266,14 @@ class Guidewire:
         }
 
         if self.config()["authType"] == "oauth" and self._access_token:
-            request_header["Authorization"] = "Bearer {}".format(self._access_token)
+            request_header["Authorization"] = f"Bearer {self._access_token}"
 
         return request_header
 
     # end method definition
 
     def do_request(
-        self, method: str, url: str, data: dict | None = None, json_data: dict | None = None, params: dict | None = None
+        self, method: str, url: str, data: dict | None = None, json_data: dict | None = None, params: dict | None = None,
     ) -> dict:
         """Send a request to the Guidewire REST API.
 
@@ -327,7 +326,7 @@ class Guidewire:
     # end method definition
 
     def process_parameters(
-        self, fields: list | None = None, filters: list | None = None, page_size: int | None = 25
+        self, fields: list | None = None, filters: list | None = None, page_size: int | None = 25,
     ) -> str | None:
         """Determine the request parameters (filters, fields).
 
@@ -360,7 +359,7 @@ class Guidewire:
             if "value" not in filter_dict:
                 self.logger.error("Missing value(s) in filter condition!")
                 return None
-            elif isinstance(filter_dict["value"], list):
+            if isinstance(filter_dict["value"], list):
                 filter_dict["value"] = ",".join(filter_dict["value"])
             query["filter"] = (
                 filter_dict.get("attribute") + ":" + filter_dict.get("op") + ":" + filter_dict.get("value")
@@ -369,9 +368,8 @@ class Guidewire:
         if page_size:
             query["pageSize"] = page_size
 
-        encoded_query = urllib.parse.urlencode(query=query, doseq=True)
+        return urllib.parse.urlencode(query=query, doseq=True)
 
-        return encoded_query
 
     # end method definition
 
@@ -429,14 +427,13 @@ class Guidewire:
             attributes = results.get("attributes", {})
             if key in attributes:
                 return attributes[key]
-            else:
-                self.logger.error(
-                    "Key -> '%s' is not in result attributes!",
-                    key,
-                )
-                return None
+            self.logger.error(
+                "Key -> '%s' is not in result attributes!",
+                key,
+            )
+            return None
 
-        elif isinstance(results, list):
+        if isinstance(results, list):
             # result is a list - we need a valid index:
             if index > len(results) - 1:
                 self.logger.error(
@@ -452,12 +449,11 @@ class Guidewire:
                     self.logger.error("Key -> '%s' is not in result attributes -> %s!", key, attributes)
                 return None
             return attributes[key]
-        else:
-            self.logger.error(
-                "Result needs to be a list or dict but it is -> %s",
-                str(type(results)),
-            )
-            return None
+        self.logger.error(
+            "Result needs to be a list or dict but it is -> %s",
+            str(type(results)),
+        )
+        return None
 
     # end method definition
 
@@ -1099,7 +1095,7 @@ class Guidewire:
     # end method definition
 
     def get_accounts_iterator(
-        self, fields: list | None = None, filters: list | None = None, page_size: int = 25
+        self, fields: list | None = None, filters: list | None = None, page_size: int = 25,
     ) -> iter:
         """Get an iterator object that can be used to traverse all Guidewire accounts.
 
@@ -1164,7 +1160,7 @@ class Guidewire:
 
         while True:
             response = self.get_accounts(
-                fields=fields, filters=filters, page_size=page_size, next_page_url=next_page_url
+                fields=fields, filters=filters, page_size=page_size, next_page_url=next_page_url,
             )
             if not response or "data" not in response:
                 # Don't return None! Plain return is what we need for iterators.
@@ -1406,7 +1402,7 @@ class Guidewire:
     # end method definition
 
     def get_policies_iterator(
-        self, fields: list | None = None, filters: list | None = None, page_size: int = 25
+        self, fields: list | None = None, filters: list | None = None, page_size: int = 25,
     ) -> iter:
         """Get an iterator object that can be used to traverse all Guidewire policies.
 
@@ -1465,7 +1461,7 @@ class Guidewire:
 
         while True:
             response = self.get_policies(
-                fields=fields, filters=filters, page_size=page_size, next_page_url=next_page_url
+                fields=fields, filters=filters, page_size=page_size, next_page_url=next_page_url,
             )
             if not response or "data" not in response:
                 # Don't return None! Plain return is what we need for iterators.

@@ -9,28 +9,16 @@ __email__ = "mdiefenb@opentext.com"
 import base64
 import json
 import logging
-import os
-import platform
-import sys
-from importlib.metadata import version
+from pathlib import Path
 
 import requests
 from suds import WebFault
 from suds.client import Client
 
-APP_NAME = "pyxecm"
-APP_VERSION = version("pyxecm")
-MODULE_NAME = APP_NAME + ".otac"
+from pyxecm.helper.useragent import build_user_agent
 
-PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-OS_INFO = f"{platform.system()} {platform.release()}"
-ARCH_INFO = platform.machine()
-REQUESTS_VERSION = requests.__version__
-
-USER_AGENT = (
-    f"{APP_NAME}/{APP_VERSION} ({MODULE_NAME}/{APP_VERSION}; "
-    f"Python/{PYTHON_VERSION}; {OS_INFO}; {ARCH_INFO}; Requests/{REQUESTS_VERSION})"
-)
+MODULE_NAME = "pyxecm.otac"
+USER_AGENT = build_user_agent("pyxecm.otac")
 
 REQUEST_FORM_HEADERS = {
     "User-Agent": USER_AGENT,
@@ -135,7 +123,7 @@ class OTAC:
 
         otac_base_url = protocol + "://" + otac_config["hostname"]
         if str(port) not in ["80", "443"]:
-            otac_base_url += ":{}".format(port)
+            otac_base_url += f":{port}"
         otac_exec_url = otac_base_url + "/archive/admin/exec"
         otac_config["execUrl"] = otac_exec_url
         otac_config["baseUrl"] = otac_base_url
@@ -341,14 +329,9 @@ class OTAC:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -421,10 +404,9 @@ class OTAC:
             )
             if not authenticate_list:
                 return None
-            else:
-                authenticate_dict = authenticate_list[1]
-                otac_ticket = authenticate_dict["TOKEN"]
-                self.logger.debug("Ticket -> %s", otac_ticket)
+            authenticate_dict = authenticate_list[1]
+            otac_ticket = authenticate_dict["TOKEN"]
+            self.logger.debug("Ticket -> %s", otac_ticket)
         else:
             self.logger.error(
                 "Failed to request an OTAC ticket; error -> %s",
@@ -531,11 +513,11 @@ class OTAC:
         """
 
         # Check if the photo file exists
-        if not os.path.isfile(cert_path):
+        if not Path(cert_path).is_file():
             self.logger.error("Certificate file -> '%s' not found!", cert_path)
             return None
 
-        with open(file=cert_path, encoding="utf-8") as cert_file:
+        with Path(file=cert_path).open(encoding="utf-8") as cert_file:
             cert_content = cert_file.read().strip()
 
         # Check that we have the pem certificate file - this is what OTAC expects.
@@ -635,7 +617,7 @@ class OTAC:
             response = client.service.invokeCommand(
                 command="SetCertificateFlags",
                 parameters=[
-                    {"key": "CERT_TYPE", "data": "@{}".format(logical_archive)},
+                    {"key": "CERT_TYPE", "data": f"@{logical_archive}"},
                     {"key": "CERT_NAME", "data": auth_id},
                     {"key": "CERT_FLAGS", "data": enabled},
                 ],
@@ -644,7 +626,7 @@ class OTAC:
             if not response:
                 self.logger.debug("Archive Center certificate has been activated.")
                 return True
-            elif response.code == 500:
+            if response.code == 500:
                 self.logger.error(
                     "Failed to activate Archive Center certificate for Client -> %s on Archive -> '%s'!",
                     auth_id,
@@ -728,7 +710,7 @@ class OTAC:
                 )
                 return self.parse_request_response(response)
             # Check if Session has expired - then re-authenticate and try once more
-            elif response.status_code == 401 and retries == 0:
+            if response.status_code == 401 and retries == 0:
                 self.logger.debug("Session has expired - try to re-authenticate...")
                 self.authenticate(revalidate=True)
                 retries += 1

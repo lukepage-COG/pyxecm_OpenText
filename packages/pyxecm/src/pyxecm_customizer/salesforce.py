@@ -11,9 +11,9 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import os
 import time
 from http import HTTPStatus
+from pathlib import Path
 
 import requests
 
@@ -94,21 +94,11 @@ class Salesforce:
 
         # Set the Salesforce URLs and REST API endpoints:
         salesforce_config["baseUrl"] = base_url
-        salesforce_config["objectUrl"] = salesforce_config["baseUrl"] + "/services/data/{}/sobjects/".format(
-            SALESFORCE_API_VERSION,
-        )
-        salesforce_config["queryUrl"] = salesforce_config["baseUrl"] + "/services/data/{}/query/".format(
-            SALESFORCE_API_VERSION,
-        )
-        salesforce_config["compositeUrl"] = salesforce_config["baseUrl"] + "/services/data/{}/composite/".format(
-            SALESFORCE_API_VERSION,
-        )
-        salesforce_config["connectUrl"] = salesforce_config["baseUrl"] + "/services/data/{}/connect/".format(
-            SALESFORCE_API_VERSION,
-        )
-        salesforce_config["toolingUrl"] = salesforce_config["baseUrl"] + "/services/data/{}/tooling/".format(
-            SALESFORCE_API_VERSION,
-        )
+        salesforce_config["objectUrl"] = salesforce_config["baseUrl"] + f"/services/data/{SALESFORCE_API_VERSION}/sobjects/"
+        salesforce_config["queryUrl"] = salesforce_config["baseUrl"] + f"/services/data/{SALESFORCE_API_VERSION}/query/"
+        salesforce_config["compositeUrl"] = salesforce_config["baseUrl"] + f"/services/data/{SALESFORCE_API_VERSION}/composite/"
+        salesforce_config["connectUrl"] = salesforce_config["baseUrl"] + f"/services/data/{SALESFORCE_API_VERSION}/connect/"
+        salesforce_config["toolingUrl"] = salesforce_config["baseUrl"] + f"/services/data/{SALESFORCE_API_VERSION}/tooling/"
         if authorization_url:
             salesforce_config["authenticationUrl"] = authorization_url
         else:
@@ -179,7 +169,7 @@ class Salesforce:
         """
 
         request_header = {
-            "Authorization": "Bearer {}".format(self._access_token),
+            "Authorization": f"Bearer {self._access_token}",
         }
         if content_type:
             request_header["Content-Type"] = content_type
@@ -294,10 +284,9 @@ class Salesforce:
                         self.logger.info(success_message)
                     if parse_request_response:
                         return self.parse_request_response(response)
-                    else:
-                        return response
+                    return response
                 # Check if Session has expired - then re-authenticate and try once more
-                elif response.status_code == 401 and retries == 0:
+                if response.status_code == 401 and retries == 0:
                     self.logger.debug("Session has expired - try to re-authenticate...")
                     self.authenticate(revalidate=True)
                     # Make sure to not change an existing content type
@@ -424,14 +413,9 @@ class Salesforce:
             dict_object = json.loads(response_object.text) if response_object.text else vars(response_object)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -576,12 +560,11 @@ class Salesforce:
             authenticate_dict = self.parse_request_response(response)
             if not authenticate_dict:
                 return None
-            else:
-                # Store authentication access_token:
-                self._access_token = authenticate_dict["access_token"]
-                self.logger.debug("Access Token -> %s", self._access_token)
-                self._instance_url = authenticate_dict["instance_url"]
-                self.logger.debug("Instance URL -> %s", self._instance_url)
+            # Store authentication access_token:
+            self._access_token = authenticate_dict["access_token"]
+            self.logger.debug("Access Token -> %s", self._access_token)
+            self._instance_url = authenticate_dict["instance_url"]
+            self.logger.debug("Instance URL -> %s", self._instance_url)
         else:
             self.logger.error(
                 "Failed to request an Salesforce Access Token; error -> %s",
@@ -629,10 +612,7 @@ class Salesforce:
             headers=request_header,
             params={"q": query},
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get Salesforce object ID for object type -> '{}' and object name -> '{}'".format(
-                object_type,
-                name,
-            ),
+            failure_message=f"Failed to get Salesforce object ID for object type -> '{object_type}' and object name -> '{name}'",
         )
         if not response:
             return None
@@ -709,11 +689,11 @@ class Salesforce:
 
         query = "SELECT {} FROM {}".format(", ".join(result_fields), object_type)
         if search_field and search_value:
-            query += " WHERE {}='{}'".format(search_field, search_value)
-        query += " LIMIT {}".format(str(limit))
+            query += f" WHERE {search_field}='{search_value}'"
+        query += f" LIMIT {limit!s}"
 
         request_header = self.request_header()
-        request_url = self.config()["queryUrl"] + "?q={}".format(query)
+        request_url = self.config()["queryUrl"] + f"?q={query}"
 
         self.logger.debug(
             "Sending query -> %s to Salesforce; calling -> %s",
@@ -726,11 +706,7 @@ class Salesforce:
             url=request_url,
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to retrieve Salesforce object type -> '{}' with {} = {}".format(
-                object_type,
-                search_field,
-                search_value,
-            ),
+            failure_message=f"Failed to retrieve Salesforce object type -> '{object_type}' with {search_field} = {search_value}",
         )
 
     # end method definition
@@ -878,9 +854,7 @@ class Salesforce:
             url=request_url,
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get Salesforce group with ID -> {}".format(
-                group_id,
-            ),
+            failure_message=f"Failed to get Salesforce group with ID -> {group_id}",
         )
 
     # end method definition
@@ -931,7 +905,7 @@ class Salesforce:
             headers=request_header,
             data=json.dumps(payload),
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add Salesforce group -> '{}'".format(group_name),
+            failure_message=f"Failed to add Salesforce group -> '{group_name}'",
         )
 
     # end method definition
@@ -974,9 +948,7 @@ class Salesforce:
             headers=request_header,
             json_data=update_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update Salesforce group with ID -> {}".format(
-                group_id,
-            ),
+            failure_message=f"Failed to update Salesforce group with ID -> {group_id}",
         )
 
     # end method definition
@@ -1031,9 +1003,7 @@ class Salesforce:
             headers=request_header,
             params=params,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get members of Salesforce group with ID -> {}".format(
-                group_id,
-            ),
+            failure_message=f"Failed to get members of Salesforce group with ID -> {group_id}",
         )
 
     # end method definition
@@ -1082,10 +1052,7 @@ class Salesforce:
             headers=request_header,
             json_data=payload,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add member with ID -> {} to Salesforce group with ID -> {}".format(
-                member_id,
-                group_id,
-            ),
+            failure_message=f"Failed to add member with ID -> {member_id} to Salesforce group with ID -> {group_id}",
         )
 
     # end method definition
@@ -1209,9 +1176,7 @@ class Salesforce:
             url=request_url,
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get Salesforce user with ID -> {}".format(
-                user_id,
-            ),
+            failure_message=f"Failed to get Salesforce user with ID -> {user_id}",
         )
 
     # end method definition
@@ -1308,7 +1273,7 @@ class Salesforce:
             headers=request_header,
             data=json.dumps(payload),
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add Salesforce user -> {}".format(username),
+            failure_message=f"Failed to add Salesforce user -> {username}",
         )
 
     # end method definition
@@ -1351,9 +1316,7 @@ class Salesforce:
             headers=request_header,
             json_data=update_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update Salesforce user with ID -> {}".format(
-                user_id,
-            ),
+            failure_message=f"Failed to update Salesforce user with ID -> {user_id}",
         )
 
     # end method definition
@@ -1382,7 +1345,7 @@ class Salesforce:
 
         request_header = self.request_header()
 
-        request_url = self.config()["userUrl"] + "{}/password".format(user_id)
+        request_url = self.config()["userUrl"] + f"{user_id}/password"
 
         self.logger.debug(
             "Update password of Salesforce user with ID -> %s; calling -> %s",
@@ -1398,9 +1361,7 @@ class Salesforce:
             headers=request_header,
             json_data=update_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update password of Salesforce user with ID -> {}".format(
-                user_id,
-            ),
+            failure_message=f"Failed to update password of Salesforce user with ID -> {user_id}",
         )
 
     # end method definition
@@ -1428,13 +1389,13 @@ class Salesforce:
             self.authenticate()
 
         # Check if the photo file exists
-        if not os.path.isfile(photo_path):
+        if not Path(photo_path).is_file():
             self.logger.error("Photo file -> %s not found!", photo_path)
             return None
 
         try:
             # Read the photo file as binary data
-            with open(photo_path, "rb") as image_file:
+            with Path(photo_path).open("rb") as image_file:
                 photo_data = image_file.read()
         except OSError:
             # Handle any errors that occurred while reading the photo file
@@ -1471,9 +1432,7 @@ class Salesforce:
             files=files,
             data=data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update profile photo of Salesforce user with ID -> {}".format(
-                user_id,
-            ),
+            failure_message=f"Failed to update profile photo of Salesforce user with ID -> {user_id}",
             verify=False,
         )
 
@@ -1546,10 +1505,7 @@ class Salesforce:
             headers=request_header,
             data=json.dumps(payload),
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add Salesforce account -> '{}' ({})".format(
-                account_name,
-                account_number,
-            ),
+            failure_message=f"Failed to add Salesforce account -> '{account_name}' ({account_number})",
         )
 
     # end method definition
@@ -1609,10 +1565,7 @@ class Salesforce:
             headers=request_header,
             data=json.dumps(payload),
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add Salesforce product -> '{}' ({})".format(
-                product_name,
-                product_code,
-            ),
+            failure_message=f"Failed to add Salesforce product -> '{product_name}' ({product_code})",
         )
 
     # end method definition
@@ -1687,7 +1640,7 @@ class Salesforce:
             headers=request_header,
             data=json.dumps(payload),
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add Salesforce opportunity -> '{}'".format(name),
+            failure_message=f"Failed to add Salesforce opportunity -> '{name}'",
         )
 
     # end method definition
@@ -1771,7 +1724,7 @@ class Salesforce:
             headers=request_header,
             data=json.dumps(payload),
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add Salesforce case -> '{}'".format(subject),
+            failure_message=f"Failed to add Salesforce case -> '{subject}'",
         )
 
     # end method definition
@@ -1844,7 +1797,7 @@ class Salesforce:
             headers=request_header,
             data=json.dumps(payload),
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add Salesforce asset -> '{}'".format(asset_name),
+            failure_message=f"Failed to add Salesforce asset -> '{asset_name}'",
         )
 
     # end method definition
@@ -1924,9 +1877,7 @@ class Salesforce:
             headers=request_header,
             data=json.dumps(payload),
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add Salesforce contract for account with ID -> {}".format(
-                account_id,
-            ),
+            failure_message=f"Failed to add Salesforce contract for account with ID -> {account_id}",
         )
 
     # end method definition

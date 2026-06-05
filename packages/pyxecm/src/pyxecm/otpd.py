@@ -8,30 +8,17 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import os
-import platform
-import sys
 import time
 from http import HTTPStatus
-from importlib.metadata import version
+from pathlib import Path
 
 import requests
 from requests.auth import HTTPBasicAuth
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
-APP_NAME = "pyxecm"
-APP_VERSION = version("pyxecm")
-MODULE_NAME = APP_NAME + ".otpd"
+from pyxecm.helper.useragent import build_user_agent
 
-PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-OS_INFO = f"{platform.system()} {platform.release()}"
-ARCH_INFO = platform.machine()
-REQUESTS_VERSION = requests.__version__
-
-USER_AGENT = (
-    f"{APP_NAME}/{APP_VERSION} ({MODULE_NAME}/{APP_VERSION}; "
-    f"Python/{PYTHON_VERSION}; {OS_INFO}; {ARCH_INFO}; Requests/{REQUESTS_VERSION})"
-)
+USER_AGENT = build_user_agent("pyxecm.otpd")
 
 REQUEST_HEADERS = {
     "User-Agent": USER_AGENT,
@@ -127,7 +114,7 @@ class OTPD:
         # Base URL Settings
         otpd_base_url = protocol + "://" + otpd_config["hostname"]
         if str(port) not in ["80", "443"]:
-            otpd_base_url += ":{}".format(port)
+            otpd_base_url += f":{port}"
         otpd_config["baseUrl"] = otpd_base_url
 
         # Server Manager URL Settings:
@@ -242,14 +229,9 @@ class OTPD:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -328,19 +310,17 @@ class OTPD:
                 self._jsessionid = session_dict["JSESSIONID"]
                 request_headers["Cookie"] = "JSESSIONID=" + self._jsessionid
                 return session_response
-            else:
-                self.logger.error(
-                    "Fetching session id from -> %s failed! Response -> %s",
-                    auth_url,
-                    session_response.text,
-                )
-                return None
-        else:
             self.logger.error(
                 "Fetching session id from -> %s failed! Response -> %s",
-                request_url,
-                response.text,
+                auth_url,
+                session_response.text,
             )
+            return None
+        self.logger.error(
+            "Fetching session id from -> %s failed! Response -> %s",
+            request_url,
+            response.text,
+        )
         return None
 
     # end method definition
@@ -358,7 +338,7 @@ class OTPD:
 
         """
 
-        if not file_path or not os.path.isfile(file_path):
+        if not file_path or not Path(file_path).is_file():
             self.logger.error(
                 "Cannot import PowerDocs database from non-existent file -> %s",
                 file_path,
@@ -367,10 +347,10 @@ class OTPD:
 
         try:
             # Extract the filename
-            file_name = os.path.basename(file_path)
+            file_name = Path(file_path).name
 
             # Open the file safely
-            with open(file_path, "rb") as file:
+            with Path(file_path).open("rb") as file:
                 file_tuple = (file_name, file, "application/zip")
 
                 # Prepare the multipart encoder
@@ -403,14 +383,13 @@ class OTPD:
                 if response.ok:
                     self.logger.info("Database backup imported successfully.")
                     return response.json()
-                else:
-                    self.logger.error(
-                        "Failed to import PowerDocs database backup from -> %s into -> %s; error -> %s",
-                        file_path,
-                        request_url,
-                        response.text,
-                    )
-                    return None
+                self.logger.error(
+                    "Failed to import PowerDocs database backup from -> %s into -> %s; error -> %s",
+                    file_path,
+                    request_url,
+                    response.text,
+                )
+                return None
 
         except FileNotFoundError:
             self.logger.error("File -> '%s' not found!", file_path)
@@ -491,18 +470,17 @@ class OTPD:
                 message = "Failed to update PowerDocs setting -> '{}' with value -> '{}'{}; error -> {}".format(
                     setting_name,
                     setting_value,
-                    " (tenant -> '{}')".format(tenant_name) if tenant_name else "",
+                    f" (tenant -> '{tenant_name}')" if tenant_name else "",
                     response.text,
                 )
                 if retries > REQUEST_MAX_RETRIES:
                     message += "; maximum retries reached - aborting!"
                     self.logger.error(message)
                     return None
-                else:
-                    message += "; retrying..."
-                    self.logger.warning(message)
-                    retries += 1
-                    time.sleep(REQUEST_RETRY_DELAY * retries)  # Add a delay before retrying
+                message += "; retrying..."
+                self.logger.warning(message)
+                retries += 1
+                time.sleep(REQUEST_RETRY_DELAY * retries)  # Add a delay before retrying
 
     # end method definition
 
@@ -594,40 +572,38 @@ class OTPD:
                         self.logger.info(success_message)
                     if parse_request_response:
                         return self.parse_request_response(response)
-                    else:
-                        return response
-                else:
-                    # Handle plain HTML responses to not pollute the logs
-                    content_type = response.headers.get("content-type", None)
-                    response_text = (
-                        "HTML content (only printed in debug log)" if content_type == "text/html" else response.text
-                    )
+                    return response
+                # Handle plain HTML responses to not pollute the logs
+                content_type = response.headers.get("content-type", None)
+                response_text = (
+                    "HTML content (only printed in debug log)" if content_type == "text/html" else response.text
+                )
 
-                    if show_error:
-                        self.logger.error(
-                            "%s; status -> %s/%s; error -> %s",
-                            failure_message,
-                            response.status_code,
-                            HTTPStatus(response.status_code).phrase,
-                            response_text,
-                        )
-                    elif show_warning:
-                        self.logger.warning(
-                            "%s; status -> %s/%s; warning -> %s",
-                            warning_message or failure_message,
-                            response.status_code,
-                            HTTPStatus(response.status_code).phrase,
-                            response_text,
-                        )
-                    if content_type == "text/html":
-                        self.logger.debug(
-                            "%s; status -> %s/%s; warning -> %s",
-                            failure_message,
-                            response.status_code,
-                            HTTPStatus(response.status_code).phrase,
-                            response.text,
-                        )
-                    return None
+                if show_error:
+                    self.logger.error(
+                        "%s; status -> %s/%s; error -> %s",
+                        failure_message,
+                        response.status_code,
+                        HTTPStatus(response.status_code).phrase,
+                        response_text,
+                    )
+                elif show_warning:
+                    self.logger.warning(
+                        "%s; status -> %s/%s; warning -> %s",
+                        warning_message or failure_message,
+                        response.status_code,
+                        HTTPStatus(response.status_code).phrase,
+                        response_text,
+                    )
+                if content_type == "text/html":
+                    self.logger.debug(
+                        "%s; status -> %s/%s; warning -> %s",
+                        failure_message,
+                        response.status_code,
+                        HTTPStatus(response.status_code).phrase,
+                        response.text,
+                    )
+                return None
             except requests.exceptions.Timeout:
                 if retries <= max_retries:
                     self.logger.warning(
@@ -699,7 +675,7 @@ class OTPD:
 
         body = {"documentgeneration": payload}
 
-        response = self.do_request(
+        return self.do_request(
             url=url,
             method="POST",
             headers=REQUEST_FORM_HEADERS,
@@ -709,4 +685,3 @@ class OTPD:
             parse_request_response=False,
         )
 
-        return response

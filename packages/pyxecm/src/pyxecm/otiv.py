@@ -7,11 +7,8 @@ __maintainer__ = "Dr. Marc Diefenbruch"
 __email__ = "mdiefenb@opentext.com"
 
 import logging
-from importlib.metadata import version
 
-APP_NAME = "pyxecm"
-APP_VERSION = version("pyxecm")
-MODULE_NAME = APP_NAME + ".otiv"
+MODULE_NAME = "pyxecm.otiv"
 
 default_logger = logging.getLogger(MODULE_NAME)
 

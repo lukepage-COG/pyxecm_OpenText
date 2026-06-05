@@ -6,7 +6,7 @@ This code implements a class called "Data" which is a wrapper
 to Pandas data frame.
 """
 
-from __future__ import annotations  # to allow using `Data` within class definitions
+from __future__ import annotations
 
 __author__ = "Dr. Marc Diefenbruch"
 __copyright__ = "Copyright (C) 2024-2025, OpenText"
@@ -20,6 +20,8 @@ import os
 import re
 import threading
 from io import StringIO
+from pathlib import Path
+from typing import Any
 
 import pandas as pd
 import requests
@@ -38,7 +40,7 @@ class Data:
     def read_sql(
         cls,
         sql: str,
-        con: any,
+        con: Any,
         columns: list[str] | None = None,
         dtypes: dict[str, type | str] | None = None,
         index_columns: str | list[str] | None = None,
@@ -203,7 +205,7 @@ class Data:
 
     # end method definition
 
-    def __getitem__(self, column: any) -> pd.Series:
+    def __getitem__(self, column: Any) -> pd.Series:
         """Return the column corresponding to the key from the data frame.
 
         NOTE: This operates on the COLUMN axis. To retrieve specific rows,
@@ -229,7 +231,7 @@ class Data:
 
     # end method definition
 
-    def __setitem__(self, key: any, value: any) -> None:
+    def __setitem__(self, key: Any, value: Any) -> None:
         """Assign data to a column or create a new column.
 
         NOTE: This operates on the COLUMN axis. Assignments will modify
@@ -255,7 +257,7 @@ class Data:
 
     # end method definition
 
-    def __delitem__(self, key: any) -> None:
+    def __delitem__(self, key: Any) -> None:
         """Remove a column from the DataFrame.
 
         NOTE: This operates on the COLUMN axis. To delete rows (nodes/edges),
@@ -294,7 +296,7 @@ class Data:
 
         """
 
-        error_message = "Object -> '{}' has no attribute -> '{}'".format(type(self).__name__, attr)
+        error_message = f"Object -> '{type(self).__name__}' has no attribute -> '{attr}'"
 
         if self._df is None:
             raise AttributeError(error_message + " (internal data frame is None)")
@@ -742,7 +744,7 @@ class Data:
             if not json_path.endswith(suffix):
                 json_path += suffix
 
-        if not os.path.exists(json_path):
+        if not Path(json_path).exists():
             self.logger.error(
                 "Missing JSON file - you have not specified a valid path -> '%s'.",
                 json_path,
@@ -868,8 +870,8 @@ class Data:
         # Save data to JSON file
         try:
             if self._df is not None:
-                if not os.path.exists(os.path.dirname(json_path)):
-                    os.makedirs(os.path.dirname(json_path), exist_ok=True)
+                if not Path(json_path).parent.exists():
+                    Path(json_path).parent.mkdir(parents=True, exist_ok=True)
 
                 # index parameter is only allowed if orient has one of the following values:
                 if orient in ("columns", "index", "table", "split"):
@@ -980,7 +982,7 @@ class Data:
 
         """
 
-        if xlsx_path is not None and os.path.exists(xlsx_path):
+        if xlsx_path is not None and Path(xlsx_path).exists():
             # Load data from Excel file
             try:
                 df = pd.read_excel(
@@ -1085,9 +1087,9 @@ class Data:
 
         try:
             # Check if the directory exists
-            directory = os.path.dirname(excel_path)
-            if directory and not os.path.exists(directory):
-                os.makedirs(directory)
+            directory = str(Path(excel_path).parent)
+            if directory and not Path(directory).exists():
+                Path(directory).mkdir(parents=True, exist_ok=True)
 
             # Validate columns if provided
             if columns:
@@ -1103,7 +1105,7 @@ class Data:
             # Attempt to save the data frame to Excel:
             if self._df is None:
                 self.logger.error(
-                    "Cannot write Excel file -> '%s' from empty / non-initialized data frame!", excel_path
+                    "Cannot write Excel file -> '%s' from empty / non-initialized data frame!", excel_path,
                 )
             self._df.to_excel(
                 excel_path,
@@ -1206,7 +1208,7 @@ class Data:
             # Convert bytes to a string using utf-8 and create a file-like object
             csv_file = StringIO(response.content.decode(encoding))
 
-        elif os.path.exists(csv_path):
+        elif Path(csv_path).exists():
             self.logger.debug("Using local CSV file -> '%s'.", csv_path)
             csv_file = csv_path
 
@@ -1318,7 +1320,7 @@ class Data:
             # Convert bytes to a string using utf-8 and create a file-like object
             xml_file = StringIO(response.content.decode(encoding))
 
-        elif os.path.exists(xml_path):
+        elif Path(xml_path).exists():
             self.logger.debug("Using local XML file -> '%s'.", xml_path)
             xml_file = xml_path
 
@@ -1386,7 +1388,7 @@ class Data:
 
         try:
             # Check if the provided path is a directory
-            if not os.path.isdir(path_to_root):
+            if not Path(path_to_root).is_dir():
                 self.logger.error(
                     "The provided path -> '%s' is not a valid directory.",
                     path_to_root,
@@ -1399,13 +1401,13 @@ class Data:
             # Walk through the directory
             for root, _, files in os.walk(path_to_root):
                 for file in files:
-                    file_path = os.path.join(root, file)
-                    file_size = os.path.getsize(file_path)
+                    file_path = str(Path(root) / file)
+                    file_size = Path(file_path).stat().st_size
                     relative_path = os.path.relpath(file_path, path_to_root)
-                    path_parts = relative_path.split(os.sep)
+                    path_parts = Path(relative_path).parts
 
                     # Create a dictionary with the path parts and file details
-                    entry = {"level {}".format(i): part for i, part in enumerate(path_parts[:-1], start=1)}
+                    entry = {f"level {i}": part for i, part in enumerate(path_parts[:-1], start=1)}
 
                     entry.update(
                         {
@@ -1427,7 +1429,7 @@ class Data:
             # Ensure all entries have the same number of levels:
             for entry in data:
                 for i in range(1, max_levels + 1):
-                    entry.setdefault("level {}".format(i), "")
+                    entry.setdefault(f"level {i}", "")
 
             # Convert to data frame again to make sure all columns are consistent:
             self._df = pd.DataFrame(data)
@@ -1483,7 +1485,7 @@ class Data:
 
         try:
             # Check if the provided path is a directory
-            if not os.path.isdir(path_to_root):
+            if not Path(path_to_root).is_dir():
                 self.logger.error(
                     "The provided path -> '%s' is not a valid directory.",
                     path_to_root,
@@ -1493,9 +1495,9 @@ class Data:
             # Walk through the directory
             for root, _, files in os.walk(path_to_root):
                 for file in files:
-                    file_path = os.path.join(root, file)
-                    file_size = os.path.getsize(file_path)
-                    file_name = os.path.basename(file_path)
+                    file_path = str(Path(root) / file)
+                    file_size = Path(file_path).stat().st_size
+                    file_name = Path(file_path).name
 
                     if file_name in xml_files:
                         self.logger.info(
@@ -1822,10 +1824,8 @@ class Data:
             self._df.drop_duplicates(subset=unique_fields, inplace=True)
             self._df.reset_index(drop=True, inplace=True)
             return self._df
-        else:
-            df = self._df.drop_duplicates(subset=unique_fields, inplace=False)
-            df = df.reset_index(drop=True, inplace=False)
-            return df
+        df = self._df.drop_duplicates(subset=unique_fields, inplace=False)
+        return df.reset_index(drop=True, inplace=False)
 
     # end method definition
 
@@ -1870,10 +1870,8 @@ class Data:
             self._df.sort_values(by=sort_fields, inplace=True, ascending=ascending)
             self._df.reset_index(drop=True, inplace=True)
             return self._df
-        else:
-            df = self._df.sort_values(by=sort_fields, inplace=False, ascending=ascending)
-            df = df.reset_index(drop=True, inplace=False)
-            return df
+        df = self._df.sort_values(by=sort_fields, inplace=False, ascending=ascending)
+        return df.reset_index(drop=True, inplace=False)
 
     # end method definition
 
@@ -2012,9 +2010,8 @@ class Data:
 
             # Use a regular expression to split the string by the separator
             # and remove leading/trailing spaces from each resulting substring
-            return_list = re.split(rf"[{separator}]\s*", str(value))
+            return re.split(rf"[{separator}]\s*", str(value))
 
-            return return_list
 
         # end def string_to_list()
 
@@ -2155,9 +2152,7 @@ class Data:
         if inplace:
             self._df.drop(column_names, axis=1, inplace=True)
             return self._df
-        else:
-            df = self._df.drop(column_names, axis=1, inplace=False)
-            return df
+        return self._df.drop(column_names, axis=1, inplace=False)
 
     # end method definition
 
@@ -2190,12 +2185,10 @@ class Data:
             if column_names != []:
                 self._df = self._df[column_names]
             return self._df
-        else:
-            # keep only those columns which are in column_names:
-            if column_names != []:
-                df = self._df[column_names]
-                return df
-            return None
+        # keep only those columns which are in column_names:
+        if column_names != []:
+            return self._df[column_names]
+        return None
 
     # end method definition
 
@@ -3035,9 +3028,8 @@ class Data:
         # To convert an Excel representation of a folder structure with nested
         # columns into a format appropriate for Pandas,
         # where all cells should be filled
-        df_filled = self._df.ffill(inplace=inplace)
+        return self._df.ffill(inplace=inplace)
 
-        return df_filled
 
     # end method definition
 
@@ -3395,7 +3387,7 @@ class Data:
         # Check the data frame is initialized:
         if self._df is None:
             self.logger.error(
-                "Data frame is not initialized. Cannot add a column -> '%s' via concatenation!", new_column
+                "Data frame is not initialized. Cannot add a column -> '%s' via concatenation!", new_column,
             )
             return False
         # Check we only do one case transformation as they are mutually exclusive:
@@ -3603,9 +3595,8 @@ class Data:
                     table_values[col] = [None] * max_len  # fill missing values
 
             # Step 3: Create a list of dictionaries (table) for each row:
-            table = [{col: table_values[col][i] for col in source_columns} for i in range(max_len)]
+            return [{col: table_values[col][i] for col in source_columns} for i in range(max_len)]
 
-            return table
 
         # end sub-method
 
@@ -3698,10 +3689,9 @@ class Data:
             # Optimized path for single-column (e.g., Node 'id')
             col = on_columns[0]
             return self._df[col].isin(match_df[col])
-        else:
-            # Optimized path for composite keys (e.g., Edge triple)
-            match_index = pd.MultiIndex.from_frame(match_df[on_columns])
-            self_index = pd.MultiIndex.from_frame(self._df[on_columns])
-            return self_index.isin(match_index)
+        # Optimized path for composite keys (e.g., Edge triple)
+        match_index = pd.MultiIndex.from_frame(match_df[on_columns])
+        self_index = pd.MultiIndex.from_frame(self._df[on_columns])
+        return self_index.isin(match_index)
 
     # end method definition

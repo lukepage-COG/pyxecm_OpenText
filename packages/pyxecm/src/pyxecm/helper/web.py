@@ -7,30 +7,18 @@ __maintainer__ = "Dr. Marc Diefenbruch"
 __email__ = "mdiefenb@opentext.com"
 
 import logging
-import os
-import platform
 import socket
-import sys
 import time
-from importlib.metadata import version
+from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
 from lxml import html
 
-APP_NAME = "pyxecm"
-APP_VERSION = version("pyxecm")
-MODULE_NAME = APP_NAME + ".helper.web"
+from pyxecm.helper.useragent import build_user_agent
 
-PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-OS_INFO = f"{platform.system()} {platform.release()}"
-ARCH_INFO = platform.machine()
-REQUESTS_VERSION = requests.__version__
-
-USER_AGENT = (
-    f"{APP_NAME}/{APP_VERSION} ({MODULE_NAME}/{APP_VERSION}; "
-    f"Python/{PYTHON_VERSION}; {OS_INFO}; {ARCH_INFO}; Requests/{REQUESTS_VERSION})"
-)
+MODULE_NAME = "pyxecm.helper.web"
+USER_AGENT = build_user_agent(MODULE_NAME)
 
 REQUEST_FORM_HEADERS = {
     "User-Agent": USER_AGENT,
@@ -154,17 +142,11 @@ class HTTP:
         if not headers:
             headers = REQUEST_FORM_HEADERS
 
-        message = "Make HTTP request to URL -> '{}' using -> {} method".format(
-            url,
-            method,
-        )
+        message = f"Make HTTP request to URL -> '{url}' using -> {method} method"
         if payload:
-            message += " with payload -> {}".format(payload)
+            message += f" with payload -> {payload}"
         if retries:
-            message += " (max number of retries -> {}, wait time between retries -> {})".format(
-                retries,
-                wait_time,
-            )
+            message += f" (max number of retries -> {retries}, wait time between retries -> {wait_time})"
             try:
                 retries = int(retries)
             except ValueError:
@@ -313,24 +295,24 @@ class HTTP:
                 "Failed to request download file -> '%s' from site -> %s%s",
                 filename,
                 url,
-                "; error -> {}".format(response.text) if response else "",
+                f"; error -> {response.text}" if response else "",
             )
             return False
 
         try:
-            directory = os.path.dirname(filename)
-            if not os.path.exists(directory):
+            directory = str(Path(filename).parent)
+            if not Path(directory).exists():
                 self.logger.info(
                     "Download directory -> '%s' does not exist, creating it.",
                     directory,
                 )
-                os.makedirs(directory)
-            with open(filename, "wb") as download_file:
+                Path(directory).mkdir(parents=True, exist_ok=True)
+            with Path(filename).open("wb") as download_file:
                 download_file.writelines(response.iter_content(chunk_size=chunk_size))
             self.logger.debug(
                 "File downloaded successfully as -> '%s' (size -> %s).",
                 filename,
-                self.human_readable_size(os.path.getsize(filename)),
+                self.human_readable_size(Path(filename).stat().st_size),
             )
         except (OSError, requests.exceptions.RequestException):
             self.logger.error(
@@ -358,11 +340,11 @@ class HTTP:
 
         for unit in ["B", "KB", "MB", "GB", "TB"]:
             if size_in_bytes < 1024:
-                return "{:.2f} {}".format(size_in_bytes, unit)
+                return f"{size_in_bytes:.2f} {unit}"
             size_in_bytes /= 1024
 
         # We should never get here but linter wants it:
-        return "{:.2f}".format(size_in_bytes)
+        return f"{size_in_bytes:.2f}"
 
     # end method definition
 
@@ -396,10 +378,9 @@ class HTTP:
             elements = tree.xpath(xpath)
 
             # Get text content of all elements and join them
-            content = "\n".join([elem.text_content().strip() for elem in elements])
+            return "\n".join([elem.text_content().strip() for elem in elements])
 
             # Return the extracted content:
-            return content
 
         # If request was not successful, print error message:
         self.logger.error(

@@ -12,27 +12,16 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import platform
-import sys
 import time
 from http import HTTPStatus
-from importlib.metadata import version
+from pathlib import Path
 
 import requests
 
-APP_NAME = "pyxecm"
-APP_VERSION = version("pyxecm")
-MODULE_NAME = APP_NAME + ".otkd"
+from pyxecm.helper.useragent import build_user_agent
 
-PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-OS_INFO = f"{platform.system()} {platform.release()}"
-ARCH_INFO = platform.machine()
-REQUESTS_VERSION = requests.__version__
-
-USER_AGENT = (
-    f"{APP_NAME}/{APP_VERSION} ({MODULE_NAME}/{APP_VERSION}; "
-    f"Python/{PYTHON_VERSION}; {OS_INFO}; {ARCH_INFO}; Requests/{REQUESTS_VERSION})"
-)
+MODULE_NAME = "pyxecm.otkd"
+USER_AGENT = build_user_agent("pyxecm.otkd")
 
 REQUEST_FORM_HEADERS = {
     "User-Agent": USER_AGENT,
@@ -113,7 +102,7 @@ class OTKD:
 
         otkd_base_url = protocol + "://" + otkd_config["hostname"]
         if str(port) not in ["80", "443"]:
-            otkd_base_url += ":{}".format(port)
+            otkd_base_url += f":{port}"
         otkd_config["baseUrl"] = otkd_base_url
         otkd_config["restUrl"] = otkd_config["baseUrl"] + "/nifi-api"
         otkd_config["flowUrl"] = otkd_config["restUrl"] + "/flow"
@@ -239,7 +228,7 @@ class OTKD:
         request_header = {}
         request_header.update(REQUEST_FORM_HEADERS)
         if self._otkd_token:
-            request_header.update({"Authorization": "Bearer {}".format(self._otkd_token)})
+            request_header.update({"Authorization": f"Bearer {self._otkd_token}"})
 
         return request_header
 
@@ -262,7 +251,7 @@ class OTKD:
         request_header = {}
         request_header.update(REQUEST_JSON_HEADERS)
         if self._otkd_token:
-            request_header.update({"Authorization": "Bearer {}".format(self._otkd_token)})
+            request_header.update({"Authorization": f"Bearer {self._otkd_token}"})
 
         return request_header
 
@@ -287,7 +276,7 @@ class OTKD:
         request_header = {}
         request_header.update(REQUEST_UPLOAD_HEADERS)
         if self._otkd_token:
-            request_header.update({"Authorization": "Bearer {}".format(self._otkd_token)})
+            request_header.update({"Authorization": f"Bearer {self._otkd_token}"})
 
         return request_header
 
@@ -379,10 +368,9 @@ class OTKD:
                         self.logger.info(success_message)
                     if parse_request_response:
                         return self.parse_request_response(response)
-                    else:
-                        return response
+                    return response
                 # Check if Session has expired - then re-authenticate and try once more
-                elif response.status_code == 401 and retries == 0:
+                if response.status_code == 401 and retries == 0:
                     self.logger.info("Session has expired - try to re-authenticate...")
                     self.authenticate(revalidate=True)
                     retries += 1
@@ -492,14 +480,9 @@ class OTKD:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -565,13 +548,12 @@ class OTKD:
             self.logger.debug("NiFi access token -> %s", token)
             self._otkd_token = token
             return token
-        else:
-            self.logger.error(
-                "Failed to request an Nifi access token; status -> %s, error -> %s",
-                response.status_code,
-                response.text,
-            )
-            return None
+        self.logger.error(
+            "Failed to request an Nifi access token; status -> %s, error -> %s",
+            response.status_code,
+            response.text,
+        )
+        return None
 
     # end method definition
 
@@ -684,7 +666,7 @@ class OTKD:
         request_header = self.request_json_header()
 
         process_groups = self.do_request(
-            url=request_url, method="GET", headers=request_header, failure_message="Failed to get process groups"
+            url=request_url, method="GET", headers=request_header, failure_message="Failed to get process groups",
         )
 
         if not process_groups:
@@ -789,12 +771,11 @@ class OTKD:
         if process_groups is None:
             return None
 
-        process_group = next(
+        return next(
             (group for group in process_groups if group["component"]["name"] == name),
             None,
         )
 
-        return process_group
 
     # end method definition
 
@@ -822,7 +803,7 @@ class OTKD:
     # end method definition
 
     def upload_process_group(
-        self, file_path: str, name: str, position_x: float = 0.0, position_y: float = 0.0
+        self, file_path: str, name: str, position_x: float = 0.0, position_y: float = 0.0,
     ) -> dict | None:
         """Upload Nifi flow from JSON file.
 
@@ -867,7 +848,7 @@ class OTKD:
         request_header = self.request_upload_header()
 
         # Upload the Template JSON file
-        with open(file_path, "rb") as pg_file:
+        with Path(file_path).open("rb") as pg_file:
             response = self.do_request(
                 url=request_url,
                 method="POST",
@@ -1015,7 +996,7 @@ class OTKD:
             return None
 
         parameter_context = next(
-            (context for context in parameter_contexts if context["component"]["name"] == name), None
+            (context for context in parameter_contexts if context["component"]["name"] == name), None,
         )
 
         if not parameter_context:
@@ -1027,7 +1008,7 @@ class OTKD:
     # end method definition
 
     def update_parameter(
-        self, component: str, parameter: str, value: str | float | bool, sensitive: bool = False, description: str = ""
+        self, component: str, parameter: str, value: str | float | bool, sensitive: bool = False, description: str = "",
     ) -> dict | None:
         """Update a parameter in a given parameter context.
 
@@ -1133,7 +1114,7 @@ class OTKD:
                             "sensitive": sensitive,
                             "description": description,
                             "value": value,
-                        }
+                        },
                     },
                 ],
                 "inheritedParameterContexts": [],
@@ -1144,7 +1125,7 @@ class OTKD:
         request_header = self.request_json_header()
 
         response = self.do_request(
-            url=request_url, method="POST", headers=request_header, json_data=json_body, failure_message=""
+            url=request_url, method="POST", headers=request_header, json_data=json_body, failure_message="",
         )
 
         if response:
@@ -1305,7 +1286,7 @@ class OTKD:
             url=request_url,
             method="GET",
             headers=request_header,
-            failure_message="Failed to get controller services for process group -> '{}'".format(process_group_id),
+            failure_message=f"Failed to get controller services for process group -> '{process_group_id}'",
         )
 
         if not controller_services:
@@ -1366,17 +1347,14 @@ class OTKD:
         if components:
             json_body["components"] = components
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="PUT",
             headers=request_header,
             json_data=json_body,
-            failure_message="Unable to set state -> '{}' for controller-services in process-group -> '{}'".format(
-                state, name
-            ),
+            failure_message=f"Unable to set state -> '{state}' for controller-services in process-group -> '{name}'",
             show_error=True,
         )
 
-        return response
 
     # end method definition

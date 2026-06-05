@@ -3,6 +3,7 @@
 import os
 import tempfile
 from ipaddress import ip_address
+from pathlib import Path
 from typing import Self
 
 from pydantic import AliasChoices, BaseModel, Field, HttpUrl, SecretStr, model_validator
@@ -276,7 +277,7 @@ class CustomizerSettingsK8S(BaseModel):
 
     enabled: bool = Field(default=True, description="Enable/Disable the K8s integration")
     kubeconfig_file: str = Field(
-        default=os.path.expanduser("~/.kube/config"),
+        default=str(Path("~/.kube/config").expanduser()),
         description="Path to the kubeconfig file",
     )
     namespace: str = Field(default="default", description="Name of the namespace")
@@ -376,7 +377,7 @@ class CustomizerSettingsAviator(BaseModel):
     oauth_client: str = Field(default="", description="OAuth Client ID for Content Aviator")
     oauth_secret: str = Field(default="", description="OAuth Client Secret for Content Aviator")
     base_url: HttpUrl | None = Field(
-        default=HttpUrl("http://csai-chat-svc:3000"), description="Base URL for Content Aviator"
+        default=HttpUrl("http://csai-chat-svc:3000"), description="Base URL for Content Aviator",
     )
 
 
@@ -407,7 +408,7 @@ class Settings(BaseSettings):
     """Class for all settings."""
 
     cust_log_file: str = Field(
-        default=os.path.join(tempfile.gettempdir(), "customizing.log"),
+        default=str(Path(tempfile.gettempdir()) / "customizing.log"),
         description="Logfile for Customizer execution",
     )
 

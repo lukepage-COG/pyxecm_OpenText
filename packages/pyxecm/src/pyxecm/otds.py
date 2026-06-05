@@ -19,34 +19,23 @@ __email__ = "mdiefenb@opentext.com"
 import base64
 import json
 import logging
-import os
-import platform
-import sys
 import tempfile
 import time
 import urllib.parse
 from http import HTTPStatus
-from importlib.metadata import version
+from pathlib import Path
 
 import requests
 from opentelemetry import trace
 
+from pyxecm.helper.useragent import build_user_agent
+
 tracer = trace.get_tracer(__name__)
 
-APP_NAME = "pyxecm"
-APP_VERSION = version("pyxecm")
-MODULE_NAME = APP_NAME + ".otds"
 OTEL_TRACING_ATTRIBUTES = {"class": "otds"}
+MODULE_NAME = "pyxecm.otds"
+USER_AGENT = build_user_agent("pyxecm.otds")
 
-PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-OS_INFO = f"{platform.system()} {platform.release()}"
-ARCH_INFO = platform.machine()
-REQUESTS_VERSION = requests.__version__
-
-USER_AGENT = (
-    f"{APP_NAME}/{APP_VERSION} ({MODULE_NAME}/{APP_VERSION}; "
-    f"Python/{PYTHON_VERSION}; {OS_INFO}; {ARCH_INFO}; Requests/{REQUESTS_VERSION})"
-)
 
 REQUEST_HEADERS = {
     "User-Agent": USER_AGENT,
@@ -150,7 +139,7 @@ class OTDS:
 
         otds_base_url = protocol + "://" + otds_config["hostname"]
         if str(port) not in ["80", "443"]:
-            otds_base_url += ":{}".format(port)
+            otds_base_url += f":{port}"
         otds_base_url += "/otdsws"
         otds_config["baseUrl"] = otds_base_url
 
@@ -274,7 +263,7 @@ class OTDS:
 
         self.logger.debug(
             "Get OAuth token info%s; calling -> %s",
-            " for resource -> '{}'".format(resource_id) if resource_id else "",
+            f" for resource -> '{resource_id}'" if resource_id else "",
             request_url,
         )
 
@@ -284,7 +273,7 @@ class OTDS:
             json_data=token_info_body,
             timeout=None,
             failure_message="Failed to get OAuth token info{}".format(
-                " for resource -> '{}'".format(resource_id) if resource_id else ""
+                f" for resource -> '{resource_id}'" if resource_id else "",
             ),
         )
 
@@ -307,7 +296,7 @@ class OTDS:
     # end method definition
 
     def client_credentials(
-        self, grant_type: str = "client_credentials", scope: str | None = None, **kwargs: dict[str, str]
+        self, grant_type: str = "client_credentials", scope: str | None = None, **kwargs: dict[str, str],
     ) -> dict:
         """Return the client credentials (client_id + client_secret).
 
@@ -591,7 +580,7 @@ class OTDS:
             request_header["Content-Type"] = content_type
 
         if self._token is not None:
-            request_header["Authorization"] = "Bearer {}".format(self._token)
+            request_header["Authorization"] = f"Bearer {self._token}"
 
         return request_header
 
@@ -696,7 +685,7 @@ class OTDS:
                         self.logger.info(success_message)
                     return self.parse_request_response(response) if parse_request_response else response
                 # Check if Session has expired - then re-authenticate and try once more
-                elif retries == 0 and (response.status_code == 401 or (response.status_code == 400 and expired_token)):
+                if retries == 0 and (response.status_code == 401 or (response.status_code == 400 and expired_token)):
                     self.logger.info("Session expired. Re-authenticating and retrying...")
                     self.authenticate(revalidate=True)
                     retries += 1
@@ -820,12 +809,9 @@ class OTDS:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as e:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    e,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {e}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(e)
+                message = f"Cannot decode response as JSon; error -> {e}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -838,7 +824,7 @@ class OTDS:
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="authenticate")
     def authenticate(
-        self, revalidate: bool = False, grant_type: str | None = None, show_error: bool = True
+        self, revalidate: bool = False, grant_type: str | None = None, show_error: bool = True,
     ) -> dict | None:
         """Authenticate at Directory Services and retrieve OTDS ticket.
 
@@ -875,7 +861,7 @@ class OTDS:
         otds_ticket = "NotSet"
 
         self.logger.debug(
-            "Requesting OTDS ticket from -> %s using grant type -> '%s'...", self.credential_url(), grant_type
+            "Requesting OTDS ticket from -> %s using grant type -> '%s'...", self.credential_url(), grant_type,
         )
 
         response = None
@@ -887,7 +873,7 @@ class OTDS:
                 grant_type = "client_credentials"
             else:
                 self.logger.error(
-                    "Cannot determine grant type automatically - please provide username/password or client_id/client_secret for authentication."
+                    "Cannot determine grant type automatically - please provide username/password or client_id/client_secret for authentication.",
                 )
                 return None
 
@@ -918,7 +904,7 @@ class OTDS:
             self.logger.warning(
                 "Unable to connect to OTDS authentication endpoint -> %s%s. OTDS service may not be ready yet.",
                 self.credential_url(),
-                "; error -> {}".format(str(exception)) if str(exception) else "",
+                f"; error -> {exception!s}" if str(exception) else "",
             )
             return None
 
@@ -926,9 +912,8 @@ class OTDS:
             authenticate_dict = self.parse_request_response(response)
             if not authenticate_dict:
                 return None
-            else:
-                otds_ticket = authenticate_dict[result_value]
-                self.logger.debug("Ticket / token -> %s", otds_ticket)
+            otds_ticket = authenticate_dict[result_value]
+            self.logger.debug("Ticket / token -> %s", otds_ticket)
         else:
             if show_error:
                 self.logger.error(
@@ -948,7 +933,7 @@ class OTDS:
             self._cookie = {"OTDSTicket": otds_ticket}
             self._token = None
             return self._cookie
-        elif grant_type == "client_credentials":
+        if grant_type == "client_credentials":
             self._token = otds_ticket
             self._cookie = None
             return self._token
@@ -1025,7 +1010,7 @@ class OTDS:
                 headers=REQUEST_FORM_HEADERS,
                 data=impersonate_post_body,
                 timeout=None,
-                failure_message="Failed to impersonate as user -> '{}' with OTDS token".format(user_id),
+                failure_message=f"Failed to impersonate as user -> '{user_id}' with OTDS token",
             )
         else:  # ticket-based authentication
             if not ticket:
@@ -1050,7 +1035,7 @@ class OTDS:
                 method="POST",
                 json_data=impersonate_post_body,
                 timeout=None,
-                failure_message="Failed to impersonate as user -> '{}' with OTDS ticket".format(user_id),
+                failure_message=f"Failed to impersonate as user -> '{user_id}' with OTDS ticket",
             )
 
         return response
@@ -1111,7 +1096,7 @@ class OTDS:
             method="POST",
             json_data=role_post_body_json,
             timeout=None,
-            failure_message="Failed to add application role -> '{}'".format(name),
+            failure_message=f"Failed to add application role -> '{name}'",
         )
 
     # end method definition
@@ -1148,16 +1133,15 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get application role -> '{}' in partition -> '{}'".format(name, partition),
+            failure_message=f"Failed to get application role -> '{name}' in partition -> '{partition}'",
             show_error=show_error,
         )
 
-        role = next(
+        return next(
             (role for role in response.get("roles") if role["name"] == name and role["userPartitionID"] == partition),
             None,
         )
 
-        return role
 
     # end method definition
 
@@ -1228,10 +1212,7 @@ class OTDS:
             method="POST",
             json_data=role_post_body_json,
             timeout=None,
-            failure_message="Failed to assign user -> '{}' to application role -> '{}'!".format(
-                user_id,
-                role_name,
-            ),
+            failure_message=f"Failed to assign user -> '{user_id}' to application role -> '{role_name}'!",
             parse_request_response=False,
         )
 
@@ -1278,7 +1259,7 @@ class OTDS:
             group_location = group["location"]
         else:
             self.logger.error(
-                "Cannot find group -> '%s'! Cannot assign group to application role -> '%s'.", group_id, role_name
+                "Cannot find group -> '%s'! Cannot assign group to application role -> '%s'.", group_id, role_name,
             )
             return False
 
@@ -1311,10 +1292,7 @@ class OTDS:
             method="POST",
             json_data=role_post_body_json,
             timeout=None,
-            failure_message="Failed to assign application role -> '{}' to group -> '{}'".format(
-                role_name,
-                group_id,
-            ),
+            failure_message=f"Failed to assign application role -> '{role_name}' to group -> '{group_id}'",
             parse_request_response=False,
         )
 
@@ -1362,7 +1340,7 @@ class OTDS:
             method="POST",
             json_data=partition_post_body_json,
             timeout=None,
-            failure_message="Failed to add user partition -> '{}'".format(name),
+            failure_message=f"Failed to add user partition -> '{name}'",
         )
 
     # end method definition
@@ -1396,7 +1374,7 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get user partition -> '{}'".format(name),
+            failure_message=f"Failed to get user partition -> '{name}'",
             show_error=show_error,
         )
 
@@ -1460,7 +1438,7 @@ class OTDS:
             method="POST",
             json_data=user_post_body_json,
             timeout=None,
-            failure_message="Failed to add user -> '{}'".format(name),
+            failure_message=f"Failed to add user -> '{name}'",
         )
 
     # end method definition
@@ -1493,7 +1471,7 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get user -> '{}'".format(user_id),
+            failure_message=f"Failed to get user -> '{user_id}'",
         )
 
     # end method definition
@@ -1639,7 +1617,7 @@ class OTDS:
 
         request_url = self.users_url()
         if query:
-            request_url += "?{}".format(encoded_query)
+            request_url += f"?{encoded_query}"
 
         if partition:
             self.logger.debug(
@@ -1648,9 +1626,7 @@ class OTDS:
                 limit,
                 request_url,
             )
-            failure_message = "Failed to get all users in partition -> '{}'".format(
-                partition,
-            )
+            failure_message = f"Failed to get all users in partition -> '{partition}'"
         else:
             self.logger.debug(
                 "Get all users (limit -> %s); calling -> %s",
@@ -1821,7 +1797,7 @@ class OTDS:
             method="PATCH",
             json_data=user_patch_body_json,
             timeout=None,
-            failure_message="Failed to update user -> '{}'".format(user_id),
+            failure_message=f"Failed to update user -> '{user_id}'",
         )
 
     # end method definition
@@ -1855,7 +1831,7 @@ class OTDS:
             url=request_url,
             method="DELETE",
             timeout=None,
-            failure_message="Failed to delete user -> '{}'".format(user_id),
+            failure_message=f"Failed to delete user -> '{user_id}'",
             parse_request_response=False,
         )
 
@@ -1881,7 +1857,7 @@ class OTDS:
 
         user_post_body_json = {"newPassword": password}
 
-        request_url = "{}/{}/password".format(self.users_url(), user_id)
+        request_url = f"{self.users_url()}/{user_id}/password"
 
         self.logger.debug(
             "Resetting password for user -> '%s'; calling -> %s",
@@ -1894,7 +1870,7 @@ class OTDS:
             method="PUT",
             json_data=user_post_body_json,
             timeout=None,
-            failure_message="Failed to reset password for user -> '{}'".format(user_id),
+            failure_message=f"Failed to reset password for user -> '{user_id}'",
             parse_request_response=False,
         )
 
@@ -1941,7 +1917,7 @@ class OTDS:
             method="POST",
             json_data=group_post_body_json,
             timeout=None,
-            failure_message="Failed to reset password for user -> '{}'".format(name),
+            failure_message=f"Failed to reset password for user -> '{name}'",
         )
 
     # end method definition
@@ -1987,7 +1963,7 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get group -> '{}'".format(group),
+            failure_message=f"Failed to get group -> '{group}'",
             show_error=show_error,
         )
 
@@ -2142,7 +2118,7 @@ class OTDS:
 
         request_url = self.groups_url()
         if query:
-            request_url += "?{}".format(encoded_query)
+            request_url += f"?{encoded_query}"
 
         if partition:
             self.logger.debug(
@@ -2152,9 +2128,7 @@ class OTDS:
                 str(page_size),
                 request_url,
             )
-            failure_message = "Failed to get all groups in partition -> '{}'!".format(
-                partition,
-            )
+            failure_message = f"Failed to get all groups in partition -> '{partition}'!"
         else:
             self.logger.debug(
                 "Get all groups (limit -> %s); calling -> %s",
@@ -2273,10 +2247,7 @@ class OTDS:
             method="POST",
             json_data=user_to_group_post_body_json,
             timeout=None,
-            failure_message="Failed to add user -> '{}' to group -> '{}'".format(
-                user,
-                group,
-            ),
+            failure_message=f"Failed to add user -> '{user}' to group -> '{group}'",
             parse_request_response=False,
         )
 
@@ -2317,10 +2288,7 @@ class OTDS:
             method="POST",
             json_data=group_to_parent_group_post_body_json,
             timeout=None,
-            failure_message="Failed to add group -> '{}' to parent group -> '{}'".format(
-                group,
-                parent_group,
-            ),
+            failure_message=f"Failed to add group -> '{group}' to parent group -> '{parent_group}'",
             parse_request_response=False,
         )
 
@@ -2405,7 +2373,7 @@ class OTDS:
             method="POST",
             json_data=resource_post_body,
             timeout=None,
-            failure_message="Failed to add resource -> '{}'".format(name),
+            failure_message=f"Failed to add resource -> '{name}'",
         )
 
     # end method definition
@@ -2464,7 +2432,7 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get resource -> '{}'".format(name),
+            failure_message=f"Failed to get resource -> '{name}'",
             show_error=show_error,
         )
 
@@ -2502,7 +2470,7 @@ class OTDS:
             method="PUT",
             json_data=resource,
             timeout=None,
-            failure_message="Failed to update resource -> '{}'".format(name),
+            failure_message=f"Failed to update resource -> '{name}'",
             show_error=show_error,
         )
 
@@ -2537,7 +2505,7 @@ class OTDS:
             method="POST",
             json_data=resource_post_body_json,
             timeout=None,
-            failure_message="Failed to activate resource -> '{}'".format(resource_id),
+            failure_message=f"Failed to activate resource -> '{resource_id}'",
         )
 
     # end method definition
@@ -2594,7 +2562,7 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get access role -> '{}'".format(access_role),
+            failure_message=f"Failed to get access role -> '{access_role}'",
         )
 
     # end method definition
@@ -2645,10 +2613,7 @@ class OTDS:
             method="POST",
             json_data=access_role_post_body_json,
             timeout=None,
-            failure_message="Failed to add partition -> '{}' to access role -> '{}'".format(
-                partition,
-                access_role,
-            ),
+            failure_message=f"Failed to add partition -> '{partition}' to access role -> '{access_role}'",
             parse_request_response=False,
         )
 
@@ -2725,10 +2690,7 @@ class OTDS:
             method="POST",
             json_data=access_role_post_body_json,
             timeout=None,
-            failure_message="Failed to add user -> '{}' to access role -> '{}'".format(
-                user_id,
-                access_role,
-            ),
+            failure_message=f"Failed to add user -> '{user_id}' to access role -> '{access_role}'",
             parse_request_response=False,
         )
 
@@ -2803,10 +2765,7 @@ class OTDS:
             method="POST",
             json_data=access_role_post_body_json,
             timeout=None,
-            failure_message="Failed to add group -> '{}' to access role -> '{}'".format(
-                group,
-                access_role,
-            ),
+            failure_message=f"Failed to add group -> '{group}' to access role -> '{access_role}'",
             parse_request_response=False,
         )
 
@@ -2868,7 +2827,7 @@ class OTDS:
             method="PUT",
             json_data=access_role_put_body_json,
             timeout=None,
-            failure_message="Failed to update access role -> '{}'".format(access_role),
+            failure_message=f"Failed to update access role -> '{access_role}'",
         )
 
     # end method definition
@@ -2904,7 +2863,7 @@ class OTDS:
 
         self.logger.debug("Reading license file -> '%s'...", path_to_license_file)
         try:
-            with open(path_to_license_file, encoding="UTF-8") as license_file:
+            with Path(path_to_license_file).open(encoding="UTF-8") as license_file:
                 license_content = license_file.read()
         except OSError:
             self.logger.error(
@@ -2942,7 +2901,7 @@ class OTDS:
             "%s product license -> '%s' for product -> '%s' to resource ->'%s'; calling -> %s",
             "Adding" if not update else "Updating",
             path_to_license_file,
-            "{} ({})".format(product_name, product_description) if product_description else product_name,
+            f"{product_name} ({product_description})" if product_description else product_name,
             resource_id,
             request_url,
         )
@@ -2956,23 +2915,22 @@ class OTDS:
                 timeout=None,
                 failure_message="Failed to update product license -> '{}' for product -> '{}' to resource -> '{}'".format(
                     path_to_license_file,
-                    "{} ({})".format(product_name, product_description) if product_description else product_name,
+                    f"{product_name} ({product_description})" if product_description else product_name,
                     resource_id,
                 ),
             )
-        else:
-            # Do a REST POST call for creation of a new license:
-            return self.do_request(
-                url=request_url,
-                method="POST",
-                json_data=license_post_body_json,
-                timeout=None,
-                failure_message="Failed to add product license -> '{}' for product -> '{}' to resource -> '{}'".format(
-                    path_to_license_file,
-                    "{} ({})".format(product_name, product_description) if product_description else product_name,
-                    resource_id,
-                ),
-            )
+        # Do a REST POST call for creation of a new license:
+        return self.do_request(
+            url=request_url,
+            method="POST",
+            json_data=license_post_body_json,
+            timeout=None,
+            failure_message="Failed to add product license -> '{}' for product -> '{}' to resource -> '{}'".format(
+                path_to_license_file,
+                f"{product_name} ({product_description})" if product_description else product_name,
+                resource_id,
+            ),
+        )
 
     # end method definition
 
@@ -3015,9 +2973,7 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get license for resource -> '{}'".format(
-                resource_id,
-            ),
+            failure_message=f"Failed to get license for resource -> '{resource_id}'",
         )
 
         if not response:
@@ -3043,7 +2999,7 @@ class OTDS:
 
         """
 
-        request_url = "{}/{}".format(self.license_url(), license_id)
+        request_url = f"{self.license_url()}/{license_id}"
 
         self.logger.debug(
             "Deleting product license -> '%s' from resource -> '%s'; calling -> %s",
@@ -3056,10 +3012,7 @@ class OTDS:
             url=request_url,
             method="DELETE",
             timeout=None,
-            failure_message="Failed to delete license -> '{}' for resource -> '{}'".format(
-                license_id,
-                resource_id,
-            ),
+            failure_message=f"Failed to delete license -> '{license_id}' for resource -> '{resource_id}'",
             parse_request_response=False,
         )
 
@@ -3162,11 +3115,7 @@ class OTDS:
             method="POST",
             json_data=license_post_body_json,
             timeout=None,
-            failure_message="Failed to add license feature -> '{}' associated with resource ID -> '{}' to user -> '{}'".format(
-                license_feature,
-                resource_id,
-                user_id,
-            ),
+            failure_message=f"Failed to add license feature -> '{license_feature}' associated with resource ID -> '{resource_id}' to user -> '{user_id}'",
             parse_request_response=False,
         )
 
@@ -3267,11 +3216,7 @@ class OTDS:
             method="POST",
             json_data=license_post_body_json,
             timeout=None,
-            failure_message="Failed to add license feature -> '{}' associated with resource ID -> '{}' to partition -> '{}'".format(
-                license_feature,
-                resource_id,
-                partition_name,
-            ),
+            failure_message=f"Failed to add license feature -> '{license_feature}' associated with resource ID -> '{resource_id}' to partition -> '{partition_name}'",
             parse_request_response=False,
         )
 
@@ -3387,11 +3332,7 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get licensed objects for license -> '{}' and license feature -> '{}' associated with resource -> '{}'".format(
-                license_name,
-                license_feature,
-                resource_id,
-            ),
+            failure_message=f"Failed to get licensed objects for license -> '{license_name}' and license feature -> '{license_feature}' associated with resource -> '{resource_id}'",
         )
 
     # end method definition
@@ -3571,9 +3512,7 @@ class OTDS:
             method="POST",
             json_data=command,
             timeout=None,
-            failure_message="Failed to import users and groups to synchronized partition -> '{}'".format(
-                name,
-            ),
+            failure_message=f"Failed to import users and groups to synchronized partition -> '{name}'",
             parse_request_response=False,
         )
 
@@ -3627,7 +3566,7 @@ class OTDS:
             method="POST",
             json_data=synchronized_partition_post_body_json,
             timeout=None,
-            failure_message="Failed to add synchronized partition -> '{}'".format(name),
+            failure_message=f"Failed to add synchronized partition -> '{name}'",
         )
 
     # end of method definition
@@ -3684,10 +3623,7 @@ class OTDS:
             method="POST",
             json_data=system_attribute_post_body_json,
             timeout=None,
-            failure_message="Failed to add system attribute -> '{}' with value -> '{}'".format(
-                name,
-                value,
-            ),
+            failure_message=f"Failed to add system attribute -> '{name}' with value -> '{value}'",
         )
 
     # end method definition
@@ -3756,7 +3692,7 @@ class OTDS:
             method="PUT",
             json_data=trusted_site_post_body_json,
             timeout=None,
-            failure_message="Failed to add trusted site -> '{}'".format(trusted_site),
+            failure_message=f"Failed to add trusted site -> '{trusted_site}'",
             parse_request_response=False,  # don't parse it!
         )
 
@@ -4012,7 +3948,7 @@ class OTDS:
             method="POST",
             json_data=oauth_client_post_body_json,
             timeout=None,
-            failure_message="Failed to add OAuth client -> {}".format(client_id),
+            failure_message=f"Failed to add OAuth client -> {client_id}",
         )
 
     # end method definition
@@ -4033,7 +3969,7 @@ class OTDS:
 
         """
 
-        request_url = "{}/{}".format(self.oauth_client_url(), client_id)
+        request_url = f"{self.oauth_client_url()}/{client_id}"
 
         self.logger.debug(
             "Get oauth client -> '%s'; calling -> %s",
@@ -4045,7 +3981,7 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get oauth client -> '{}'".format(client_id),
+            failure_message=f"Failed to get oauth client -> '{client_id}'",
             show_error=show_error,
         )
 
@@ -4070,7 +4006,7 @@ class OTDS:
 
         oauth_client_patch_body_json = updates
 
-        request_url = "{}/{}".format(self.oauth_client_url(), client_id)
+        request_url = f"{self.oauth_client_url()}/{client_id}"
 
         self.logger.debug(
             "Update OAuth client -> '%s' with -> %s; calling -> %s",
@@ -4084,7 +4020,7 @@ class OTDS:
             method="PATCH",
             json_data=oauth_client_patch_body_json,
             timeout=None,
-            failure_message="Failed to update OAuth client -> '{}'".format(client_id),
+            failure_message=f"Failed to update OAuth client -> '{client_id}'",
         )
 
     # end method definition
@@ -4115,9 +4051,7 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to retrieve access role -> '{}'".format(
-                access_role_name,
-            ),
+            failure_message=f"Failed to retrieve access role -> '{access_role_name}'",
         )
         if not access_role:
             return None
@@ -4140,9 +4074,7 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get partition info for OAuthClients for role -> '{}'".format(
-                access_role_name,
-            ),
+            failure_message=f"Failed to get partition info for OAuthClients for role -> '{access_role_name}'",
         )
         if not response:
             return None
@@ -4163,9 +4095,7 @@ class OTDS:
             url=request_url,
             method="PUT",
             timeout=None,
-            warning_message="Failed to add OAuthClients to access role -> '{}'".format(
-                access_role_name,
-            ),
+            warning_message=f"Failed to add OAuthClients to access role -> '{access_role_name}'",
             show_error=False,
             show_warning=True,
             parse_request_response=False,
@@ -4223,7 +4153,7 @@ class OTDS:
 
         """
 
-        request_url = "{}/{}".format(self.auth_handler_url(), name)
+        request_url = f"{self.auth_handler_url()}/{name}"
 
         self.logger.debug(
             "Getting authentication handler -> '%s'; calling -> %s",
@@ -4235,7 +4165,7 @@ class OTDS:
             url=request_url,
             method="GET",
             timeout=None,
-            failure_message="Failed to get authentication handler -> '{}'".format(name),
+            failure_message=f"Failed to get authentication handler -> '{name}'",
             show_error=show_error,
         )
 
@@ -4589,7 +4519,7 @@ class OTDS:
             method="POST",
             json_data=auth_handler_post_body_json,
             timeout=None,
-            failure_message="Failed to add SAML auth handler -> '{}'".format(name),
+            failure_message=f"Failed to add SAML auth handler -> '{name}'",
         )
 
     # end method definition
@@ -4653,9 +4583,9 @@ class OTDS:
                     "_fileBased": False,
                     "_fileName": False,
                     "_fileExtensions": None,
-                    "_value": os.path.basename(
+                    "_value": Path(
                         certificate_file,
-                    ),  # "TM6_Sandbox.pse" - file name only
+                    ).name,  # "TM6_Sandbox.pse" - file name only
                     "_allowedValues": None,
                     "_confidential": False,
                     "_keepOriginal": False,
@@ -4704,7 +4634,7 @@ class OTDS:
             method="POST",
             json_data=auth_handler_post_body_json,
             timeout=None,
-            failure_message="Failed to add SAP auth handler -> '{}'".format(name),
+            failure_message=f"Failed to add SAP auth handler -> '{name}'",
             parse_request_response=False,
         )
         if not response or not response.ok:
@@ -4716,7 +4646,7 @@ class OTDS:
         self.logger.debug("Reading certificate file -> '%s'...", certificate_file)
         try:
             # PSE files are binary - so we need to open with "rb":
-            with open(certificate_file, "rb") as cert_file:
+            with Path(certificate_file).open("rb") as cert_file:
                 cert_content = cert_file.read()
                 if not cert_content:
                     self.logger.error(
@@ -4755,14 +4685,14 @@ class OTDS:
             cert_file_encoded = False
 
         if cert_file_encoded:
-            certificate_file = os.path.join(tempfile.gettempdir(), os.path.basename(certificate_file))
+            certificate_file = str(Path(tempfile.gettempdir()) / Path(certificate_file).name)
             self.logger.debug(
                 "Writing decoded certificate file -> %s...",
                 certificate_file,
             )
             try:
                 # PSE files need to be binary - so we need to open with "wb":
-                with open(certificate_file, "wb") as cert_file:
+                with Path(certificate_file).open("wb") as cert_file:
                     cert_file.write(base64.b64decode(cert_content))
             except OSError:
                 self.logger.error(
@@ -4787,10 +4717,10 @@ class OTDS:
 
         # It is important to send the file pointer and not the actual file content
         # otherwise the file is sent base64 encoded, which we don't want:
-        with open(certificate_file, "rb") as file_obj:
+        with Path(certificate_file).open("rb") as file_obj:
             auth_handler_post_files = {
                 "file1": (
-                    os.path.basename(certificate_file),
+                    Path(certificate_file).name,
                     file_obj,
                     "application/octet-stream",
                 ),
@@ -5234,7 +5164,7 @@ class OTDS:
             method="POST",
             json_data=auth_handler_post_body_json,
             timeout=None,
-            failure_message="Failed to add OAuth auth handler -> '{}'".format(name),
+            failure_message=f"Failed to add OAuth auth handler -> '{name}'",
         )
 
         # end method definition
@@ -5273,7 +5203,7 @@ class OTDS:
             "objectToConsolidate": resource_dn,
         }
 
-        request_url = "{}".format(self.consolidation_url())
+        request_url = f"{self.consolidation_url()}"
 
         self.logger.debug(
             "Consolidation of resource -> '%s' (%s); calling -> %s",
@@ -5287,9 +5217,7 @@ class OTDS:
             method="POST",
             json_data=consolidation_post_body_json,
             timeout=None,
-            failure_message="Failed to consolidate resource -> '{}'".format(
-                resource_name,
-            ),
+            failure_message=f"Failed to consolidate resource -> '{resource_name}'",
             parse_request_response=False,
         )
 
@@ -5329,7 +5257,7 @@ class OTDS:
             "impersonateList": impersonation_list,
         }
 
-        request_url = "{}/{}/impersonation".format(self.resource_url(), resource_name)
+        request_url = f"{self.resource_url()}/{resource_name}/impersonation"
 
         self.logger.debug(
             "Impersonation settings for resource -> '%s'; calling -> %s",
@@ -5342,9 +5270,7 @@ class OTDS:
             method="PUT",
             json_data=impersonation_put_body_json,
             timeout=None,
-            failure_message="Failed to set impersonation for resource -> '{}'".format(
-                resource_name,
-            ),
+            failure_message=f"Failed to set impersonation for resource -> '{resource_name}'",
             parse_request_response=False,
         )
 
@@ -5384,7 +5310,7 @@ class OTDS:
             "impersonateList": impersonation_list,
         }
 
-        request_url = "{}/{}/impersonation".format(self.oauth_client_url(), client_id)
+        request_url = f"{self.oauth_client_url()}/{client_id}/impersonation"
 
         self.logger.debug(
             "Impersonation settings for OAuth Client -> '%s'; calling -> %s",
@@ -5397,9 +5323,7 @@ class OTDS:
             method="PUT",
             json_data=impersonation_put_body_json,
             timeout=None,
-            failure_message="Failed to set impersonation for OAuth Client -> '{}'".format(
-                client_id,
-            ),
+            failure_message=f"Failed to set impersonation for OAuth Client -> '{client_id}'",
             parse_request_response=False,
         )
 
@@ -5502,9 +5426,7 @@ class OTDS:
             method="PUT",
             json_data=update_values,
             timeout=None,
-            failure_message="Failed to update password policy with values -> {}".format(
-                update_values,
-            ),
+            failure_message=f"Failed to update password policy with values -> {update_values}",
             parse_request_response=False,
         )
 

@@ -17,7 +17,7 @@ router = APIRouter(tags=["terminal"])
 
 @router.websocket("/ws/terminal")
 async def ws_terminal(
-    websocket: WebSocket, pod: str = Query(...), command: str = Query(...), container: str = Query(None)
+    websocket: WebSocket, pod: str = Query(...), command: str = Query(...), container: str = Query(None),
 ) -> None:
     """Websocket to connect to a shell session in a pod.
 

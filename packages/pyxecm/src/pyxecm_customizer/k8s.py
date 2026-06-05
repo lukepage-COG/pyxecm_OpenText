@@ -17,6 +17,7 @@ import logging
 import os
 import time
 from datetime import UTC, datetime
+from pathlib import Path
 
 from kubernetes import client, config
 from kubernetes.client import (
@@ -97,7 +98,7 @@ class K8s:
         if kubeconfig_file is None:
             kubeconfig_file = os.getenv(
                 "KUBECONFIG",
-                os.path.expanduser("~/.kube/config"),
+                str(Path("~/.kube/config").expanduser()),
             )
 
         if not configured:
@@ -116,8 +117,7 @@ class K8s:
         if namespace == "default":
             # Read current namespace
             try:
-                with open(
-                    "/var/run/secrets/kubernetes.io/serviceaccount/namespace",
+                with Path("/var/run/secrets/kubernetes.io/serviceaccount/namespace").open(
                     encoding="utf-8",
                 ) as namespace_file:
                     self._namespace = namespace_file.read()
@@ -204,9 +204,8 @@ class K8s:
             if e.status == 404:
                 self.logger.debug("Pod -> '%s' not found (may be deleted).", pod_name)
                 return None
-            else:
-                self.logger.error("Failed to get pod -> '%s'!", pod_name)
-                return None  # Unexpected error, return None
+            self.logger.error("Failed to get pod -> '%s'!", pod_name)
+            return None  # Unexpected error, return None
         return response
 
     # end method definition
@@ -646,7 +645,7 @@ class K8s:
 
         try:
             response = self.list_config_maps(
-                field_selector="metadata.name={}".format(config_map_name),
+                field_selector=f"metadata.name={config_map_name}",
             )
         except ApiException:
             self.logger.error(
@@ -1093,12 +1092,12 @@ class K8s:
         body = [
             {
                 "op": "replace",
-                "path": "/spec/rules/{}/http/paths/{}/backend/service/name".format(rule_index, path_index),
+                "path": f"/spec/rules/{rule_index}/http/paths/{path_index}/backend/service/name",
                 "value": service_name,
             },
             {
                 "op": "replace",
-                "path": "/spec/rules/{}/http/paths/{}/backend/service/port/number".format(rule_index, path_index),
+                "path": f"/spec/rules/{rule_index}/http/paths/{path_index}/backend/service/port/number",
                 "value": service_port,
             },
         ]
@@ -1195,13 +1194,12 @@ class K8s:
                             total_containers_in_pod,
                         )
                         return True
-                    else:
-                        self.logger.debug(
-                            "Pod -> '%s' is not yet ready (%d/%d).",
-                            pod_name,
-                            current_ready_containers,
-                            total_containers_in_pod,
-                        )
+                    self.logger.debug(
+                        "Pod -> '%s' is not yet ready (%d/%d).",
+                        pod_name,
+                        current_ready_containers,
+                        total_containers_in_pod,
+                    )
                 else:
                     self.logger.debug("Pod -> '%s' is not yet ready.", pod_name)
 
@@ -1272,7 +1270,7 @@ class K8s:
                         pod_condition.type
                         for pod_condition in pod_status.status.conditions
                         if pod_condition.status == "True"
-                    ]
+                    ],
                 ),
                 retry_interval,
             )
@@ -1286,7 +1284,7 @@ class K8s:
     # end method definition
 
     def restart_deployment(
-        self, deployment_name: str, force: bool = False, wait: bool = False, wait_timeout: int = 1800
+        self, deployment_name: str, force: bool = False, wait: bool = False, wait_timeout: int = 1800,
     ) -> bool:
         """Restart a Kubernetes deployment using rolling restart.
 
@@ -1333,7 +1331,7 @@ class K8s:
 
             except ApiException as api_exception:
                 self.logger.error(
-                    "Failed to restart deployment -> '%s'; error -> %s!", deployment_name, str(api_exception)
+                    "Failed to restart deployment -> '%s'; error -> %s!", deployment_name, str(api_exception),
                 )
                 return False
 
@@ -1344,7 +1342,7 @@ class K8s:
             try:
                 # Get the Deployment to retrieve its pod labels
                 deployment = self.get_apps_v1_api().read_namespaced_deployment(
-                    name=deployment_name, namespace=self.get_namespace()
+                    name=deployment_name, namespace=self.get_namespace(),
                 )
 
                 # Get the label selector for the Deployment
@@ -1369,10 +1367,10 @@ class K8s:
 
                         # Call the delete_namespaced_pod method
                         self.get_core_v1_api().delete_namespaced_pod(
-                            name=pod_name, namespace=self.get_namespace(), body=body
+                            name=pod_name, namespace=self.get_namespace(), body=body,
                         )
                         self.logger.info(
-                            "Pod '%s' in namespace '%s' has been deleted forcefully.", pod_name, self.get_namespace()
+                            "Pod '%s' in namespace '%s' has been deleted forcefully.", pod_name, self.get_namespace(),
                         )
                     except Exception as e:
                         self.logger.error("Error occurred while deleting pod '%s': %s", pod_name, e)
@@ -1545,7 +1543,7 @@ class K8s:
             # The ONLY reliable way to know if the loop is seeing the NEW rollout
             if (sts.status.observed_generation or 0) < target_generation:
                 self.logger.debug(
-                    "Kubernetes controller hasn't processed the new generation -> %s yet...", target_generation
+                    "Kubernetes controller hasn't processed the new generation -> %s yet...", target_generation,
                 )
                 continue
 

@@ -10,26 +10,15 @@ import base64
 import json
 import logging
 import os
-import platform
-import sys
 import time
-from importlib.metadata import version
+from pathlib import Path
 
 import requests
 
-APP_NAME = "pyxecm"
-APP_VERSION = version("pyxecm")
-MODULE_NAME = APP_NAME + ".avts"
+from pyxecm.helper.useragent import build_user_agent
 
-PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-OS_INFO = f"{platform.system()} {platform.release()}"
-ARCH_INFO = platform.machine()
-REQUESTS_VERSION = requests.__version__
-
-USER_AGENT = (
-    f"{APP_NAME}/{APP_VERSION} ({MODULE_NAME}/{APP_VERSION}; "
-    f"Python/{PYTHON_VERSION}; {OS_INFO}; {ARCH_INFO}; Requests/{REQUESTS_VERSION})"
-)
+MODULE_NAME = "pyxecm.avts"
+USER_AGENT = build_user_agent("pyxecm.avts")
 
 REQUEST_HEADERS = {"User-Agent": USER_AGENT, "accept": "application/json", "Content-Type": "application/json"}
 
@@ -216,7 +205,7 @@ class AVTS:
                     if success_message:
                         self.logger.debug(success_message)
                     return self.parse_request_response(response)
-                elif (
+                if (
                     response.status_code == 500
                     and "Cannot modify configuration" in response.text
                     and "while the Processor is running" in response.text
@@ -335,14 +324,9 @@ class AVTS:
             list_object = json.loads(response_object.text) if response_object.text else vars(response_object)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSON. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSON. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSON; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSON; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -610,10 +594,7 @@ class AVTS:
             json_data=payload,
             headers=request_header,
             timeout=None,
-            failure_message="Failed to create repository -> '{}' ({})".format(
-                name,
-                node_id,
-            ),
+            failure_message=f"Failed to create repository -> '{name}' ({node_id})",
             show_error=False,
         )
 
@@ -917,7 +898,7 @@ class AVTS:
             json_data=payload,
             headers=request_header,
             timeout=None,
-            failure_message="Failed to create repository -> '{}'".format(name),
+            failure_message=f"Failed to create repository -> '{name}'",
             show_error=False,
         )
 
@@ -1299,7 +1280,7 @@ class AVTS:
             json_data=payload,
             headers=request_header,
             timeout=None,
-            failure_message="Failed to create repository -> '{}'".format(name),
+            failure_message=f"Failed to create repository -> '{name}'",
             show_error=False,
         )
 
@@ -1336,9 +1317,7 @@ class AVTS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to set admin_consent for repository -> '{}'".format(
-                repo_id,
-            ),
+            failure_message=f"Failed to set admin_consent for repository -> '{repo_id}'",
         )
 
     # end method definition
@@ -1370,9 +1349,7 @@ class AVTS:
             method="POST",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to start crawling repository -> '{}'!".format(
-                repo_name,
-            ),
+            failure_message=f"Failed to start crawling repository -> '{repo_name}'!",
         )
 
     # end method definition
@@ -1402,9 +1379,7 @@ class AVTS:
             method="POST",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to stop crawling repository -> '{}'!".format(
-                repo_name,
-            ),
+            failure_message=f"Failed to stop crawling repository -> '{repo_name}'!",
         )
 
     # end method definition
@@ -1471,22 +1446,22 @@ class AVTS:
 
         """
 
-        if not os.path.isfile(filepath):
+        if not Path(filepath).is_file():
             return None
 
-        file_ext = os.path.splitext(filepath)[1].lower()
+        file_ext = Path(filepath).suffix.lower()
 
         if self.running_in_kubernetes_pod() and file_ext == ".pfx":
             # Return file directly as already base64 encoded
             self.logger.warning(
                 "Detected a binary pfx file in Kubernetes environment, expecting it to be already base64 encoded",
             )
-            with open(filepath, encoding="UTF-8") as file:
+            with Path(filepath).open(encoding="UTF-8") as file:
                 return file.read().strip()
 
         else:
             # Return file as base64 encoded
-            with open(filepath, "rb") as file:
+            with Path(filepath).open("rb") as file:
                 # Read the content of the file
                 file_content = file.read()
                 # Convert the bytes to a base64 string

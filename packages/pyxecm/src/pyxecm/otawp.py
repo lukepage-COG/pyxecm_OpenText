@@ -8,32 +8,19 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import platform
 import re
-import sys
 import time
 import uuid
 from http import HTTPStatus
-from importlib.metadata import version
 
 import requests
 
+from pyxecm.helper.useragent import build_user_agent
 from pyxecm.helper.xml import XML
 from pyxecm.otds import OTDS
 
-APP_NAME = "pyxecm"
-APP_VERSION = version("pyxecm")
-MODULE_NAME = APP_NAME + ".otawp"
-
-PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-OS_INFO = f"{platform.system()} {platform.release()}"
-ARCH_INFO = platform.machine()
-REQUESTS_VERSION = requests.__version__
-
-USER_AGENT = (
-    f"{APP_NAME}/{APP_VERSION} ({MODULE_NAME}/{APP_VERSION}; "
-    f"Python/{PYTHON_VERSION}; {OS_INFO}; {ARCH_INFO}; Requests/{REQUESTS_VERSION})"
-)
+MODULE_NAME = "pyxecm.otawp"
+USER_AGENT = build_user_agent("pyxecm.otawp")
 
 REQUEST_HEADERS_XML = {
     "User-Agent": USER_AGENT,
@@ -374,7 +361,7 @@ class OTAWP:
 
         server_url = "{}://{}".format(protocol, otawp_config["hostname"])
         if str(port) not in ["80", "443"]:
-            server_url += ":{}".format(port)
+            server_url += f":{port}"
 
         otawp_config["serverUrl"] = server_url
 
@@ -590,7 +577,7 @@ class OTAWP:
         username = self.config()["username"]
         password = self.config()["password"]
 
-        soap_payload = f"""
+        return f"""
         <SOAP:Envelope xmlns:SOAP="http://schemas.xmlsoap.org/soap/envelope/">
             <SOAP:Header>
                 <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
@@ -615,7 +602,6 @@ class OTAWP:
         </SOAP:Envelope>
         """
 
-        return soap_payload
 
     # end method definition
 
@@ -841,9 +827,8 @@ class OTAWP:
         """
 
         soap_data = self.parse_xml(soap_response)
-        soap_string = self.find_key(data=soap_data, target_key=soap_tag)
+        return self.find_key(data=soap_data, target_key=soap_tag)
 
-        return soap_string
 
     # end method definition
 
@@ -946,15 +931,14 @@ class OTAWP:
                     self.logger.info(success_message)
                 if parse_request_response:
                     return self.parse_request_response(response_object=response, show_error=show_error)
-                else:
-                    return response
+                return response
             # Check if Session has expired - then re-authenticate and try once more
-            elif response.status_code == 401 and retries == 0:
+            if response.status_code == 401 and retries == 0:
                 self.logger.warning("Session has expired - try to re-authenticate...")
                 self.authenticate(revalidate=True)
                 retries += 1
                 continue
-            elif show_error:
+            if show_error:
                 self.logger.error(
                     "%s; status -> %s/%s; error -> %s",
                     failure_message,
@@ -1010,14 +994,9 @@ class OTAWP:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -1334,32 +1313,30 @@ class OTAWP:
                     self._otawp_ticket = otawp_ticket
 
                     return self._cookie
-                else:
-                    self.logger.error(
-                        "Cannot retrieve OTAWP ticket! Received corrupt authentication data -> %s",
-                        response.text,
-                    )
-                    return None
-            else:
                 self.logger.error(
-                    "Failed to request an OTAWP ticket at authentication URL -> %s with user -> '%s'!%s",
-                    self.credential_url(),
-                    self.config()["username"],
-                    " Reason -> '{}'".format(response.reason) if response.reason else "",
+                    "Cannot retrieve OTAWP ticket! Received corrupt authentication data -> %s",
+                    response.text,
                 )
                 return None
+            self.logger.error(
+                "Failed to request an OTAWP ticket at authentication URL -> %s with user -> '%s'!%s",
+                self.credential_url(),
+                self.config()["username"],
+                f" Reason -> '{response.reason}'" if response.reason else "",
+            )
+            return None
 
         self.logger.error(
             "Authentication at AppWorks platform failed after %d retries. %sBailing out.",
             REQUEST_MAX_RETRIES,
-            "{}. ".format(response.text) if response and response.text else "",
+            f"{response.text}. " if response and response.text else "",
         )
         return None
 
     # end method definition
 
     def create_workspace(
-        self, workspace_name: str, workspace_id: str, show_error: bool = True
+        self, workspace_name: str, workspace_id: str, show_error: bool = True,
     ) -> tuple[dict | None, bool]:
         """Create a workspace in cws.
 
@@ -1578,7 +1555,7 @@ class OTAWP:
         if not workspace_id:
             self.logger.error(
                 "Cannot synchronize workspace%s without a workspace ID!",
-                " -> '{}'".format(workspace_name) if workspace_name else "",
+                f" -> '{workspace_name}'" if workspace_name else "",
             )
             return None
 
@@ -1711,7 +1688,7 @@ class OTAWP:
             if not value:
                 self.logger.error(
                     "Cannot publish project%s without a %s!",
-                    " -> '{}'".format(project_name) if project_name else "",
+                    f" -> '{project_name}'" if project_name else "",
                     name,
                 )
                 return None
@@ -1764,13 +1741,12 @@ class OTAWP:
                         workspace_id,
                     )
                     return True
-                else:
-                    self.logger.warning(
-                        "Expected success indicator -> '%s' but it was not found in response. Retrying in 30 seconds... (Attempt %d of %d)",
-                        success_indicator,
-                        retries + 1,
-                        REQUEST_MAX_RETRIES,
-                    )
+                self.logger.warning(
+                    "Expected success indicator -> '%s' but it was not found in response. Retrying in 30 seconds... (Attempt %d of %d)",
+                    success_indicator,
+                    retries + 1,
+                    REQUEST_MAX_RETRIES,
+                )
             elif response.status_code == 401:
                 # Check for session expiry and retry authentication
                 self.logger.warning("Session has expired - re-authenticating...")
@@ -1850,7 +1826,7 @@ class OTAWP:
             cookies=self.cookie(),
             json_data=create_priority_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Request to create priority -> '{}' failed".format(name),
+            failure_message=f"Request to create priority -> '{name}' failed",
         )
 
     # end method definition
@@ -2006,7 +1982,7 @@ class OTAWP:
             cookies=self.cookie(),
             json_data=create_customer_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Request to create customer -> '{}' failed".format(customer_name),
+            failure_message=f"Request to create customer -> '{customer_name}' failed",
         )
 
     # end method definition
@@ -2143,7 +2119,7 @@ class OTAWP:
             cookies=self.cookie(),
             json_data=create_case_type_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Request to create case type -> '{}' failed".format(name),
+            failure_message=f"Request to create case type -> '{name}' failed",
         )
 
     # end method definition
@@ -2307,7 +2283,7 @@ class OTAWP:
             cookies=self.cookie(),
             json_data=create_category_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to create category -> '{}'".format(name),
+            failure_message=f"Failed to create category -> '{name}'",
         )
 
     # end method definition
@@ -2477,9 +2453,7 @@ class OTAWP:
             cookies=self.cookie(),
             json_data=create_sub_category_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to create sub-category -> '{}' with parent category ID -> {}".format(
-                name, parent_id
-            ),
+            failure_message=f"Failed to create sub-category -> '{name}' with parent category ID -> {parent_id}",
         )
 
     # end method definition
@@ -2538,7 +2512,7 @@ class OTAWP:
             headers=REQUEST_HEADERS_JSON,
             cookies=self.cookie(),
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get sub-categories for parent category with ID -> {}".format(parent_id),
+            failure_message=f"Failed to get sub-categories for parent category with ID -> {parent_id}",
         )
 
     # end method definition
@@ -2720,7 +2694,7 @@ class OTAWP:
 
             if response.ok:
                 return self.parse_xml(response.text)
-            elif response.status_code == 401 and retries == 0:
+            if response.status_code == 401 and retries == 0:
                 self.logger.warning("Session has expired - try to re-authenticate...")
                 self.authenticate(revalidate=True)
                 retries += 1
@@ -3027,7 +3001,7 @@ class OTAWP:
         """
 
         self.logger.info(
-            "Verify user -> '%s' has role -> '%s' in organization -> '%s'...", user_name, role_name, organization
+            "Verify user -> '%s' has role -> '%s' in organization -> '%s'...", user_name, role_name, organization,
         )
 
         # Construct the SOAP request body
@@ -3084,9 +3058,8 @@ class OTAWP:
                 if role_name in response.text:  # Corrected syntax for checking if 'Developer' is in the response text
                     self.logger.info("Verified user -> '%s' already has the role -> '%s'.", user_name, role_name)
                     return True  # Assuming the user has the role if the response contains 'Developer'
-                else:
-                    self.logger.info("Verified user -> '%s' does not yet have role -> '%s'.", user_name, role_name)
-                    return False
+                self.logger.info("Verified user -> '%s' does not yet have role -> '%s'.", user_name, role_name)
+                return False
 
             # Handle session expiration
             if response.status_code == 401 and retries == 0:
@@ -3130,7 +3103,7 @@ class OTAWP:
 
         """
         self.logger.info(
-            "Assign role -> '%s' to user -> '%s' in organization -> '%s'...", role_name, user_name, organization
+            "Assign role -> '%s' to user -> '%s' in organization -> '%s'...", role_name, user_name, organization,
         )
 
         # Check if user already has the role before making the request

@@ -11,7 +11,6 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import os
 import platform
 import sys
 import tempfile
@@ -21,6 +20,7 @@ import urllib.parse
 from collections.abc import Callable
 from functools import cache
 from importlib.metadata import version
+from pathlib import Path
 from typing import Any
 
 import requests
@@ -46,7 +46,7 @@ REQUEST_HEADERS = {"User-Agent": USER_AGENT, "Accept": "application/json", "Cont
 
 REQUEST_TIMEOUT = 60.0
 
-KNOWLEDGE_BASE_PATH = os.path.join(tempfile.gettempdir(), "attachments")
+KNOWLEDGE_BASE_PATH = str(Path(tempfile.gettempdir()) / "attachments")
 
 default_logger = logging.getLogger(MODULE_NAME)
 
@@ -222,7 +222,7 @@ class ServiceNow:
         request_header = REQUEST_HEADERS
 
         if self.config()["authType"] == "oauth":
-            request_header["Authorization"] = ("Bearer {}".format(self._access_token),)
+            request_header["Authorization"] = (f"Bearer {self._access_token}",)
 
         if content_type:
             request_header["Content-Type"] = content_type
@@ -267,14 +267,9 @@ class ServiceNow:
             dict_object = json.loads(response_object.text) if response_object.text else vars(response_object)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSON. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSON. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSON; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSON; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -390,14 +385,13 @@ class ServiceNow:
                 self._session = requests.Session()
             self._session.auth = HTTPBasicAuth(username, password)
             return self._session.auth
-        elif auth_type == "oauth":
+        if auth_type == "oauth":
             token = self.get_oauth_token()
-            self._session.headers.update({"Authorization": "Bearer {}".format(token)})
+            self._session.headers.update({"Authorization": f"Bearer {token}"})
 
             return token
-        else:
-            self.logger.error("Unsupported authentication type -> %s!", auth_type)
-            return None
+        self.logger.error("Unsupported authentication type -> %s!", auth_type)
+        return None
 
     # end method definition
 
@@ -426,10 +420,9 @@ class ServiceNow:
             authenticate_dict = self.parse_request_response(response)
             if not authenticate_dict:
                 return None
-            else:
-                # Store authentication access_token:
-                self._access_token = authenticate_dict["access_token"]
-                self.logger.debug("Access Token -> %s", self._access_token)
+            # Store authentication access_token:
+            self._access_token = authenticate_dict["access_token"]
+            self.logger.debug("Access Token -> %s", self._access_token)
         else:
             self.logger.error(
                 "Failed to request an Service Now Access Token; error -> %s",
@@ -468,10 +461,7 @@ class ServiceNow:
 
         request_header = self.request_header()
 
-        request_url = self.config()["restUrl"] + "table/{}/{}".format(
-            table_name,
-            sys_id,
-        )
+        request_url = self.config()["restUrl"] + f"table/{table_name}/{sys_id}"
 
         try:
             response = self._session.get(url=request_url, headers=request_header)
@@ -565,10 +555,7 @@ class ServiceNow:
 
         encoded_query = urllib.parse.urlencode(params, doseq=True)
 
-        request_url = self.config()["tableUrl"] + "/{}?{}".format(
-            table_name,
-            encoded_query,
-        )
+        request_url = self.config()["tableUrl"] + f"/{table_name}?{encoded_query}"
 
         try:
             while True:
@@ -580,7 +567,7 @@ class ServiceNow:
 
                 if response.status_code == 200:
                     return data.get("result", [])
-                elif response.status_code == 202:
+                if response.status_code == 202:
                     self.logger.warning(
                         "Service Now returned <202 Accepted> -> throtteling, retrying ...",
                     )
@@ -629,10 +616,7 @@ class ServiceNow:
 
         encoded_query = urllib.parse.urlencode(params, doseq=True)
 
-        request_url = self.config()["statsUrl"] + "/{}?{}".format(
-            table_name,
-            encoded_query,
-        )
+        request_url = self.config()["statsUrl"] + f"/{table_name}?{encoded_query}"
 
         try:
             response = self._session.get(
@@ -646,7 +630,7 @@ class ServiceNow:
             self.logger.error("HTTP error occurred when trying to get the table count for table -> '%s'!", table_name)
         except RequestException:
             self.logger.error(
-                "Request error occurred when trying to get the table count for table -> '%s'!", table_name
+                "Request error occurred when trying to get the table count for table -> '%s'!", table_name,
             )
         except Exception:
             self.logger.error("An error occurred when trying to get the table count for table -> '%s'!", table_name)
@@ -934,7 +918,7 @@ class ServiceNow:
         # Iterate through the list of dictionaries
         for file_info in file_list:
             original_name = file_info["file_name"]
-            name, ext = os.path.splitext(original_name)
+            name, ext = Path(original_name).stem, Path(original_name).suffix
 
             # Initialize count if this is the first time the name is encountered
             if original_name not in name_count:
@@ -975,7 +959,7 @@ class ServiceNow:
         request_url = self.config()["attachmentsUrl"]
 
         params = {
-            "sysparm_query": "table_sys_id={}".format(article_sys_id),
+            "sysparm_query": f"table_sys_id={article_sys_id}",
             "sysparm_fields": "sys_id,file_name",
         }
 
@@ -993,13 +977,12 @@ class ServiceNow:
                     article_number,
                 )
                 return []
-            else:
-                self.logger.debug(
-                    "Knowledge base article -> %s has %s attachments.",
-                    article_number,
-                    len(attachments),
-                )
-                return attachments
+            self.logger.debug(
+                "Knowledge base article -> %s has %s attachments.",
+                article_number,
+                len(attachments),
+            )
+            return attachments
 
         except HTTPError:
             self.logger.error(
@@ -1060,19 +1043,18 @@ class ServiceNow:
             )
             article["has_attachments"] = False
             return False
-        else:
-            self.logger.info(
-                "Knowledge base article -> %s has %s attachments to download...",
-                article_number,
-                len(attachments),
-            )
-            article["has_attachments"] = True
+        self.logger.info(
+            "Knowledge base article -> %s has %s attachments to download...",
+            article_number,
+            len(attachments),
+        )
+        article["has_attachments"] = True
 
         # Service Now can have multiple files with the same name - we need to
         # resolve this for Extended ECM:
         self.make_file_names_unique(attachments)
 
-        base_dir = os.path.join(self._download_dir, article_number)
+        base_dir = str(Path(self._download_dir) / article_number)
 
         # save download dir for later use in bulkDocument processing...
         article["download_dir"] = base_dir
@@ -1080,9 +1062,9 @@ class ServiceNow:
         article["download_files"] = []
         article["download_files_ids"] = []
 
-        if not os.path.exists(base_dir):
+        if not Path(base_dir).exists():
             try:
-                os.makedirs(base_dir)
+                Path(base_dir).mkdir(parents=True, exist_ok=True)
             except FileExistsError:
                 self.logger.error(
                     "Directory -> '%s' already exists. Race condition occurred.",
@@ -1099,9 +1081,9 @@ class ServiceNow:
                 return False
 
         for attachment in attachments:
-            file_path = os.path.join(base_dir, attachment["file_name"])
+            file_path = str(Path(base_dir) / attachment["file_name"])
 
-            if os.path.exists(file_path) and skip_existing:
+            if Path(file_path).exists() and skip_existing:
                 self.logger.info(
                     "File -> '%s' has been downloaded before. Skipping download...",
                     file_path,
@@ -1131,7 +1113,7 @@ class ServiceNow:
                 attachment_response.raise_for_status()
 
                 # Read and write the attachment file in chunks:
-                with open(file_path, "wb") as attachment_file:
+                with Path(file_path).open("wb") as attachment_file:
                     attachment_file.writelines(attachment_response.iter_content(chunk_size=8192))
 
                 # We build a list of filenames and IDs.

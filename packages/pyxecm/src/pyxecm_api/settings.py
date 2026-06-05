@@ -1,9 +1,9 @@
 """Settings for Customizer execution."""
 
-import os
 import tempfile
 import uuid
-from typing import Literal
+from pathlib import Path
+from typing import Any, Literal
 
 from pydantic import Field
 from pydantic_settings import (
@@ -37,7 +37,7 @@ class CustomizerAPISettings(BaseSettings):
     reload: bool = Field(default=False, description="Enable or disable the autoreload feature")
 
     concurrent_payloads: int = Field(
-        default=3, description="Maximum number of concurrent payloads that are executed at the same time."
+        default=3, description="Maximum number of concurrent payloads that are executed at the same time.",
     )
     import_payload: bool = Field(default=False)
     payload: str = Field(
@@ -54,13 +54,13 @@ class CustomizerAPISettings(BaseSettings):
     )
 
     temp_dir: str = Field(
-        default=os.path.join(tempfile.gettempdir(), "customizer"),
+        default=str(Path(tempfile.gettempdir()) / "customizer"),
         description="location of the temp folder. Used for temporary files during the payload execution",
     )
 
     loglevel: Literal["INFO", "DEBUG", "WARNING", "ERROR"] = "INFO"
     logfolder: str = Field(
-        default=os.path.join(tempfile.gettempdir(), "customizer"),
+        default=str(Path(tempfile.gettempdir()) / "customizer"),
         description="Logfolder for Customizer logfiles",
     )
     logfile: str = Field(
@@ -112,12 +112,12 @@ class CustomizerAPISettings(BaseSettings):
         description="Port of the VictoriaLogs Server",
     )
 
-    upload_folder: str = Field(default=os.path.join(tempfile.gettempdir(), "upload"), description="Folder for uploads")
+    upload_folder: str = Field(default=str(Path(tempfile.gettempdir()) / "upload"), description="Folder for uploads")
 
     upload_key: str = Field(default=str(uuid.uuid4()), description="Upload key for the Logs")
 
     upload_url: str = Field(
-        default="http://customizer:8000/api/v1/otcs/logs/upload", description="Upload URL for the Logs"
+        default="http://customizer:8000/api/v1/otcs/logs/upload", description="Upload URL for the Logs",
     )
 
     ws_terminal: bool = Field(
@@ -127,7 +127,7 @@ class CustomizerAPISettings(BaseSettings):
 
     model_config = SettingsConfigDict(env_prefix="CUSTOMIZER_")
 
-    def __init__(self, **data: any) -> None:
+    def __init__(self, **data: Any) -> None:
         """Class initializer."""
 
         super().__init__(**data)

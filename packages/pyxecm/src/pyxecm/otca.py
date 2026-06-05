@@ -14,28 +14,15 @@ __email__ = "mdiefenb@opentext.com"
 import hashlib
 import json
 import logging
-import platform
-import sys
 import time
-from importlib.metadata import version
 
 import requests
 
+from pyxecm.helper.useragent import build_user_agent
 from pyxecm.otcs import OTCS
 
-APP_NAME = "pyxecm"
-APP_VERSION = version("pyxecm")
-MODULE_NAME = APP_NAME + ".otca"
-
-PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-OS_INFO = f"{platform.system()} {platform.release()}"
-ARCH_INFO = platform.machine()
-REQUESTS_VERSION = requests.__version__
-
-USER_AGENT = (
-    f"{APP_NAME}/{APP_VERSION} ({MODULE_NAME}/{APP_VERSION}; "
-    f"Python/{PYTHON_VERSION}; {OS_INFO}; {ARCH_INFO}; Requests/{REQUESTS_VERSION})"
-)
+MODULE_NAME = "pyxecm.otca"
+USER_AGENT = build_user_agent("pyxecm.otca")
 
 REQUEST_HEADERS = {"User-Agent": USER_AGENT, "accept": "application/json", "Content-Type": "application/json"}
 
@@ -187,10 +174,8 @@ class OTCA:
         if self.otcs_object and (cs_version := self.otcs_object.get_server_version()):
             if float(cs_version) < 25.4:
                 return "xecm"
-            else:
-                return "otcm"
-        else:
-            return None
+            return "otcm"
+        return None
 
             # content_system or {"user": "xecm", "service": "xecm"}
 
@@ -236,16 +221,16 @@ class OTCA:
                 self.authenticate_user()
 
             if content_system == "xecm":
-                request_header["Authorization"] = "Bearer {}".format(self._chat_token_hashed)
+                request_header["Authorization"] = f"Bearer {self._chat_token_hashed}"
             if content_system == "otcm":
-                request_header["Authorization"] = "Bearer {}".format(self._chat_token)
+                request_header["Authorization"] = f"Bearer {self._chat_token}"
             elif content_system in {"xecm-direct", "otcm-direct"}:
                 request_header["otcsticket"] = self._chat_token
 
         elif service_type == "service":
             if self._embed_token is None:
                 self.authenticate_service()
-            request_header["Authorization"] = "Bearer {}".format(self._embed_token)
+            request_header["Authorization"] = f"Bearer {self._embed_token}"
 
         return request_header
 
@@ -341,10 +326,9 @@ class OTCA:
                         self.logger.debug(success_message)
                     if parse_request_response:
                         return self.parse_request_response(response, show_error=show_error)
-                    else:
-                        return response
+                    return response
                 # Check if Session has expired - then re-authenticate and try once more
-                elif response.status_code == 401 and retries == 0:
+                if response.status_code == 401 and retries == 0:
                     self.logger.debug("Session has expired - try to re-authenticate...")
                     self.authenticate_user()
                     retries += 1
@@ -457,14 +441,9 @@ class OTCA:
             list_object = json.loads(response_object.text) if response_object.text else vars(response_object)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSON. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSON. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSON; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSON; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -544,10 +523,9 @@ class OTCA:
 
             return self._chat_token
 
-        else:
-            self.logger.error("Authentication failed. Token not found.")
+        self.logger.error("Authentication failed. Token not found.")
 
-            return None
+        return None
 
     # end method definition
 
@@ -580,11 +558,10 @@ class OTCA:
         if result:
             self._embed_token = result["token"]
             return self._embed_token
-        else:
-            self.logger.error(
-                "Authentication failed with client ID -> '%s' against -> %s", self.config()["clientId"], url
-            )
-            return None
+        self.logger.error(
+            "Authentication failed with client ID -> '%s' against -> %s", self.config()["clientId"], url,
+        )
+        return None
 
     # end method definition
 
@@ -809,7 +786,7 @@ class OTCA:
             method="GET",
             headers=request_header,
             params={"thread_id": thread_id},
-            failure_message="Failed to retrieve thread -> '{}'".format(thread_id),
+            failure_message=f"Failed to retrieve thread -> '{thread_id}'",
         )
 
     # end method definition
@@ -897,7 +874,7 @@ class OTCA:
             headers=request_header,
             json_data=search_data,
             timeout=None,
-            failure_message="Failed to to do a semantic search with query -> '{}'".format(query),
+            failure_message=f"Failed to to do a semantic search with query -> '{query}'",
         )
 
     # end method definition
@@ -1122,7 +1099,7 @@ class OTCA:
         if chat_id is not None:
             request_data["chatID"] = chat_id
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="POST",
             headers=request_header,
@@ -1130,11 +1107,10 @@ class OTCA:
             timeout=None,
             show_error=True,
             failure_message="Failed to chat with LLM -> '{}'".format(
-                options.get("model", "<default model>") if options else "<default model>"
+                options.get("model", "<default model>") if options else "<default model>",
             ),
         )
 
-        return response
 
     # end method definition
 
@@ -1345,7 +1321,7 @@ class OTCA:
             url=request_url,
             method="GET",
             headers=request_header,
-            failure_message="Failed to get MCP server -> '{}'".format(server_id),
+            failure_message=f"Failed to get MCP server -> '{server_id}'",
         )
 
     # end method definition
@@ -1373,7 +1349,7 @@ class OTCA:
             method="PUT",
             headers=request_header,
             json_data=server_config,
-            failure_message="Failed to update MCP server -> '{}'".format(server_id),
+            failure_message=f"Failed to update MCP server -> '{server_id}'",
         )
 
     # end method definition
@@ -1398,7 +1374,7 @@ class OTCA:
             url=request_url,
             method="DELETE",
             headers=request_header,
-            failure_message="Failed to delete MCP server -> '{}'".format(server_id),
+            failure_message=f"Failed to delete MCP server -> '{server_id}'",
         )
 
     # end method definition
