@@ -20,33 +20,22 @@ import base64
 import json
 import logging
 from pathlib import Path
-import platform
-import sys
 import tempfile
 import time
 import urllib.parse
 from http import HTTPStatus
-from importlib.metadata import version
+
+from pyxecm.helper.useragent import build_user_agent
 
 import requests
 from opentelemetry import trace
 
 tracer = trace.get_tracer(__name__)
 
-APP_NAME = "pyxecm"
-APP_VERSION = version("pyxecm")
-MODULE_NAME = APP_NAME + ".otds"
 OTEL_TRACING_ATTRIBUTES = {"class": "otds"}
+MODULE_NAME = APP_NAME + ".otds"
+USER_AGENT = build_user_agent("pyxecm.otds")
 
-PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-OS_INFO = f"{platform.system()} {platform.release()}"
-ARCH_INFO = platform.machine()
-REQUESTS_VERSION = requests.__version__
-
-USER_AGENT = (
-    f"{APP_NAME}/{APP_VERSION} ({MODULE_NAME}/{APP_VERSION}; "
-    f"Python/{PYTHON_VERSION}; {OS_INFO}; {ARCH_INFO}; Requests/{REQUESTS_VERSION})"
-)
 
 REQUEST_HEADERS = {
     "User-Agent": USER_AGENT,

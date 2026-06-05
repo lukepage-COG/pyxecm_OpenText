@@ -22,10 +22,8 @@ import logging
 import mimetypes
 import os
 from pathlib import Path
-import platform
 import re
 import shutil
-import sys
 import tempfile
 import threading
 import time
@@ -37,7 +35,8 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, date, datetime
 from functools import cache
 from http import HTTPStatus
-from importlib.metadata import version
+
+from pyxecm.helper.useragent import build_user_agent
 from queue import Empty, LifoQueue, Queue
 from collections.abc import Iterator
 from typing import Any, Literal
@@ -54,20 +53,10 @@ from pyxecm.otds import OTDS
 
 tracer = trace.get_tracer(__name__)
 
-APP_NAME = "pyxecm"
-APP_VERSION = version("pyxecm")
-MODULE_NAME = APP_NAME + ".otcs"
 OTEL_TRACING_ATTRIBUTES = {"class": "otcs"}
+MODULE_NAME = APP_NAME + ".otcs"
+USER_AGENT = build_user_agent("pyxecm.otcs")
 
-PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-OS_INFO = f"{platform.system()} {platform.release()}"
-ARCH_INFO = platform.machine()
-REQUESTS_VERSION = requests.__version__
-
-USER_AGENT = (
-    f"{APP_NAME}/{APP_VERSION} ({MODULE_NAME}/{APP_VERSION}; "
-    f"Python/{PYTHON_VERSION}; {OS_INFO}; {ARCH_INFO}; Requests/{REQUESTS_VERSION})"
-)
 
 REQUEST_JSON_HEADERS = {
     "User-Agent": USER_AGENT,

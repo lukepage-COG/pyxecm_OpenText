@@ -8,29 +8,18 @@ __email__ = "mdiefenb@opentext.com"
 
 import logging
 from pathlib import Path
-import platform
 import socket
-import sys
 import time
-from importlib.metadata import version
+
+from pyxecm.helper.useragent import build_user_agent
 from urllib.parse import urlparse
 
 import requests
 from lxml import html
 
-APP_NAME = "pyxecm"
-APP_VERSION = version("pyxecm")
+
 MODULE_NAME = APP_NAME + ".helper.web"
-
-PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-OS_INFO = f"{platform.system()} {platform.release()}"
-ARCH_INFO = platform.machine()
-REQUESTS_VERSION = requests.__version__
-
-USER_AGENT = (
-    f"{APP_NAME}/{APP_VERSION} ({MODULE_NAME}/{APP_VERSION}; "
-    f"Python/{PYTHON_VERSION}; {OS_INFO}; {ARCH_INFO}; Requests/{REQUESTS_VERSION})"
-)
+USER_AGENT = build_user_agent("pyxecm.helper.web")
 
 REQUEST_FORM_HEADERS = {
     "User-Agent": USER_AGENT,

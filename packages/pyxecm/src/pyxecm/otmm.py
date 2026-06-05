@@ -13,14 +13,13 @@ __email__ = "mdiefenb@opentext.com"
 import json
 import logging
 from pathlib import Path
-import platform
-import sys
 import threading
 import traceback
 import urllib.parse
 from collections.abc import Callable
 from datetime import UTC, datetime
-from importlib.metadata import version
+
+from pyxecm.helper.useragent import build_user_agent
 from json import JSONDecodeError
 
 import requests
@@ -29,19 +28,9 @@ from requests.exceptions import HTTPError, RequestException
 
 from pyxecm.helper import Data
 
-APP_NAME = "pyxecm"
-APP_VERSION = version("pyxecm")
+
 MODULE_NAME = APP_NAME + ".otmm"
-
-PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-OS_INFO = f"{platform.system()} {platform.release()}"
-ARCH_INFO = platform.machine()
-REQUESTS_VERSION = requests.__version__
-
-USER_AGENT = (
-    f"{APP_NAME}/{APP_VERSION} ({MODULE_NAME}/{APP_VERSION}; "
-    f"Python/{PYTHON_VERSION}; {OS_INFO}; {ARCH_INFO}; Requests/{REQUESTS_VERSION})"
-)
+USER_AGENT = build_user_agent("pyxecm.otmm")
 
 REQUEST_HEADERS = {
     "User-Agent": USER_AGENT,
