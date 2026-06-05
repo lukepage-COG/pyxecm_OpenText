@@ -11,7 +11,7 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import os
+from pathlib import Path
 import time
 from http import HTTPStatus
 
@@ -1391,13 +1391,13 @@ class Salesforce:
             self.authenticate()
 
         # Check if the photo file exists
-        if not os.path.isfile(photo_path):
+        if not Path(photo_path).is_file():
             self.logger.error("Photo file -> %s not found!", photo_path)
             return None
 
         try:
             # Read the photo file as binary data
-            with open(photo_path, "rb") as image_file:
+            with Path(photo_path).open("rb") as image_file:
                 photo_data = image_file.read()
         except OSError:
             # Handle any errors that occurred while reading the photo file

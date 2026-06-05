@@ -3,6 +3,7 @@
 import logging
 import mimetypes
 import os
+from pathlib import Path
 import signal
 import tempfile
 from http import HTTPStatus
@@ -82,10 +83,7 @@ def list_browser_automation_files(
     """List all browser automation files."""
 
     result = list_files_in_directory(
-        os.path.join(
-            tempfile.gettempdir(),
-            "browser_automations",
-        )
+        str(Path(tempfile.gettempdir()) / "browser_automations")
     )
 
     return JSONResponse(result)
@@ -98,9 +96,9 @@ def get_browser_automation_file(
 ) -> FileResponse:
     """Download the logfile for a specific payload."""
 
-    filename = os.path.join(tempfile.gettempdir(), "browser_automations", file)
+    filename = str(Path(tempfile.gettempdir()) / "browser_automations" / file)
 
-    if not os.path.isfile(filename):
+    if not Path(filename).is_file():
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
             detail=f"File -> '{filename}' not found",
@@ -108,13 +106,13 @@ def get_browser_automation_file(
 
     media_type, _ = mimetypes.guess_type(filename)
 
-    with open(filename, "rb") as f:
+    with Path(filename).open("rb") as f:
         content = f.read()
 
     return Response(
         content,
         media_type=media_type,
         headers={
-            "Content-Disposition": f'attachment; filename="{os.path.basename(filename)}"',
+            "Content-Disposition": f'attachment; filename="{Path(filename).name}"',
         },
     )

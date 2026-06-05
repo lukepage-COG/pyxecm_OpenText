@@ -19,7 +19,7 @@ __email__ = "mdiefenb@opentext.com"
 import base64
 import json
 import logging
-import os
+from pathlib import Path
 import platform
 import sys
 import tempfile
@@ -2876,7 +2876,7 @@ class OTDS:
 
         self.logger.debug("Reading license file -> '%s'...", path_to_license_file)
         try:
-            with open(path_to_license_file, encoding="UTF-8") as license_file:
+            with Path(path_to_license_file).open(encoding="UTF-8") as license_file:
                 license_content = license_file.read()
         except OSError:
             self.logger.error(
@@ -4597,9 +4597,9 @@ class OTDS:
                     "_fileBased": False,
                     "_fileName": False,
                     "_fileExtensions": None,
-                    "_value": os.path.basename(
+                    "_value": Path(
                         certificate_file,
-                    ),  # "TM6_Sandbox.pse" - file name only
+                    ).name,  # "TM6_Sandbox.pse" - file name only
                     "_allowedValues": None,
                     "_confidential": False,
                     "_keepOriginal": False,
@@ -4660,7 +4660,7 @@ class OTDS:
         self.logger.debug("Reading certificate file -> '%s'...", certificate_file)
         try:
             # PSE files are binary - so we need to open with "rb":
-            with open(certificate_file, "rb") as cert_file:
+            with Path(certificate_file).open("rb") as cert_file:
                 cert_content = cert_file.read()
                 if not cert_content:
                     self.logger.error(
@@ -4699,14 +4699,14 @@ class OTDS:
             cert_file_encoded = False
 
         if cert_file_encoded:
-            certificate_file = os.path.join(tempfile.gettempdir(), os.path.basename(certificate_file))
+            certificate_file = str(Path(tempfile.gettempdir()) / Path(certificate_file).name)
             self.logger.debug(
                 "Writing decoded certificate file -> %s...",
                 certificate_file,
             )
             try:
                 # PSE files need to be binary - so we need to open with "wb":
-                with open(certificate_file, "wb") as cert_file:
+                with Path(certificate_file).open("wb") as cert_file:
                     cert_file.write(base64.b64decode(cert_content))
             except OSError:
                 self.logger.error(
@@ -4731,10 +4731,10 @@ class OTDS:
 
         # It is important to send the file pointer and not the actual file content
         # otherwise the file is sent base64 encoded, which we don't want:
-        with open(certificate_file, "rb") as file_obj:
+        with Path(certificate_file).open("rb") as file_obj:
             auth_handler_post_files = {
                 "file1": (
-                    os.path.basename(certificate_file),
+                    Path(certificate_file).name,
                     file_obj,
                     "application/octet-stream",
                 ),

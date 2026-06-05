@@ -11,7 +11,7 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import os
+from pathlib import Path
 import platform
 import sys
 import tempfile
@@ -46,7 +46,7 @@ REQUEST_HEADERS = {"User-Agent": USER_AGENT, "Accept": "application/json", "Cont
 
 REQUEST_TIMEOUT = 60.0
 
-KNOWLEDGE_BASE_PATH = os.path.join(tempfile.gettempdir(), "attachments")
+KNOWLEDGE_BASE_PATH = str(Path(tempfile.gettempdir()) / "attachments")
 
 default_logger = logging.getLogger(MODULE_NAME)
 
@@ -920,7 +920,7 @@ class ServiceNow:
         # Iterate through the list of dictionaries
         for file_info in file_list:
             original_name = file_info["file_name"]
-            name, ext = os.path.splitext(original_name)
+            name, ext = Path(original_name).stem, Path(original_name).suffix
 
             # Initialize count if this is the first time the name is encountered
             if original_name not in name_count:
@@ -1058,7 +1058,7 @@ class ServiceNow:
         # resolve this for Extended ECM:
         self.make_file_names_unique(attachments)
 
-        base_dir = os.path.join(self._download_dir, article_number)
+        base_dir = str(Path(self._download_dir) / article_number)
 
         # save download dir for later use in bulkDocument processing...
         article["download_dir"] = base_dir
@@ -1066,9 +1066,9 @@ class ServiceNow:
         article["download_files"] = []
         article["download_files_ids"] = []
 
-        if not os.path.exists(base_dir):
+        if not Path(base_dir).exists():
             try:
-                os.makedirs(base_dir)
+                Path(base_dir).mkdir(parents=True, exist_ok=True)
             except FileExistsError:
                 self.logger.error(
                     "Directory -> '%s' already exists. Race condition occurred.",
@@ -1085,9 +1085,9 @@ class ServiceNow:
                 return False
 
         for attachment in attachments:
-            file_path = os.path.join(base_dir, attachment["file_name"])
+            file_path = str(Path(base_dir) / attachment["file_name"])
 
-            if os.path.exists(file_path) and skip_existing:
+            if Path(file_path).exists() and skip_existing:
                 self.logger.info(
                     "File -> '%s' has been downloaded before. Skipping download...",
                     file_path,
@@ -1117,7 +1117,7 @@ class ServiceNow:
                 attachment_response.raise_for_status()
 
                 # Read and write the attachment file in chunks:
-                with open(file_path, "wb") as attachment_file:
+                with Path(file_path).open("wb") as attachment_file:
                     attachment_file.writelines(attachment_response.iter_content(chunk_size=8192))
 
                 # We build a list of filenames and IDs.

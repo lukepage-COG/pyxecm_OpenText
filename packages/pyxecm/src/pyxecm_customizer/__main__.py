@@ -7,7 +7,7 @@ __maintainer__ = "Dr. Marc Diefenbruch"
 __email__ = "mdiefenb@opentext.com"
 
 import logging
-import os
+from pathlib import Path
 import sys
 
 from .customizer import Customizer
@@ -34,7 +34,7 @@ def main() -> int:
 
     payload_filename = sys.argv[1]
 
-    if not os.path.isfile(payload_filename):
+    if not Path(payload_filename).is_file():
         logger.error("Input file does not exist")
         sys.exit(1)
 

@@ -1,7 +1,7 @@
 """Maintenance Page that can be enabled by the customizer."""
 
 import logging
-import os
+from pathlib import Path
 import threading
 from datetime import UTC, datetime
 
@@ -17,15 +17,15 @@ logger = logging.getLogger("pyxecm_customizer.maintenance_page")
 
 app = FastAPI(openapi_url=None)
 
-base_dir = os.path.dirname(os.path.abspath(__file__))
-static_dir = os.path.join(base_dir, "static")
+base_dir = str(Path(str(Path(__file__).resolve()).parent))
+static_dir = str(Path(base_dir) / "static")
 templates = Jinja2Templates(directory=settings.templates_dir)
 
 
 @app.get("/favicon.avif", include_in_schema=False)
 async def favicon() -> FileResponse:
     """Serve the favicon."""
-    return FileResponse(path=os.path.join(static_dir, "favicon.avif"))
+    return FileResponse(path=str(Path(static_dir) / "favicon.avif"))
 
 
 @app.exception_handler(StarletteHTTPException)

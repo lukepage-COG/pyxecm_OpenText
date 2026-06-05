@@ -862,7 +862,7 @@ class OTKD:
         request_header = self.request_upload_header()
 
         # Upload the Template JSON file
-        with open(file_path, "rb") as pg_file:
+        with Path(file_path).open("rb") as pg_file:
             response = self.do_request(
                 url=request_url,
                 method="POST",
