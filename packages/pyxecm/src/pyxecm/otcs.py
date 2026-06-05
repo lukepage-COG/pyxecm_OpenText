@@ -681,9 +681,8 @@ class OTCS:
         sha512.update(encoded_string)
 
         # Get the hexadecimal representation of the hash
-        hashed_output = sha512.hexdigest()
+        return sha512.hexdigest()
 
-        return hashed_output
 
     # end method definition
 
@@ -1067,7 +1066,7 @@ class OTCS:
         with Path(file_path).open("w", encoding="utf-8") as ontology_file:
             json.dump(self._workspace_ontology, ontology_file, indent=2)
             self.logger.info(
-                "Workspace ontology -> '%s' has been saved to JSON file -> %s", self.ONTOLOGY_FILE_NAME, file_path
+                "Workspace ontology -> '%s' has been saved to JSON file -> %s", self.ONTOLOGY_FILE_NAME, file_path,
             )
 
         #
@@ -1160,7 +1159,7 @@ class OTCS:
             self._workspace_ontology = self.get_json_document(node_id=int(document_id))
             if not self._workspace_ontology:
                 self.logger.error(
-                    "Cannot load ontology from JSON document -> %s (%s)", self.ONTOLOGY_FILE_NAME, document_id
+                    "Cannot load ontology from JSON document -> %s (%s)", self.ONTOLOGY_FILE_NAME, document_id,
                 )
                 return False
         except Exception as json_error:
@@ -1173,7 +1172,7 @@ class OTCS:
             return False
 
         self.logger.info(
-            "Ontology file -> '%s' has been loaded from document with ID -> %s.", self.ONTOLOGY_FILE_NAME, document_id
+            "Ontology file -> '%s' has been loaded from document with ID -> %s.", self.ONTOLOGY_FILE_NAME, document_id,
         )
         return True
 
@@ -1360,10 +1359,9 @@ class OTCS:
                             time.sleep(REQUEST_RETRY_DELAY)  # Add a delay before retrying
                             continue
                         return parsed_response
-                    else:
-                        return response
+                    return response
                 # Check if Session has expired - then re-authenticate and try once more
-                elif response.status_code == 401 and retries <= max_retries:
+                if response.status_code == 401 and retries <= max_retries:
                     # Try to reauthenticate:
                     self.logger.info(
                         "Reauthentication at -> '%s' required...",
@@ -1397,10 +1395,9 @@ class OTCS:
                     )
                     if parse_error_response:
                         return self.parse_error_response(response_object=response)
-                    elif parse_request_response:
+                    if parse_request_response:
                         return self.parse_request_response(response_object=response)
-                    else:
-                        return response
+                    return response
                 else:
                     # Handle plain HTML responses to not pollute the logs
                     content_type = response.headers.get("content-type", None)
@@ -1442,8 +1439,7 @@ class OTCS:
                         )
                     if parse_error_response:
                         return self.parse_error_response(response_object=response)
-                    else:
-                        return None
+                    return None
             # end try:
             except (
                 requests.exceptions.Timeout,
@@ -1663,22 +1659,20 @@ class OTCS:
                 properties = data["properties"]
                 if key in properties and properties[key] == value and return_key in properties:
                     return properties[return_key]
-                else:
-                    return None
-            elif isinstance(data, list):
+                return None
+            if isinstance(data, list):
                 # data is a list - this has typically just one item, so we use 0 as index
                 for item in data:
                     properties = item["properties"]
                     if key in properties and properties[key] == value and return_key in properties:
                         return properties[return_key]
                 return None
-            else:
-                self.logger.error(
-                    "Data needs to be a list or dict but it is -> %s",
-                    str(type(data)),
-                )
-                return None
-        elif isinstance(results, list):
+            self.logger.error(
+                "Data needs to be a list or dict but it is -> %s",
+                str(type(data)),
+            )
+            return None
+        if isinstance(results, list):
             # result is a list - we need index value
             for result in results:
                 data = result["data"]
@@ -1700,12 +1694,11 @@ class OTCS:
                     )
                     return None
             return None
-        else:
-            self.logger.error(
-                "Result needs to be a list or dict but it is of type -> %s",
-                str(type(results)),
-            )
-            return None
+        self.logger.error(
+            "Result needs to be a list or dict but it is of type -> %s",
+            str(type(results)),
+        )
+        return None
 
     # end method definition
 
@@ -1759,19 +1752,17 @@ class OTCS:
                 if isinstance(properties, dict):
                     if key in properties:
                         return properties[key] == value
-                    else:
-                        return False
-                elif isinstance(properties, list):
+                    return False
+                if isinstance(properties, list):
                     # Properties is a list we iterate through the list
                     # and try to find the key. If we find it we return True. Otherwise False.
                     return any(key in item and item[key] == value for item in properties)
-                else:
-                    self.logger.error(
-                        "Properties needs to be a list or dict but it is -> %s",
-                        str(type(properties)),
-                    )
-                    return False
-            elif isinstance(data, list):
+                self.logger.error(
+                    "Properties needs to be a list or dict but it is -> %s",
+                    str(type(properties)),
+                )
+                return False
+            if isinstance(data, list):
                 # data is a list
                 for item in data:
                     if property_name and property_name not in item:
@@ -1788,13 +1779,12 @@ class OTCS:
                     if key in properties and properties[key] == value:
                         return True
                 return False
-            else:
-                self.logger.error(
-                    "Data needs to be a list or dict but it is -> %s",
-                    str(type(data)),
-                )
-                return False
-        elif isinstance(results, list):
+            self.logger.error(
+                "Data needs to be a list or dict but it is -> %s",
+                str(type(data)),
+            )
+            return False
+        if isinstance(results, list):
             # result is a list - we need index value
             for result in results:
                 if "data" not in result:
@@ -1818,12 +1808,11 @@ class OTCS:
                     )
                     return False
             return False
-        else:
-            self.logger.error(
-                "Result needs to be a list or dict but it is -> %s",
-                str(type(results)),
-            )
-            return False
+        self.logger.error(
+            "Result needs to be a list or dict but it is -> %s",
+            str(type(results)),
+        )
+        return False
 
     # end method definition
 
@@ -1915,7 +1904,7 @@ class OTCS:
                 return properties[key]
             # but there are some strange ones that have other names for
             # properties and may use a list - see e.g. /v2/holds
-            elif isinstance(properties, list):
+            if isinstance(properties, list):
                 if index > len(properties) - 1:
                     self.logger.error(
                         "Illegal Index -> %s given. List has only -> %s elements!",
@@ -1924,13 +1913,12 @@ class OTCS:
                     )
                     return None
                 return properties[index][key]
-            else:
-                self.logger.error(
-                    "Properties needs to be a list or dict but it is -> %s",
-                    str(type(properties)),
-                )
-                return None
-        elif isinstance(results, list):
+            self.logger.error(
+                "Properties needs to be a list or dict but it is -> %s",
+                str(type(properties)),
+            )
+            return None
+        if isinstance(results, list):
             # result is a list - we need a valid index:
             if index > len(results) - 1:
                 self.logger.error(
@@ -1963,12 +1951,11 @@ class OTCS:
                     self.logger.error("Key -> '%s' is not in result properties!", key)
                 return None
             return properties[key]
-        else:
-            self.logger.error(
-                "Result needs to be a list or dict but it is -> %s",
-                str(type(results)),
-            )
-            return None
+        self.logger.error(
+            "Result needs to be a list or dict but it is -> %s",
+            str(type(results)),
+        )
+        return None
 
     # end method definition
 
@@ -2053,23 +2040,21 @@ class OTCS:
                 return [properties[key]]
             # but there are some strange ones that have other names for
             # properties and may use a list - see e.g. /v2/holds
-            elif isinstance(properties, list):
+            if isinstance(properties, list):
                 return [item[key] for item in properties]
-            else:
-                self.logger.error(
-                    "Properties needs to be a list or dict but it is -> %s",
-                    str(type(properties)),
-                )
-                return None
-        # end if isinstance(results, dict)
-        elif isinstance(results, list):
-            return [item[data_name][property_name][key] for item in results]
-        else:
             self.logger.error(
-                "Result needs to be a list or dict but it is of type -> %s",
-                str(type(results)),
+                "Properties needs to be a list or dict but it is -> %s",
+                str(type(properties)),
             )
             return None
+        # end if isinstance(results, dict)
+        if isinstance(results, list):
+            return [item[data_name][property_name][key] for item in results]
+        self.logger.error(
+            "Result needs to be a list or dict but it is of type -> %s",
+            str(type(results)),
+        )
+        return None
 
     # end method definition
 
@@ -2378,7 +2363,7 @@ class OTCS:
                 # a failed OTDS based authentication (ticket or token) above:
                 if self._otds_ticket or self._otds_token:
                     self.logger.warning(
-                        "Cannot fallback to basic authentication at OTCS after OTDS based authentication failed as no username or password are provided."
+                        "Cannot fallback to basic authentication at OTCS after OTDS based authentication failed as no username or password are provided.",
                     )
                 else:
                     self.logger.error("Missing username or password for authentication! Cannot authenticate at OTCS.")
@@ -2414,9 +2399,8 @@ class OTCS:
                 )
                 if not authenticate_dict:
                     return None
-                else:
-                    otcs_ticket = authenticate_dict["ticket"]
-                    self.logger.debug("Ticket -> %s", otcs_ticket)
+                otcs_ticket = authenticate_dict["ticket"]
+                self.logger.debug("Ticket -> %s", otcs_ticket)
             else:
                 self.logger.error(
                     "Failed to request an OTCS ticket; error -> %s",
@@ -2475,13 +2459,12 @@ class OTCS:
                 )
                 # return the new cookie:
                 return self.cookie()
-            else:
-                # No other thread has re-authenticatedyes.
-                # This thread will try to get the re-authentication role:
-                self.logger.debug(
-                    "Session has still the old cookie used for the REST call -> %s",
-                    request_cookie,
-                )
+            # No other thread has re-authenticatedyes.
+            # This thread will try to get the re-authentication role:
+            self.logger.debug(
+                "Session has still the old cookie used for the REST call -> %s",
+                request_cookie,
+            )
 
         # If the session is invalid, try to acquire the semaphore and renew it
         if self._authentication_semaphore.acquire(blocking=False):
@@ -2896,7 +2879,7 @@ class OTCS:
         if limit:
             if limit > 20:
                 self.logger.warning(
-                    "Page limit for user query cannot be larger than 20. Adjusting from %d to 20.", limit
+                    "Page limit for user query cannot be larger than 20. Adjusting from %d to 20.", limit,
                 )
                 limit = 20
             query["limit"] = limit
@@ -3059,7 +3042,7 @@ class OTCS:
     @cache
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_user")
     def get_user(
-        self, name: str | None = None, user_id: int | None = None, user_type: int = 0, show_error: bool = False
+        self, name: str | None = None, user_id: int | None = None, user_type: int = 0, show_error: bool = False,
     ) -> dict[str, Any] | None:
         """Get a Content Server user based on the login name and type.
 
@@ -3655,13 +3638,12 @@ class OTCS:
                 value=user_name,
                 property_name="",
             )
-        else:
-            response = self.get_user_proxies(use_v2=False)
-            if not response or "proxies" not in response:
-                return False
-            proxies = response["proxies"]
+        response = self.get_user_proxies(use_v2=False)
+        if not response or "proxies" not in response:
+            return False
+        proxies = response["proxies"]
 
-            return any(proxy["name"] == user_name for proxy in proxies)
+        return any(proxy["name"] == user_name for proxy in proxies)
 
     # end method definition
 
@@ -4494,7 +4476,7 @@ class OTCS:
         if limit:
             if limit > 20:
                 self.logger.warning(
-                    "Page limit for group query cannot be larger than 20. Adjusting from %d to 20.", limit
+                    "Page limit for group query cannot be larger than 20. Adjusting from %d to 20.", limit,
                 )
                 limit = 20
             query["limit"] = limit
@@ -4517,10 +4499,10 @@ class OTCS:
             headers=request_header,
             timeout=None,
             failure_message="Failed to get groups{}".format(
-                f" with name -> '{where_name}'" if where_name else ""
+                f" with name -> '{where_name}'" if where_name else "",
             ),
             warning_message="Groups{} do not yet exist!".format(
-                f" with name -> '{where_name}'" if where_name else ""
+                f" with name -> '{where_name}'" if where_name else "",
             ),
             show_error=show_error,
         )
@@ -4628,7 +4610,7 @@ class OTCS:
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_group")
     def get_group(
-        self, name: str | None = None, group_id: int | None = None, group_type: int = 1, show_error: bool = False
+        self, name: str | None = None, group_id: int | None = None, group_type: int = 1, show_error: bool = False,
     ) -> dict[str, Any] | None:
         """Get the Content Server group with a given name.
 
@@ -4858,7 +4840,7 @@ class OTCS:
             self.logger.error(
                 "Failed to extract secureRequestToken from create group form. "
                 "This may indicate insufficient privileges. Ensure the session is impersonated "
-                "as a user with Signing Authority Admin privileges (see start_impersonation())."
+                "as a user with Signing Authority Admin privileges (see start_impersonation()).",
             )
             return None
 
@@ -5982,13 +5964,13 @@ class OTCS:
             # We only deliver the full set of fields for the last path element:
             if i == len(path) - 1:
                 node = self.get_node_by_parent_and_name(
-                    parent_id=parent_item_id, name=path_element, fields=fields, metadata=metadata
+                    parent_id=parent_item_id, name=path_element, fields=fields, metadata=metadata,
                 )
             # For intermediate path elements we use the minimum set of fields (ID)
             # to allow traversal of the path (IMPORTANT: turn-off exact_match if name property is excluded):
             else:
                 node = self.get_node_by_parent_and_name(
-                    parent_id=parent_item_id, name=path_element, fields="properties{id}", exact_match=False
+                    parent_id=parent_item_id, name=path_element, fields="properties{id}", exact_match=False,
                 )
             current_item_id = self.get_result_value(response=node, key="id")
             if not current_item_id:
@@ -6139,13 +6121,13 @@ class OTCS:
             # We only deliver the full set of fields for the last path element:
             if i == len(path) - 1:
                 node = self.get_node_by_parent_and_name(
-                    parent_id=current_item_id, name=path_element, fields=fields, metadata=metadata
+                    parent_id=current_item_id, name=path_element, fields=fields, metadata=metadata,
                 )
             # For intermediate path elements we use the minimum set of fields (ID)
             # to allow traversal of the path (IMPORTANT: turn-off exact_match if name property is excluded):
             else:
                 node = self.get_node_by_parent_and_name(
-                    parent_id=current_item_id, name=path_element, fields="properties{id}", exact_match=False
+                    parent_id=current_item_id, name=path_element, fields="properties{id}", exact_match=False,
                 )
             path_item_id = self.get_result_value(response=node, key="id")
             if not path_item_id and create_path:
@@ -6912,7 +6894,7 @@ class OTCS:
         # get_subnodes_iterator() returns a python generator that we use for iterating over all nodes
         # in an efficient way avoiding to retrieve all nodes at once (which could be a large number):
         for node in self.get_subnodes_iterator(
-            parent_node_id=parent_node_id, fields=fields, metadata=True, page_size=page_size
+            parent_node_id=parent_node_id, fields=fields, metadata=True, page_size=page_size,
         ):
             #
             # 1: Get the category and attribute schemas for the requested category name and attribute name:
@@ -7333,7 +7315,7 @@ class OTCS:
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_node_facets")
     def get_node_facets(
-        self, node_id: int, facet_values: dict[int, str] | None = None, facet_values_limit: int | None = None
+        self, node_id: int, facet_values: dict[int, str] | None = None, facet_values_limit: int | None = None,
     ) -> dict[str, Any] | None:
         """Get facets configured / enabled for a node.
 
@@ -8659,7 +8641,7 @@ class OTCS:
             request_url,
         )
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="POST",
             headers=request_header,
@@ -8680,7 +8662,6 @@ class OTCS:
             show_warning=not show_error,
         )
 
-        return response
 
     # end method definition
 
@@ -10556,7 +10537,7 @@ class OTCS:
             {
                 "package.url": package_url,
                 "package.name": package_name,
-            }
+            },
         )
 
         if replacements is None:
@@ -10689,38 +10670,37 @@ class OTCS:
             )
             # we return and skip this transport...
             return response
-        else:
-            self.logger.debug(
-                "Check if workbench -> '%s' already exists...",
+        self.logger.debug(
+            "Check if workbench -> '%s' already exists...",
+            workbench_name,
+        )
+        response = self.get_node_by_parent_and_name(
+            parent_id=transport_root_volume_id,
+            name=workbench_name,
+        )
+        workbench_id = self.get_result_value(response=response, key="id")
+        if workbench_id:
+            self.logger.info(
+                "Workbench -> '%s' (%d) does already exist but has not been successfully deployed.",
                 workbench_name,
+                workbench_id,
             )
-            response = self.get_node_by_parent_and_name(
-                parent_id=transport_root_volume_id,
-                name=workbench_name,
+        else:
+            response = self.create_transport_workbench(
+                workbench_name=workbench_name,
             )
             workbench_id = self.get_result_value(response=response, key="id")
-            if workbench_id:
-                self.logger.info(
-                    "Workbench -> '%s' (%d) does already exist but has not been successfully deployed.",
+            if not workbench_id:
+                self.logger.error(
+                    "Failed to create workbench -> '%s'",
                     workbench_name,
-                    workbench_id,
                 )
-            else:
-                response = self.create_transport_workbench(
-                    workbench_name=workbench_name,
-                )
-                workbench_id = self.get_result_value(response=response, key="id")
-                if not workbench_id:
-                    self.logger.error(
-                        "Failed to create workbench -> '%s'",
-                        workbench_name,
-                    )
-                    return None
-                self.logger.debug(
-                    "Successfully created workbench -> '%s'; new workbench ID -> %d.",
-                    workbench_name,
-                    workbench_id,
-                )
+                return None
+            self.logger.debug(
+                "Successfully created workbench -> '%s'; new workbench ID -> %d.",
+                workbench_name,
+                workbench_id,
+            )
 
         # Step 3: Unpack Transport Package to Workbench
         self.logger.info(
@@ -11688,7 +11668,7 @@ class OTCS:
 
         if not type_name and not type_id:
             self.logger.error(
-                "Either type name or type ID needs to be provided. Cannot get business object search form."
+                "Either type name or type ID needs to be provided. Cannot get business object search form.",
             )
             return None
 
@@ -12586,7 +12566,7 @@ class OTCS:
     # end method definition
 
     def get_workspace_types_iterator(
-        self, expand_workspace_info: bool = True, expand_templates: bool = True, show_error: bool = True
+        self, expand_workspace_info: bool = True, expand_templates: bool = True, show_error: bool = True,
     ) -> Iterator:
         """Get an iterator object to traverse all workspace types.
 
@@ -12613,7 +12593,7 @@ class OTCS:
         """
 
         response = self.get_workspace_types(
-            expand_workspace_info=expand_workspace_info, expand_templates=expand_templates, show_error=show_error
+            expand_workspace_info=expand_workspace_info, expand_templates=expand_templates, show_error=show_error,
         )
         if not response or "results" not in response:
             self.logger.warning("Failed to get workspace types or no results found.")
@@ -12822,7 +12802,7 @@ class OTCS:
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_workspace_templates")
     def get_workspace_templates(
-        self, type_id: int | None = None, type_name: str | None = None
+        self, type_id: int | None = None, type_name: str | None = None,
     ) -> tuple[int | None, list | None]:
         """Get the workspace type with a list of workspace templates for a workspace type.
 
@@ -14052,7 +14032,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(
-        attributes=OTEL_TRACING_ATTRIBUTES, name="create_workspace", kind=trace.SpanKind.CLIENT
+        attributes=OTEL_TRACING_ATTRIBUTES, name="create_workspace", kind=trace.SpanKind.CLIENT,
     )
     def create_workspace(
         self,
@@ -14215,7 +14195,7 @@ class OTCS:
                 "workspace.name": workspace_name,
                 "workspace.type": workspace_type,
                 "workspace.template_id": workspace_template_id,
-            }
+            },
         )
 
         # This REST API needs a special treatment: we encapsulate the payload as JSON into a "body" tag.
@@ -15529,7 +15509,7 @@ class OTCS:
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="copy_node")
     def copy_node(
-        self, node_id: int, parent_id: int, new_name: str, parse_error_response: bool | None = False
+        self, node_id: int, parent_id: int, new_name: str, parse_error_response: bool | None = False,
     ) -> dict[str, Any] | None:
         """Create a copy of a node based on an existing, specified node to a specified destination, optionally with as a new name.
 
@@ -15554,7 +15534,7 @@ class OTCS:
         request_url = self.config()["nodesUrlv2"]
 
         self.logger.debug(
-            "Copying the item with ID -> %s under parent with ID -> %d; calling -> %s", node_id, parent_id, request_url
+            "Copying the item with ID -> %s under parent with ID -> %d; calling -> %s", node_id, parent_id, request_url,
         )
 
         create_document_post_data = {
@@ -15728,7 +15708,7 @@ class OTCS:
         for cat_id in category_ids:
             request_url += f"&category_id={cat_id}"
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
@@ -15736,7 +15716,6 @@ class OTCS:
             failure_message=f"Cannot get create form for parent ID -> {parent_id} and category IDs -> {category_ids}",
         )
 
-        return response
 
     # end method definition
 
@@ -15867,7 +15846,7 @@ class OTCS:
 
         request_url = self.config()["nodesFormUrl"] + f"/categories/{operation}?id={node_id}&category_id={category_id}"
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
@@ -15875,7 +15854,6 @@ class OTCS:
             failure_message=f"Cannot get category {operation} form for node ID -> {node_id} and category ID -> {category_id}",
         )
 
-        return response
 
     # end method definition
 
@@ -16511,7 +16489,7 @@ class OTCS:
 
         if not assignee_type or assignee_type not in OTCS.PERMISSION_ASSIGNEE_TYPES:
             self.logger.error(
-                "Missing or wrong assignee type. Needs to be one of %s!", str(OTCS.PERMISSION_ASSIGNEE_TYPES)
+                "Missing or wrong assignee type. Needs to be one of %s!", str(OTCS.PERMISSION_ASSIGNEE_TYPES),
             )
             return None
         if assignee_type == "custom" and not assignee:
@@ -16563,16 +16541,15 @@ class OTCS:
                 timeout=None,
                 failure_message=f"Failed to assign 'custom' permissions -> {permissions} to item with ID -> {node_id} (apply to -> {apply_to})",
             )
-        else:
-            # Owner, Owner Group and Public require REST PUT:
-            return self.do_request(
-                url=request_url,
-                method="PUT",
-                headers=request_header,
-                data={"body": json.dumps(permission_post_data)},
-                timeout=None,
-                failure_message=f"Failed to assign -> '{assignee_type}' permissions -> {permissions} to item with ID -> {node_id} (apply to -> {apply_to})",
-            )
+        # Owner, Owner Group and Public require REST PUT:
+        return self.do_request(
+            url=request_url,
+            method="PUT",
+            headers=request_header,
+            data={"body": json.dumps(permission_post_data)},
+            timeout=None,
+            failure_message=f"Failed to assign -> '{assignee_type}' permissions -> {permissions} to item with ID -> {node_id} (apply to -> {apply_to})",
+        )
 
     # end method definition
 
@@ -16657,7 +16634,7 @@ class OTCS:
 
         if not assignee_type or assignee_type not in OTCS.PERMISSION_ASSIGNEE_TYPES:
             self.logger.error(
-                "Missing or wrong assignee type. Needs to be one of %s!", str(OTCS.PERMISSION_ASSIGNEE_TYPES)
+                "Missing or wrong assignee type. Needs to be one of %s!", str(OTCS.PERMISSION_ASSIGNEE_TYPES),
             )
             return None
         if assignee_type == "custom" and not assignee:
@@ -16696,16 +16673,15 @@ class OTCS:
                 timeout=None,
                 failure_message=f"Failed to delete 'custom' permissions from item with ID -> {node_id} (apply to -> {apply_to})",
             )
-        else:
-            # Owner, Owner Group and Public require REST PUT:
-            return self.do_request(
-                url=request_url,
-                method="DELETE",
-                headers=request_header,
-                data={"body": json.dumps(permission_delete_data)},
-                timeout=None,
-                failure_message=f"Failed to delete -> '{assignee_type}' permissions from item with ID -> {node_id} (apply to -> {apply_to})",
-            )
+        # Owner, Owner Group and Public require REST PUT:
+        return self.do_request(
+            url=request_url,
+            method="DELETE",
+            headers=request_header,
+            data={"body": json.dumps(permission_delete_data)},
+            timeout=None,
+            failure_message=f"Failed to delete -> '{assignee_type}' permissions from item with ID -> {node_id} (apply to -> {apply_to})",
+        )
 
     # end method definition
 
@@ -16776,7 +16752,7 @@ class OTCS:
             headers=request_header,
             data=permission_post_data,
             failure_message="Failed to check if {} has permissions to access nodes -> {}".format(
-                "user with ID -> " + str(user_id) if user_id is not None else "current user", node_ids
+                "user with ID -> " + str(user_id) if user_id is not None else "current user", node_ids,
             ),
         )
 
@@ -17525,7 +17501,7 @@ class OTCS:
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="get_category_as_dictionary")
     def get_node_category_as_dictionary(
-        self, node_id: int, category_id: int | None = None, category_name: str | None = None
+        self, node_id: int, category_id: int | None = None, category_name: str | None = None,
     ) -> dict[str, Any] | None:
         """Get a specific category assigned to a node in a streamlined Python dictionary form.
 
@@ -18079,7 +18055,7 @@ class OTCS:
 
         if not category_id:
             self.logger.error(
-                "Category ID is not specified! Cannot set category inheritance on node with ID -> %s", str(node_id)
+                "Category ID is not specified! Cannot set category inheritance on node with ID -> %s", str(node_id),
             )
             return None
 
@@ -18102,20 +18078,19 @@ class OTCS:
                 timeout=None,
                 failure_message=f"Failed to enable categories inheritance for node ID -> {node_id} and category ID -> {category_id}",
             )
-        else:
-            self.logger.debug(
-                "Disable category inheritance of node with ID -> %d and category ID -> %d; calling -> %s",
-                node_id,
-                category_id,
-                request_url,
-            )
-            return self.do_request(
-                url=request_url,
-                method="DELETE",
-                headers=request_header,
-                timeout=None,
-                failure_message=f"Failed to disable categories inheritance for node ID -> {node_id} and category ID -> {category_id}",
-            )
+        self.logger.debug(
+            "Disable category inheritance of node with ID -> %d and category ID -> %d; calling -> %s",
+            node_id,
+            category_id,
+            request_url,
+        )
+        return self.do_request(
+            url=request_url,
+            method="DELETE",
+            headers=request_header,
+            timeout=None,
+            failure_message=f"Failed to disable categories inheritance for node ID -> {node_id} and category ID -> {category_id}",
+        )
 
     # end method definition
 
@@ -18278,7 +18253,7 @@ class OTCS:
         metadata = node["results"]["metadata"]
         if "categories" not in metadata:
             self.logger.error(
-                "Cannot extract category data. No category data found in node response! Use 'categories' value for 'fields' parameter in the node call!"
+                "Cannot extract category data. No category data found in node response! Use 'categories' value for 'fields' parameter in the node call!",
             )
             return None
         category_schemas = metadata["categories"]
@@ -18658,7 +18633,7 @@ class OTCS:
     # end method definition
 
     @tracer.start_as_current_span(
-        attributes=OTEL_TRACING_ATTRIBUTES, name="createassign_classifications_document_from_template"
+        attributes=OTEL_TRACING_ATTRIBUTES, name="createassign_classifications_document_from_template",
     )
     def assign_classifications(
         self,
@@ -21911,7 +21886,7 @@ class OTCS:
                     workspace_id,
                 )
                 return True
-            elif "enableai" in data:
+            if "enableai" in data:
                 self.logger.debug(
                     "Aviator is disabled for workspace with ID -> %d",
                     workspace_id,
@@ -22092,7 +22067,7 @@ class OTCS:
     # end method definition
 
     def aviator_context(
-        self, query: str, threshold: float = 0.5, limit: int = 10, data: list[dict[str, Any]] | None = None
+        self, query: str, threshold: float = 0.5, limit: int = 10, data: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any] | None:
         """Get context based on the query text from Aviator's vector database.
 
@@ -22352,7 +22327,7 @@ class OTCS:
                     node_type = self.get_result_value(response=node, key="type")
 
                     self.logger.debug(
-                        "[%s] Traversing node -> '%s' (%s) at depth %d", thread_name, node_name, node_id, current_depth
+                        "[%s] Traversing node -> '%s' (%s) at depth %d", thread_name, node_name, node_id, current_depth,
                     )
 
                     # Run all executables
@@ -22381,7 +22356,7 @@ class OTCS:
                                 break
                         except Exception as e:
                             self.logger.error(
-                                "Failed to run executable on node -> '%s' (%s), error -> %s", node_name, node_id, str(e)
+                                "Failed to run executable on node -> '%s' (%s), error -> %s", node_name, node_id, str(e),
                             )
                     else:
                         with lock:
@@ -22581,13 +22556,12 @@ class OTCS:
         #
         # 2. Check Inclusions - only if some exist (either on type name or type ID basis):
         #
-        include = (
+        return (
             not workspace_type_inclusions  # if no inclusion list is given all types will be included!
             or workspace_type_name in workspace_type_inclusions
             or workspace_type_id in workspace_type_inclusions
         )
 
-        return include
 
     # endsub-method definition
 
@@ -22669,7 +22643,7 @@ class OTCS:
                 continue
 
             workspace_instances = self.get_workspace_instances_iterator(
-                type_id=wksp_type_id, fields=fields, metadata=metadata
+                type_id=wksp_type_id, fields=fields, metadata=metadata,
             )
             for workspace_instance in workspace_instances:
                 # Call the actual recursive traversal method:
@@ -22835,7 +22809,7 @@ class OTCS:
             for rel_type in relationship_types:
                 # Get children nodes of the current node:
                 workspace_relationships = self.get_workspace_relationships_iterator(
-                    workspace_id=workspace_node_id, relationship_type=rel_type, fields=fields, metadata=metadata
+                    workspace_id=workspace_node_id, relationship_type=rel_type, fields=fields, metadata=metadata,
                 )
 
                 # Recursive call of all subnodes:
@@ -22843,7 +22817,7 @@ class OTCS:
                     related_workspace_id = self.get_result_value(response=related_workspace, key="id")
                     related_workspace_name = self.get_result_value(response=related_workspace, key="name")
                     related_workspace_type_id = self.get_result_value(
-                        response=related_workspace, key="wnf_wksp_type_id"
+                        response=related_workspace, key="wnf_wksp_type_id",
                     )
                     related_workspace_type_name = self.get_workspace_type_name(type_id=related_workspace_type_id)
 
@@ -23024,7 +22998,7 @@ class OTCS:
                 # only metadata for landing page workspace widget which is useless
                 # for traversal and would just slow down the initialization of the queue:
                 workspace_instances = self.get_workspace_instances_iterator(
-                    type_id=wksp_type_id, fields=fields, metadata=False
+                    type_id=wksp_type_id, fields=fields, metadata=False,
                 )
                 for workspace_instance in workspace_instances:
                     # Add the workspace and the current depth to the queue. Depth is 0 for the initial workspaces:
@@ -23147,7 +23121,7 @@ class OTCS:
                         for rel_type in relationship_types:
                             # Get related workspaces of the current workspace and the current relationship type:
                             workspace_relationships = self.get_workspace_relationships_iterator(
-                                workspace_id=workspace_id, relationship_type=rel_type, fields=fields, metadata=metadata
+                                workspace_id=workspace_id, relationship_type=rel_type, fields=fields, metadata=metadata,
                             )
 
                             # Traverse all related workspaces:
@@ -23155,12 +23129,12 @@ class OTCS:
                                 related_workspace_id = self.get_result_value(response=related_workspace, key="id")
                                 related_workspace_name = self.get_result_value(response=related_workspace, key="name")
                                 related_workspace_type_id = self.get_result_value(
-                                    response=related_workspace, key="wnf_wksp_type_id"
+                                    response=related_workspace, key="wnf_wksp_type_id",
                                 )
                                 # Determine the name of the workspace type with the help of the
                                 # lookup dictionary created in init_traversal_queue():
                                 related_workspace_type_name = self.get_workspace_type_name(
-                                    type_id=related_workspace_type_id
+                                    type_id=related_workspace_type_id,
                                 )
                                 if filter_at_traversal and not self._check_filter(
                                     workspace_type_name=related_workspace_type_name,
@@ -23514,7 +23488,7 @@ class OTCS:
                         )
                         return False
                     # Case 2: Data source delivers a list and filter value is a scalar value (int, str, float)
-                    elif isinstance(actual_value, list) and isinstance(
+                    if isinstance(actual_value, list) and isinstance(
                         filter_value,
                         (str, int, float),
                     ):
@@ -23863,21 +23837,21 @@ class OTCS:
 
             if not traversal_data:
                 self.logger.error(
-                    "Missing keyword argument 'traversal_data' for executable 'check_node_workspace' in node traversal!"
+                    "Missing keyword argument 'traversal_data' for executable 'check_node_workspace' in node traversal!",
                 )
                 # Success = False, Traverse = False
                 return (False, False)
 
             if not filter_workspace_data:
                 self.logger.error(
-                    "Missing keyword argument 'filter_workspace_data' for executable 'check_node_workspace' in node traversal!"
+                    "Missing keyword argument 'filter_workspace_data' for executable 'check_node_workspace' in node traversal!",
                 )
                 # Success = False, Traverse = False
                 return (False, False)
 
             if not control_flags:
                 self.logger.error(
-                    "Missing keyword argument 'control_flags' for executable 'check_node_workspace' in node traversal!"
+                    "Missing keyword argument 'control_flags' for executable 'check_node_workspace' in node traversal!",
                 )
                 # Success = False, Traverse = False
                 return (False, False)
@@ -24505,7 +24479,7 @@ class OTCS:
 
         # Get available SmartUI Actions to check if we have SuccessFactors or generic XECM PowerDocs templates configured:
         actions = self.get_node_actions(
-            node_id=workspace_id, filter_actions=["xecmforsfcreatedocument", "xecmpfcreatedocument"]
+            node_id=workspace_id, filter_actions=["xecmforsfcreatedocument", "xecmpfcreatedocument"],
         )
         if actions is None:
             self.logger.error(
@@ -24513,8 +24487,7 @@ class OTCS:
                 workspace_id,
             )
             return None
-        else:
-            actions = actions["results"][str(workspace_id)]["data"]
+        actions = actions["results"][str(workspace_id)]["data"]
 
         # SuccessFactors specific handling
         if "xECMforSFCreateDocument" in actions:
@@ -24585,7 +24558,7 @@ class OTCS:
             text = response.text
             if text and "User is not authorized" in text:
                 self.logger.error(
-                    "The current user is not authorized to retrive document templates for document generation!"
+                    "The current user is not authorized to retrive document templates for document generation!",
                 )
                 return None
             match = re.search(r'<textarea[^>]*name=["\']documentgeneration["\'][^>]*>(.*?)</textarea>', text, re.DOTALL)
@@ -24633,14 +24606,13 @@ class OTCS:
                     workspace_id,
                 )
                 return None
-        template_names = [item.text for item in root.findall("startup/processing/templates/template")]
+        return [item.text for item in root.findall("startup/processing/templates/template")]
 
-        return template_names
 
     # end method definition
 
     def get_document_template(
-        self, workspace_id: int, template_name: str, input_values: dict[str, Any] | None = None
+        self, workspace_id: int, template_name: str, input_values: dict[str, Any] | None = None,
     ) -> str | None:
         """Get the template XML payload from a workspace and a given template name.
 
@@ -24711,9 +24683,8 @@ class OTCS:
                 value_element = ET.SubElement(input_element, "value", column=column)
                 value_element.text = value
 
-        payload = ET.tostring(root, encoding="utf8").decode("utf8")
+        return ET.tostring(root, encoding="utf8").decode("utf8")
 
-        return payload
 
     # end method definition
 
@@ -25828,7 +25799,7 @@ class OTCS:
         valid_reminder_type_ids = self.get_valid_reminder_type_ids()
         if not valid_reminder_type_ids:
             self.logger.error(
-                "No valid reminder types found. There may not be any reminder type configured or the user does not have access to any. Cannot create or update reminder."
+                "No valid reminder types found. There may not be any reminder type configured or the user does not have access to any. Cannot create or update reminder.",
             )
             return None
         if reminder_type not in valid_reminder_type_ids:
@@ -26063,7 +26034,7 @@ class OTCS:
         escalation_when: Literal["before", "after"] | None = None,
         escalation_value: int | None = None,
         escalation_unit: Literal[
-            "day", "week", "month", "year"
+            "day", "week", "month", "year",
         ] = "day",  # the UI does only allow to specify "day" so we make it the default
         escalation_business_day: bool | None = None,
     ) -> dict[str, Any] | None:

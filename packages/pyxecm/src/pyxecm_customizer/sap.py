@@ -150,8 +150,7 @@ class SAP:
 
         try:
             with pyrfc.Connection(**params) as conn:
-                result = conn.call(rfc_name, options=options, **rfc_parameters)
-                return result
+                return conn.call(rfc_name, options=options, **rfc_parameters)
         except pyrfc.RFCError as sap_error:
             self.logger.error(
                 "Failed to call RFC -> '%s'; error -> %s",

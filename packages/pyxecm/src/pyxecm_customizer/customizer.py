@@ -886,7 +886,7 @@ class Customizer:
         )
         if not otcs_resource or "resourceID" not in otcs_resource:
             self.logger.error(
-                "Cannot get OTCS resource ID from OTDS for resource name -> '%s'!", self.settings.otcs.resource_name
+                "Cannot get OTCS resource ID from OTDS for resource name -> '%s'!", self.settings.otcs.resource_name,
             )
             return otcs_object
         otcs_resource_id = otcs_resource["resourceID"]
@@ -1193,7 +1193,7 @@ class Customizer:
                     str(self.settings.otds.url).rstrip("/") + "/otdsws/login"
                 )
                 solution["platform"]["security"]["contentSecurityPolicy"] = "frame-ancestors 'self' " + str(
-                    self.settings.otcs.url
+                    self.settings.otcs.url,
                 ).rstrip("/")
                 config_map.data["solution.yaml"] = yaml.dump(solution)
                 result = self.k8s_object.replace_config_map(
@@ -1271,7 +1271,7 @@ class Customizer:
         # Allow impersonation for all users:
         self.otds_object.impersonate_resource(resource_name=self.settings.otawp.resource_name)
 
-        otawp_object = OTAWP(
+        return OTAWP(
             protocol=self.settings.otawp.protocol,
             hostname=self.settings.k8s.sts_otawp,
             port=str(self.settings.otawp.port),
@@ -1286,7 +1286,6 @@ class Customizer:
             logger=self.logger,
         )
 
-        return otawp_object
 
     # end method definition
 
@@ -1352,7 +1351,7 @@ class Customizer:
                     "header": "Rolling restart of OTCS Distributed Agents",
                     "sts_name": self.settings.k8s.sts_otcs_da,
                     "error_msg": "Rolling restart failed for Distributed Agent StatefulSet -> '%s'",
-                }
+                },
             )
 
         if self.settings.k8s.sts_otcs_frontend:
@@ -1362,7 +1361,7 @@ class Customizer:
                     "sts_name": self.settings.k8s.sts_otcs_frontend,
                     "error_msg": "Rolling restart failed for OTCS frontend stateful set -> '%s'",
                     "endpoint_service_name": self.settings.k8s.svc_otcs_frontend,
-                }
+                },
             )
 
         if self.settings.k8s.sts_otcs_admin:
@@ -1372,7 +1371,7 @@ class Customizer:
                     "sts_name": self.settings.k8s.sts_otcs_admin,
                     "error_msg": "Restart failed for OTCS admin stateful set -> '%s'",
                     "endpoint_service_name": self.settings.k8s.svc_otcs_admin,
-                }
+                },
             )
 
         # Execute all restart tasks in parallel
@@ -1775,7 +1774,7 @@ class Customizer:
                 t.set_attributes(
                     {
                         "payload": cust_payload,
-                    }
+                    },
                 )
                 self.log_header(f"Start processing of payload -> '{cust_payload}'")
 

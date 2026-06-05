@@ -187,10 +187,8 @@ class OTCA:
         if self.otcs_object and (cs_version := self.otcs_object.get_server_version()):
             if float(cs_version) < 25.4:
                 return "xecm"
-            else:
-                return "otcm"
-        else:
-            return None
+            return "otcm"
+        return None
 
             # content_system or {"user": "xecm", "service": "xecm"}
 
@@ -341,10 +339,9 @@ class OTCA:
                         self.logger.debug(success_message)
                     if parse_request_response:
                         return self.parse_request_response(response, show_error=show_error)
-                    else:
-                        return response
+                    return response
                 # Check if Session has expired - then re-authenticate and try once more
-                elif response.status_code == 401 and retries == 0:
+                if response.status_code == 401 and retries == 0:
                     self.logger.debug("Session has expired - try to re-authenticate...")
                     self.authenticate_user()
                     retries += 1
@@ -539,10 +536,9 @@ class OTCA:
 
             return self._chat_token
 
-        else:
-            self.logger.error("Authentication failed. Token not found.")
+        self.logger.error("Authentication failed. Token not found.")
 
-            return None
+        return None
 
     # end method definition
 
@@ -575,11 +571,10 @@ class OTCA:
         if result:
             self._embed_token = result["token"]
             return self._embed_token
-        else:
-            self.logger.error(
-                "Authentication failed with client ID -> '%s' against -> %s", self.config()["clientId"], url
-            )
-            return None
+        self.logger.error(
+            "Authentication failed with client ID -> '%s' against -> %s", self.config()["clientId"], url,
+        )
+        return None
 
     # end method definition
 
@@ -1117,7 +1112,7 @@ class OTCA:
         if chat_id is not None:
             request_data["chatID"] = chat_id
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="POST",
             headers=request_header,
@@ -1125,11 +1120,10 @@ class OTCA:
             timeout=None,
             show_error=True,
             failure_message="Failed to chat with LLM -> '{}'".format(
-                options.get("model", "<default model>") if options else "<default model>"
+                options.get("model", "<default model>") if options else "<default model>",
             ),
         )
 
-        return response
 
     # end method definition
 

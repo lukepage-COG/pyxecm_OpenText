@@ -140,7 +140,7 @@ def import_payload(
             logger.debug(exc, exc_info=True)
         return
 
-    elif not Path(payload_dir).is_dir():
+    if not Path(payload_dir).is_dir():
         return
 
     for filename in sorted([p.name for p in Path(payload_dir).iterdir()]):

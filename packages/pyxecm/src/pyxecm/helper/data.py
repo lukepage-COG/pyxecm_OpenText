@@ -1103,7 +1103,7 @@ class Data:
             # Attempt to save the data frame to Excel:
             if self._df is None:
                 self.logger.error(
-                    "Cannot write Excel file -> '%s' from empty / non-initialized data frame!", excel_path
+                    "Cannot write Excel file -> '%s' from empty / non-initialized data frame!", excel_path,
                 )
             self._df.to_excel(
                 excel_path,
@@ -1822,10 +1822,8 @@ class Data:
             self._df.drop_duplicates(subset=unique_fields, inplace=True)
             self._df.reset_index(drop=True, inplace=True)
             return self._df
-        else:
-            df = self._df.drop_duplicates(subset=unique_fields, inplace=False)
-            df = df.reset_index(drop=True, inplace=False)
-            return df
+        df = self._df.drop_duplicates(subset=unique_fields, inplace=False)
+        return df.reset_index(drop=True, inplace=False)
 
     # end method definition
 
@@ -1870,10 +1868,8 @@ class Data:
             self._df.sort_values(by=sort_fields, inplace=True, ascending=ascending)
             self._df.reset_index(drop=True, inplace=True)
             return self._df
-        else:
-            df = self._df.sort_values(by=sort_fields, inplace=False, ascending=ascending)
-            df = df.reset_index(drop=True, inplace=False)
-            return df
+        df = self._df.sort_values(by=sort_fields, inplace=False, ascending=ascending)
+        return df.reset_index(drop=True, inplace=False)
 
     # end method definition
 
@@ -2012,9 +2008,8 @@ class Data:
 
             # Use a regular expression to split the string by the separator
             # and remove leading/trailing spaces from each resulting substring
-            return_list = re.split(rf"[{separator}]\s*", str(value))
+            return re.split(rf"[{separator}]\s*", str(value))
 
-            return return_list
 
         # end def string_to_list()
 
@@ -2155,9 +2150,7 @@ class Data:
         if inplace:
             self._df.drop(column_names, axis=1, inplace=True)
             return self._df
-        else:
-            df = self._df.drop(column_names, axis=1, inplace=False)
-            return df
+        return self._df.drop(column_names, axis=1, inplace=False)
 
     # end method definition
 
@@ -2190,12 +2183,10 @@ class Data:
             if column_names != []:
                 self._df = self._df[column_names]
             return self._df
-        else:
-            # keep only those columns which are in column_names:
-            if column_names != []:
-                df = self._df[column_names]
-                return df
-            return None
+        # keep only those columns which are in column_names:
+        if column_names != []:
+            return self._df[column_names]
+        return None
 
     # end method definition
 
@@ -3035,9 +3026,8 @@ class Data:
         # To convert an Excel representation of a folder structure with nested
         # columns into a format appropriate for Pandas,
         # where all cells should be filled
-        df_filled = self._df.ffill(inplace=inplace)
+        return self._df.ffill(inplace=inplace)
 
-        return df_filled
 
     # end method definition
 
@@ -3395,7 +3385,7 @@ class Data:
         # Check the data frame is initialized:
         if self._df is None:
             self.logger.error(
-                "Data frame is not initialized. Cannot add a column -> '%s' via concatenation!", new_column
+                "Data frame is not initialized. Cannot add a column -> '%s' via concatenation!", new_column,
             )
             return False
         # Check we only do one case transformation as they are mutually exclusive:
@@ -3603,9 +3593,8 @@ class Data:
                     table_values[col] = [None] * max_len  # fill missing values
 
             # Step 3: Create a list of dictionaries (table) for each row:
-            table = [{col: table_values[col][i] for col in source_columns} for i in range(max_len)]
+            return [{col: table_values[col][i] for col in source_columns} for i in range(max_len)]
 
-            return table
 
         # end sub-method
 
@@ -3698,10 +3687,9 @@ class Data:
             # Optimized path for single-column (e.g., Node 'id')
             col = on_columns[0]
             return self._df[col].isin(match_df[col])
-        else:
-            # Optimized path for composite keys (e.g., Edge triple)
-            match_index = pd.MultiIndex.from_frame(match_df[on_columns])
-            self_index = pd.MultiIndex.from_frame(self._df[on_columns])
-            return self_index.isin(match_index)
+        # Optimized path for composite keys (e.g., Edge triple)
+        match_index = pd.MultiIndex.from_frame(match_df[on_columns])
+        self_index = pd.MultiIndex.from_frame(self._df[on_columns])
+        return self_index.isin(match_index)
 
     # end method definition

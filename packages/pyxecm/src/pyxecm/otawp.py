@@ -590,7 +590,7 @@ class OTAWP:
         username = self.config()["username"]
         password = self.config()["password"]
 
-        soap_payload = f"""
+        return f"""
         <SOAP:Envelope xmlns:SOAP="http://schemas.xmlsoap.org/soap/envelope/">
             <SOAP:Header>
                 <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
@@ -615,7 +615,6 @@ class OTAWP:
         </SOAP:Envelope>
         """
 
-        return soap_payload
 
     # end method definition
 
@@ -841,9 +840,8 @@ class OTAWP:
         """
 
         soap_data = self.parse_xml(soap_response)
-        soap_string = self.find_key(data=soap_data, target_key=soap_tag)
+        return self.find_key(data=soap_data, target_key=soap_tag)
 
-        return soap_string
 
     # end method definition
 
@@ -946,10 +944,9 @@ class OTAWP:
                     self.logger.info(success_message)
                 if parse_request_response:
                     return self.parse_request_response(response_object=response, show_error=show_error)
-                else:
-                    return response
+                return response
             # Check if Session has expired - then re-authenticate and try once more
-            elif response.status_code == 401 and retries == 0:
+            if response.status_code == 401 and retries == 0:
                 self.logger.warning("Session has expired - try to re-authenticate...")
                 self.authenticate(revalidate=True)
                 retries += 1
@@ -1329,20 +1326,18 @@ class OTAWP:
                     self._otawp_ticket = otawp_ticket
 
                     return self._cookie
-                else:
-                    self.logger.error(
-                        "Cannot retrieve OTAWP ticket! Received corrupt authentication data -> %s",
-                        response.text,
-                    )
-                    return None
-            else:
                 self.logger.error(
-                    "Failed to request an OTAWP ticket at authentication URL -> %s with user -> '%s'!%s",
-                    self.credential_url(),
-                    self.config()["username"],
-                    f" Reason -> '{response.reason}'" if response.reason else "",
+                    "Cannot retrieve OTAWP ticket! Received corrupt authentication data -> %s",
+                    response.text,
                 )
                 return None
+            self.logger.error(
+                "Failed to request an OTAWP ticket at authentication URL -> %s with user -> '%s'!%s",
+                self.credential_url(),
+                self.config()["username"],
+                f" Reason -> '{response.reason}'" if response.reason else "",
+            )
+            return None
 
         self.logger.error(
             "Authentication at AppWorks platform failed after %d retries. %sBailing out.",
@@ -1354,7 +1349,7 @@ class OTAWP:
     # end method definition
 
     def create_workspace(
-        self, workspace_name: str, workspace_id: str, show_error: bool = True
+        self, workspace_name: str, workspace_id: str, show_error: bool = True,
     ) -> tuple[dict | None, bool]:
         """Create a workspace in cws.
 
@@ -1759,13 +1754,12 @@ class OTAWP:
                         workspace_id,
                     )
                     return True
-                else:
-                    self.logger.warning(
-                        "Expected success indicator -> '%s' but it was not found in response. Retrying in 30 seconds... (Attempt %d of %d)",
-                        success_indicator,
-                        retries + 1,
-                        REQUEST_MAX_RETRIES,
-                    )
+                self.logger.warning(
+                    "Expected success indicator -> '%s' but it was not found in response. Retrying in 30 seconds... (Attempt %d of %d)",
+                    success_indicator,
+                    retries + 1,
+                    REQUEST_MAX_RETRIES,
+                )
             elif response.status_code == 401:
                 # Check for session expiry and retry authentication
                 self.logger.warning("Session has expired - re-authenticating...")
@@ -2713,7 +2707,7 @@ class OTAWP:
 
             if response.ok:
                 return self.parse_xml(response.text)
-            elif response.status_code == 401 and retries == 0:
+            if response.status_code == 401 and retries == 0:
                 self.logger.warning("Session has expired - try to re-authenticate...")
                 self.authenticate(revalidate=True)
                 retries += 1
@@ -3020,7 +3014,7 @@ class OTAWP:
         """
 
         self.logger.info(
-            "Verify user -> '%s' has role -> '%s' in organization -> '%s'...", user_name, role_name, organization
+            "Verify user -> '%s' has role -> '%s' in organization -> '%s'...", user_name, role_name, organization,
         )
 
         # Construct the SOAP request body
@@ -3077,9 +3071,8 @@ class OTAWP:
                 if role_name in response.text:  # Corrected syntax for checking if 'Developer' is in the response text
                     self.logger.info("Verified user -> '%s' already has the role -> '%s'.", user_name, role_name)
                     return True  # Assuming the user has the role if the response contains 'Developer'
-                else:
-                    self.logger.info("Verified user -> '%s' does not yet have role -> '%s'.", user_name, role_name)
-                    return False
+                self.logger.info("Verified user -> '%s' does not yet have role -> '%s'.", user_name, role_name)
+                return False
 
             # Handle session expiration
             if response.status_code == 401 and retries == 0:
@@ -3123,7 +3116,7 @@ class OTAWP:
 
         """
         self.logger.info(
-            "Assign role -> '%s' to user -> '%s' in organization -> '%s'...", role_name, user_name, organization
+            "Assign role -> '%s' to user -> '%s' in organization -> '%s'...", role_name, user_name, organization,
         )
 
         # Check if user already has the role before making the request

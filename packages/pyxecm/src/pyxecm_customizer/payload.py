@@ -755,7 +755,7 @@ class Payload:
                 continue
 
             self._log_header_callback(
-                text=f"Process AppWorks resource configuration for '{organization}'", char="-"
+                text=f"Process AppWorks resource configuration for '{organization}'", char="-",
             )
 
             # Check if user has been explicitly disabled in payload
@@ -997,10 +997,10 @@ class Payload:
                 success = False
                 continue
             self._otawp.create_cws_config(
-                partition=self._otcs.partition_name(), resource_name=organization, otcs_url=self._otcs.cs_url()
+                partition=self._otcs.partition_name(), resource_name=organization, otcs_url=self._otcs.cs_url(),
             )
             self._otawp.assign_role_to_user(
-                organization=organization, user_name=self._otawp.username(), role_name="Developer"
+                organization=organization, user_name=self._otawp.username(), role_name="Developer",
             )
         # end for appworks_configuration in self._appworks_configurations:
 
@@ -1024,7 +1024,7 @@ class Payload:
                 continue
 
             self._log_header_callback(
-                text=f"Process AppWorks workspaces, project, entities for '{organization}'", char="-"
+                text=f"Process AppWorks workspaces, project, entities for '{organization}'", char="-",
             )
 
             self._otawp.set_organization(organization)
@@ -1039,7 +1039,7 @@ class Payload:
 
             if "workspaces" not in appworks_configuration:
                 self.logger.warning(
-                    "No workspace information in AppWorks configuration -> '%s'. Skipping...", organization
+                    "No workspace information in AppWorks configuration -> '%s'. Skipping...", organization,
                 )
                 continue
 
@@ -1057,7 +1057,7 @@ class Payload:
                     continue
 
                 response, created = self._otawp.create_workspace(
-                    workspace_name=workspace_name, workspace_id=workspace_id
+                    workspace_name=workspace_name, workspace_id=workspace_id,
                 )
                 if not response:
                     self.logger.info("Failed to create workspace -> '%s' (%s)!", workspace_name, workspace_id)
@@ -1130,7 +1130,7 @@ class Payload:
             entities = appworks_configuration.get("entities", [])
             if entities:
                 self._log_header_callback(
-                    text=f"Process AppWorks entities for organization -> '{organization}'", char="-"
+                    text=f"Process AppWorks entities for organization -> '{organization}'", char="-",
                 )
                 for entity in entities:
                     if not self.process_appworks_entity(entity=entity):
@@ -1182,7 +1182,7 @@ class Payload:
                 if cat:
                     cat_id = self._otawp.get_entity_value(entity=cat, key="id")
                     self.logger.info(
-                        "Category -> '%s' (%s) does already exist. Skipping...", entity.get("name"), str(cat_id)
+                        "Category -> '%s' (%s) does already exist. Skipping...", entity.get("name"), str(cat_id),
                     )
                     self.logger.debug("Category -> %s", str(cat))
                 else:
@@ -1206,7 +1206,7 @@ class Payload:
                     for sub_entity in entity["sub_entities"]:
                         if sub_entity["type"] != "subCategory":
                             self.logger.warning(
-                                "Found a category sub-entities with wrong type -> '%s'!", sub_entity["type"]
+                                "Found a category sub-entities with wrong type -> '%s'!", sub_entity["type"],
                             )
                             continue
                         response = self._otawp.create_sub_category(
@@ -1248,7 +1248,7 @@ class Payload:
                     self.logger.error("Failed to create priority -> '%s'!", entity.get("name"))
                     return False
                 self.logger.info(
-                    "Successfully created priority -> '%s' (%s).", entity.get("name"), response["Identity"].get("Id")
+                    "Successfully created priority -> '%s' (%s).", entity.get("name"), response["Identity"].get("Id"),
                 )
                 self.logger.debug("Response -> %s", str(response))
                 return True
@@ -1257,7 +1257,7 @@ class Payload:
                 if case_type:
                     case_type_id = self._otawp.get_entity_value(entity=case_type, key="id")
                     self.logger.info(
-                        "Case type -> '%s' (%s) does already exist. Skipping...", entity.get("name"), str(case_type_id)
+                        "Case type -> '%s' (%s) does already exist. Skipping...", entity.get("name"), str(case_type_id),
                     )
                     return True
                 response = self._otawp.create_case_type(
@@ -1269,7 +1269,7 @@ class Payload:
                     self.logger.error("Failed to case type -> '%s'!", entity.get("name"))
                     return False
                 self.logger.info(
-                    "Successfully created case type -> '%s' (%s).", entity.get("name"), response["Identity"].get("Id")
+                    "Successfully created case type -> '%s' (%s).", entity.get("name"), response["Identity"].get("Id"),
                 )
                 self.logger.debug("Response -> %s", str(response))
                 return True
@@ -1278,7 +1278,7 @@ class Payload:
                 if customer:
                     customer_id = self._otawp.get_entity_value(entity=customer, key="id")
                     self.logger.info(
-                        "Customer -> '%s' (%s) does already exist. Skipping...", entity.get("name"), str(customer_id)
+                        "Customer -> '%s' (%s) does already exist. Skipping...", entity.get("name"), str(customer_id),
                     )
                     return True
                 response = self._otawp.create_customer(
@@ -1290,7 +1290,7 @@ class Payload:
                     self.logger.error("Failed to create customer -> '%s'!", entity.get("name"))
                     return False
                 self.logger.info(
-                    "Successfully created customer -> '%s' (%s).", entity.get("name"), response["Identity"].get("Id")
+                    "Successfully created customer -> '%s' (%s).", entity.get("name"), response["Identity"].get("Id"),
                 )
                 self.logger.debug("Response -> %s", str(response))
                 return True
@@ -1312,7 +1312,7 @@ class Payload:
                         return False
                 else:
                     self.logger.warning(
-                        "Case entity -> '%s' does not have a category specified in its payload!", entity["subject"]
+                        "Case entity -> '%s' does not have a category specified in its payload!", entity["subject"],
                     )
                     category_id = None
 
@@ -1335,7 +1335,7 @@ class Payload:
                         return False
                 else:
                     self.logger.warning(
-                        "Case entity -> '%s' does not have a priority specified in its payload!", entity["subject"]
+                        "Case entity -> '%s' does not have a priority specified in its payload!", entity["subject"],
                     )
                     priority_id = None
 
@@ -1352,7 +1352,7 @@ class Payload:
                         return False
                 else:
                     self.logger.warning(
-                        "Case entity -> '%s' does not have a case type specified in its payload!", entity["subject"]
+                        "Case entity -> '%s' does not have a case type specified in its payload!", entity["subject"],
                     )
                     case_type_id = None
 
@@ -1369,7 +1369,7 @@ class Payload:
                         return False
                 else:
                     self.logger.warning(
-                        "Case entity -> '%s' does not have a customer specified in its payload!", entity["subject"]
+                        "Case entity -> '%s' does not have a customer specified in its payload!", entity["subject"],
                     )
                     customer_id = None
 
@@ -1490,7 +1490,7 @@ class Payload:
 
         if not self.status_file_check:
             self.logger.warning(
-                "Check for previously executed payload section disabled. Start processing %s", payload_section_name
+                "Check for previously executed payload section disabled. Start processing %s", payload_section_name,
             )
             return False
 
@@ -1872,9 +1872,8 @@ class Payload:
         random.shuffle(password)
 
         # Convert the password list to a string
-        final_password = "".join(password)
+        return "".join(password)
 
-        return final_password
 
     # end method definition
 
@@ -1927,12 +1926,11 @@ class Payload:
             # Write ID back into the payload:
             group["id"] = existing_group_id
             return group["id"]
-        else:
-            self.logger.debug(
-                "Cannot find an existing group -> '%s'",
-                group_name,
-            )
-            return 0
+        self.logger.debug(
+            "Cannot find an existing group -> '%s'",
+            group_name,
+        )
+        return 0
 
     # end method definition
 
@@ -1979,12 +1977,11 @@ class Payload:
             # write back the M365 user ID into the payload
             group["m365_id"] = existing_group_id
             return group["m365_id"]
-        else:
-            self.logger.debug(
-                "Cannot find an existing M365 group -> '%s'",
-                group_name,
-            )
-            return None
+        self.logger.debug(
+            "Cannot find an existing M365 group -> '%s'",
+            group_name,
+        )
+        return None
 
     # end method definition
 
@@ -2034,12 +2031,11 @@ class Payload:
             # Write ID back into the payload:
             group["core_share_id"] = core_share_group_id
             return group["core_share_id"]
-        else:
-            self.logger.debug(
-                "Cannot find an existing Core Share group -> '%s'",
-                group["name"],
-            )
-            return None
+        self.logger.debug(
+            "Cannot find an existing Core Share group -> '%s'",
+            group["name"],
+        )
+        return None
 
     # end method definition
 
@@ -2090,12 +2086,11 @@ class Payload:
             # Write ID back into the payload
             user["id"] = user_id
             return user["id"]
-        else:
-            self.logger.debug(
-                "Cannot find an existing user -> '%s'!",
-                user_name,
-            )
-            return 0
+        self.logger.debug(
+            "Cannot find an existing user -> '%s'!",
+            user_name,
+        )
+        return 0
 
         # end method definition
 
@@ -2142,12 +2137,11 @@ class Payload:
             # write back the M365 user ID into the payload
             user["m365_id"] = existing_user["id"]
             return user["m365_id"]
-        else:
-            self.logger.debug(
-                "Did not find an existing M365 user -> '%s'",
-                user_name,
-            )
-            return None
+        self.logger.debug(
+            "Did not find an existing M365 user -> '%s'",
+            user_name,
+        )
+        return None
 
     # end method definition
 
@@ -2204,19 +2198,18 @@ class Payload:
             # Write ID back into the payload:
             user["core_share_id"] = core_share_user_id
             return user["core_share_id"]
+        if "email" in user:
+            self.logger.debug(
+                "Did not find an existing Core Share user with email -> '%s'",
+                user["email"],
+            )
         else:
-            if "email" in user:
-                self.logger.debug(
-                    "Did not find an existing Core Share user with email -> '%s'",
-                    user["email"],
-                )
-            else:
-                self.logger.debug(
-                    "Cannot find an existing Core Share user -> '%s %s'",
-                    user.get("firstname"),
-                    user.get("lastname"),
-                )
-            return None
+            self.logger.debug(
+                "Cannot find an existing Core Share user -> '%s %s'",
+                user.get("firstname"),
+                user.get("lastname"),
+            )
+        return None
 
     # end method definition
 
@@ -2575,7 +2568,7 @@ class Payload:
                             # (departments), not the MS Teams for the Workspaces. These
                             # are created via the scheduled bots!
                             self._log_header_callback(
-                                text=f"Process M365 Teams for departmental groups{post_label}", char="-"
+                                text=f"Process M365 Teams for departmental groups{post_label}", char="-",
                             )
                             self.process_teams_m365()
                     case "adminSettings":
@@ -2912,7 +2905,7 @@ class Payload:
                     case "testAutomations":
                         self._log_header_callback(text="Process Test Automations")
                         self.process_browser_automations(
-                            browser_automations=self._test_automations, section_name="testAutomations"
+                            browser_automations=self._test_automations, section_name="testAutomations",
                         )
                     case "workspaceTypes":
                         if not self._workspace_types:
@@ -3363,7 +3356,7 @@ class Payload:
                                 resource_id = self._otds.get_resource(name=license_item["resource"])["resourceID"]
                             except Exception:
                                 self.logger.error(
-                                    "Error getting resource ID from resource -> %s", license_item["resource"]
+                                    "Error getting resource ID from resource -> %s", license_item["resource"],
                                 )
                         else:
                             resource_id = otcs_resource_id
@@ -3572,7 +3565,7 @@ class Payload:
                                 resource_id = self._otds.get_resource(name=license_item["resource"])["resourceID"]
                             except Exception:
                                 self.logger.error(
-                                    "Error getting resource ID from resource -> '%s'!", license_item["resource"]
+                                    "Error getting resource ID from resource -> '%s'!", license_item["resource"],
                                 )
                         else:
                             resource_id = otcs_resource_id
@@ -3709,7 +3702,7 @@ class Payload:
                 continue
 
             self.logger.info(
-                "Adding license -> '%s' for product -> '%s' to resource -> '%s'...", path, product_name, resource_id
+                "Adding license -> '%s' for product -> '%s' to resource -> '%s'...", path, product_name, resource_id,
             )
 
             add_license = self._otds.add_license_to_resource(
@@ -3803,7 +3796,7 @@ class Payload:
             client_allow_impersonation = oauth_client.get("allow_impersonation", True)
             client_secret = oauth_client.get("secret", "")
             client_user_type = oauth_client.get(
-                "user_type", ""
+                "user_type", "",
             )  # "" -> Default: Standard user, "ServiceUser" -> Service User
             client_access_token_lifetime = oauth_client.get("access_token_lifetime", 1000)
             client_refresh_token_lifetime = oauth_client.get("refresh_token_lifetime", 20000)
@@ -3969,7 +3962,7 @@ class Payload:
                 )
                 continue
             self.logger.info(
-                "Application role -> '%s' does not exist in partition -> '%s'. Creating...", role_name, role_partition
+                "Application role -> '%s' does not exist in partition -> '%s'. Creating...", role_name, role_partition,
             )
 
             response = self._otds.add_application_role(
@@ -3981,11 +3974,11 @@ class Payload:
             )
             if response:
                 self.logger.info(
-                    "Successfully added OTDS Application role -> '%s' to partition -> '%s'.", role_name, role_partition
+                    "Successfully added OTDS Application role -> '%s' to partition -> '%s'.", role_name, role_partition,
                 )
             else:
                 self.logger.error(
-                    "Failed to add OTDS Application role -> '%s' to partition -> '%s'!", role_name, role_partition
+                    "Failed to add OTDS Application role -> '%s' to partition -> '%s'!", role_name, role_partition,
                 )
                 success = False
                 continue
@@ -4933,7 +4926,7 @@ class Payload:
                 group["id"] = new_group_id
             else:
                 self.logger.error(
-                    "Failed to create %s group -> '%s'!", "signing" if group_type == 101 else "regular", group_name
+                    "Failed to create %s group -> '%s'!", "signing" if group_type == 101 else "regular", group_name,
                 )
                 # Stop impersonation before skipping to next group:
                 if group_type == 101:
@@ -5046,7 +5039,7 @@ class Payload:
             group_id = group.get("id")  # this should have been set in the first loop
             if not group_id:
                 self.logger.error(
-                    "Group -> '%s' does not have an ID! Creation may have failed before. Skipping...", group_name
+                    "Group -> '%s' does not have an ID! Creation may have failed before. Skipping...", group_name,
                 )
                 success = False
                 continue
@@ -5119,7 +5112,7 @@ class Payload:
             application_roles = group.get("application_roles", [])
             if application_roles:
                 self.logger.info(
-                    "Group -> '%s' has application roles -> %s. Assigning...", group_name, str(application_roles)
+                    "Group -> '%s' has application roles -> %s. Assigning...", group_name, str(application_roles),
                 )
             group_partition = self._otcs.config()["partition"] if application_roles else None
             for role in application_roles:
@@ -5633,7 +5626,7 @@ class Payload:
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="process_users")
     def process_users(
-        self, users: list | None = None, section_name: str = "users", use_browser_automation: bool = False
+        self, users: list | None = None, section_name: str = "users", use_browser_automation: bool = False,
     ) -> bool:
         """Process users in payload and create them in Content Server.
 
@@ -7078,7 +7071,7 @@ class Payload:
                 )
                 if not response:
                     self.logger.error(
-                        "Failed to cleanup user files for user -> '%s' (%s)!", user_name, core_share_user_id
+                        "Failed to cleanup user files for user -> '%s' (%s)!", user_name, core_share_user_id,
                     )
 
             # Save result for status file content
@@ -7717,7 +7710,7 @@ class Payload:
                             # as the user... The scope is important here - the user's drive can only
                             # be provisioned if "Files.ReadWrite" scope is provided:
                             response = self._m365.authenticate_user(
-                                username=user["email"], password=user["password"], scope="Files.ReadWrite"
+                                username=user["email"], password=user["password"], scope="Files.ReadWrite",
                             )
                             if not response:
                                 self.logger.error(
@@ -8884,9 +8877,8 @@ class Payload:
             )
             external_system["reachable"] = True
             return True
-        else:
-            external_system["reachable"] = False
-            return False
+        external_system["reachable"] = False
+        return False
 
     # end method definition
 
@@ -9332,7 +9324,7 @@ class Payload:
 
         # First check if external system is in current payload:
         external_system = next(
-            (item for item in self._external_systems if item["external_system_name"] == ext_system_id), None
+            (item for item in self._external_systems if item["external_system_name"] == ext_system_id), None,
         )
         if external_system:
             self.logger.info("Found external system -> '%s' declared in current payload.", ext_system_id)
@@ -9345,7 +9337,7 @@ class Payload:
             return None
 
         additional_systems = self.get_status_file(
-            payload_section_name="externalSystems", payload_specific=False, prefix=prefix
+            payload_section_name="externalSystems", payload_specific=False, prefix=prefix,
         )
 
         # Merge avoiding duplicates and only enabled entries. existing_names is a set:
@@ -9357,7 +9349,7 @@ class Payload:
 
         # Try finding the external system payload again after merging:
         external_system = next(
-            (item for item in self._external_systems if item["external_system_name"] == ext_system_id), None
+            (item for item in self._external_systems if item["external_system_name"] == ext_system_id), None,
         )
 
         if external_system:
@@ -10259,7 +10251,7 @@ class Payload:
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="extract_properties_from_transport_packages")
     def extract_properties_from_transport_packages(
-        self, business_object_type: dict, bo_type_name: str, bo_type_id: int
+        self, business_object_type: dict, bo_type_name: str, bo_type_id: int,
     ) -> bool:
         """Extract properties from transport packages for a given Business Object Type.
 
@@ -10602,11 +10594,10 @@ class Payload:
                     str(self._business_object_types),
                 )
                 return self._business_object_types
-            else:
-                self.logger.warning(
-                    "Couldn't read business object types from status file -> '%s'. Regenerate list...",
-                    self.get_status_file_name(payload_section_name=section_name),
-                )
+            self.logger.warning(
+                "Couldn't read business object types from status file -> '%s'. Regenerate list...",
+                self.get_status_file_name(payload_section_name=section_name),
+            )
 
         success: bool = True
 
@@ -10851,11 +10842,10 @@ class Payload:
                 )
                 self.logger.debug("Workspace types -> %s", str(self._workspace_types))
                 return self._workspace_types
-            else:
-                self.logger.error(
-                    "Couldn't read workspace types from status file -> '%s'. Regenerate list...",
-                    self.get_status_file_name(payload_section_name=section_name),
-                )
+            self.logger.error(
+                "Couldn't read workspace types from status file -> '%s'. Regenerate list...",
+                self.get_status_file_name(payload_section_name=section_name),
+            )
 
         # Read payload_section "workspaceTypes" if available
         payload_section = {}
@@ -11361,45 +11351,43 @@ class Payload:
                     )
                     # Put the user ID into data structure
                     return str(user_id)
+                self.logger.error(
+                    "User with login name -> '%s' does not exist!",
+                    attribute_values,
+                )
+                # Clear the value to avoid workspace create failure
+                return ""
+            # Multi-value user attribute:
+            user_ids = []
+            for value in attribute_values:
+                user = self._otcs_frontend.get_user(name=value)
+                user_id = self._otcs_frontend.lookup_result_value(
+                    response=user,
+                    key="name",
+                    value=value,
+                    return_key="id",
+                )
+                if user_id:
+                    # User has been found - determine ID:
+                    self.logger.debug(
+                        "User -> '%s' has ID -> %s",
+                        value,
+                        user_id,
+                    )
+                    # Put the user ID into the result list:
+                    user_ids.append(str(user_id))
                 else:
                     self.logger.error(
                         "User with login name -> '%s' does not exist!",
-                        attribute_values,
+                        value,
                     )
-                    # Clear the value to avoid workspace create failure
-                    return ""
-            # Multi-value user attribute:
-            else:
-                user_ids = []
-                for value in attribute_values:
-                    user = self._otcs_frontend.get_user(name=value)
-                    user_id = self._otcs_frontend.lookup_result_value(
-                        response=user,
-                        key="name",
-                        value=value,
-                        return_key="id",
-                    )
-                    if user_id:
-                        # User has been found - determine ID:
-                        self.logger.debug(
-                            "User -> '%s' has ID -> %s",
-                            value,
-                            user_id,
-                        )
-                        # Put the user ID into the result list:
-                        user_ids.append(str(user_id))
-                    else:
-                        self.logger.error(
-                            "User with login name -> '%s' does not exist!",
-                            value,
-                        )
-                return user_ids
+            return user_ids
 
         # Special Case 2: handle Extended ECM for Government attribute type "Organizational Unit" (OU).
         # This is referring to a group ID which is not stable across deployments. So we need to lookup
         # the Group ID and add it to the data structure. This expects that the payload has the
         # group name and not the group ID:
-        elif attribute_type == str(11480):
+        if attribute_type == str(11480):
             self.logger.debug(
                 "Attribute -> '%s' is is of type -> 'Organizational Unit' (%s). Looking up group ID for group name -> %s",
                 attribute_name,
@@ -11426,41 +11414,39 @@ class Payload:
                     )
                     # Put the group ID as a string:
                     return str(group_id)
+                self.logger.error(
+                    "Group for Organizational Unit -> '%s' does not exist!",
+                    attribute_values,
+                )
+                # Return an empty value string:
+                return ""
+            # Multi-value org group attribute:
+            group_ids = []
+            for value in attribute_values:
+                group = self._otcs_frontend.get_group(
+                    name=value,
+                )
+                group_id = self._otcs_frontend.lookup_result_value(
+                    response=group,
+                    key="name",
+                    value=value,
+                    return_key="id",
+                )
+
+                if group_id:
+                    self.logger.debug(
+                        "Group for Organizational Unit -> '%s' has ID -> %s",
+                        value,
+                        group_id,
+                    )
+                    # Put the group ID into the result list:
+                    group_ids.append(str(group_id))
                 else:
                     self.logger.error(
                         "Group for Organizational Unit -> '%s' does not exist!",
-                        attribute_values,
+                        value,
                     )
-                    # Return an empty value string:
-                    return ""
-            # Multi-value org group attribute:
-            else:
-                group_ids = []
-                for value in attribute_values:
-                    group = self._otcs_frontend.get_group(
-                        name=value,
-                    )
-                    group_id = self._otcs_frontend.lookup_result_value(
-                        response=group,
-                        key="name",
-                        value=value,
-                        return_key="id",
-                    )
-
-                    if group_id:
-                        self.logger.debug(
-                            "Group for Organizational Unit -> '%s' has ID -> %s",
-                            value,
-                            group_id,
-                        )
-                        # Put the group ID into the result list:
-                        group_ids.append(str(group_id))
-                    else:
-                        self.logger.error(
-                            "Group for Organizational Unit -> '%s' does not exist!",
-                            value,
-                        )
-                return group_ids
+            return group_ids
 
         # This is the default case - we return the unchanged attribute values:
         return attribute_values
@@ -12996,7 +12982,7 @@ class Payload:
                         bo_id,
                     )
                     response = self._otcs.set_workspace_reference(
-                        workspace_id=workspace_id, external_system_id=external_system_id, bo_type=bo_type, bo_id=bo_id
+                        workspace_id=workspace_id, external_system_id=external_system_id, bo_type=bo_type, bo_id=bo_id,
                     )
                     if not response:
                         self.logger.error(
@@ -13365,7 +13351,7 @@ class Payload:
             {
                 "thread.id": thread_id,
                 "thread.name": thread_name,
-            }
+            },
         )
 
         result = {}
@@ -13629,7 +13615,7 @@ class Payload:
                                 predicate if isinstance(predicate, dict) else {"en": predicate}
                                 for predicate in rel.get("predicates", [])
                             ],  # the REST API supports multi-lingual. If the payload has plain strings as elements we interpret this as english only
-                        }
+                        },
                     )
                     added += 1
 
@@ -13654,7 +13640,7 @@ class Payload:
                 if not entity_relations or added == 0:
                     # We don't want to overwrite with empty or unchanged relationships
                     self.logger.info(
-                        "No new relationships to add for entity type -> '%s'. Skipping...", workspace_type_name
+                        "No new relationships to add for entity type -> '%s'. Skipping...", workspace_type_name,
                     )
                     continue
 
@@ -13665,7 +13651,7 @@ class Payload:
                 if otcs_version >= 26.2:
                     # Update the workspace type with the relationships:
                     response = self._otcs.update_workspace_type_relations(
-                        type_id=workspace_type_id, relations=entity_relations
+                        type_id=workspace_type_id, relations=entity_relations,
                     )
                     if not response:
                         self.logger.error(
@@ -13682,7 +13668,7 @@ class Payload:
                 # end if otcs_version >= 26.2
                 else:
                     self.logger.warning(
-                        "OTCM version < 26.2 detected. Skipping update of workspace type relationships via REST API."
+                        "OTCM version < 26.2 detected. Skipping update of workspace type relationships via REST API.",
                     )
 
             # end for entity in entities
@@ -13709,11 +13695,11 @@ class Payload:
         }
 
         target_folder = self._otcs.get_node_by_volume_and_path(
-            volume_type=self._otcs.VOLUME_TYPE_ENTERPRISE_WORKSPACE, path=["Administration"]
+            volume_type=self._otcs.VOLUME_TYPE_ENTERPRISE_WORKSPACE, path=["Administration"],
         )
         if not target_folder:
             target_folder = self._otcs.get_node_by_volume_and_path(
-                volume_type=self._otcs.VOLUME_TYPE_PERSONAL_WORKSPACE, path=[]
+                volume_type=self._otcs.VOLUME_TYPE_PERSONAL_WORKSPACE, path=[],
             )
         target_folder_id = self._otcs.get_result_value(response=target_folder, key="id")
 
@@ -13757,7 +13743,7 @@ class Payload:
         else:
             document_id = self._otcs.get_result_value(response=response, key="id")
             response = self._otcs.set_node_nickname(
-                node_id=document_id, nickname=self._otcs.ONTOLOGY_NICK_NAME, show_error=True
+                node_id=document_id, nickname=self._otcs.ONTOLOGY_NICK_NAME, show_error=True,
             )
             if not response:
                 self.logger.error("Failed to set nickname for the merged ontology information file in Content Server!")
@@ -14089,7 +14075,7 @@ class Payload:
                 relationship_type = related_workspace.get("relationship_type", "child").lower()
                 if related_workspace_type and related_workspace_name:
                     response = self._otcs.get_workspace_by_type_and_name(
-                        type_name=related_workspace_type, name=related_workspace_name
+                        type_name=related_workspace_type, name=related_workspace_name,
                     )
                     related_workspace_node_id = self._otcs.get_result_value(
                         response=response,
@@ -14110,7 +14096,7 @@ class Payload:
             #
             elif isinstance(related_workspace, list):
                 response = self._otcs.get_node_by_volume_and_path(
-                    volume_type=self._otcs.VOLUME_TYPE_ENTERPRISE_WORKSPACE, path=related_workspace
+                    volume_type=self._otcs.VOLUME_TYPE_ENTERPRISE_WORKSPACE, path=related_workspace,
                 )
                 related_workspace_node_id = self._otcs.get_result_value(
                     response=response,
@@ -14135,7 +14121,7 @@ class Payload:
 
             # Check if relationship does already exists:
             response = self._otcs.get_workspace_relationships(
-                workspace_id=workspace_node_id, relationship_type=relationship_type
+                workspace_id=workspace_node_id, relationship_type=relationship_type,
             )
 
             existing_workspace_relationship = self._otcs.exist_result_item(
@@ -14426,7 +14412,7 @@ class Payload:
                 continue
 
             self.logger.info(
-                "Workspace -> '%s' (%s) has memberships in payload - establishing...", workspace_name, workspace_node_id
+                "Workspace -> '%s' (%s) has memberships in payload - establishing...", workspace_name, workspace_node_id,
             )
 
             # now determine the actual node IDs of the workspaces (have been created by process_workspaces()):
@@ -16441,7 +16427,7 @@ class Payload:
     # end method definition
 
     @tracer.start_as_current_span(
-        attributes=OTEL_TRACING_ATTRIBUTES, name="process_additional_application_role_assignments"
+        attributes=OTEL_TRACING_ATTRIBUTES, name="process_additional_application_role_assignments",
     )
     def process_additional_application_role_assignments(
         self,
@@ -17194,7 +17180,7 @@ class Payload:
                     response = self._otcs.update_item(node_id=node_id, body=False, actionName=action)
                     if not response:
                         self.logger.error(
-                            "Failed to execute action -> '%s' for scheduled bot item -> '%s'!", action, item_name
+                            "Failed to execute action -> '%s' for scheduled bot item -> '%s'!", action, item_name,
                         )
                         success = False
                         continue
@@ -18490,7 +18476,7 @@ class Payload:
                             ]
                         except Exception:
                             self.logger.error(
-                                "Error retrieving resourceID for -> %s", user_license_feature_dict["resource"]
+                                "Error retrieving resourceID for -> %s", user_license_feature_dict["resource"],
                             )
                             continue
                             success = False
@@ -18754,7 +18740,7 @@ class Payload:
 
             if "interactive" not in exec_pod_command or exec_pod_command["interactive"] is False:
                 result = self._k8s.exec_pod_command(
-                    pod_name=pod_name, command=command, container=container, timeout=timeout
+                    pod_name=pod_name, command=command, container=container, timeout=timeout,
                 )
             else:
                 result = self._k8s.exec_pod_command_interactive(
@@ -18896,7 +18882,7 @@ class Payload:
 
                     if "interactive" not in item or item["interactive"] is False:
                         result = self._k8s.exec_pod_command(
-                            pod_name=pod_name, command=command, container=container, timeout=timeout
+                            pod_name=pod_name, command=command, container=container, timeout=timeout,
                         )
                     else:
                         result = self._k8s.exec_pod_command_interactive(
@@ -19075,20 +19061,20 @@ class Payload:
                 # Using a context managers (with ...) for automatic resource management:
                 with psycopg.connect(connect_string) as db_connection:
                     self.logger.info(
-                        "Connected to database -> '%s' (%s) with user -> '%s'...", db_name, db_hostname, db_username
+                        "Connected to database -> '%s' (%s) with user -> '%s'...", db_name, db_hostname, db_username,
                     )
                     with db_connection.cursor() as cursor:
                         for db_command in db_commands:
                             cmd = db_command.get("command", None)
                             if not cmd:
                                 self.logger.warning(
-                                    "Cannot execute database command without SQL statement. Skipping..."
+                                    "Cannot execute database command without SQL statement. Skipping...",
                                 )
                                 continue
                             params = db_command.get("params", None)
                             if params is not None and isinstance(params, (list, tuple)):
                                 self.logger.error(
-                                    "Database parameters -> %s must be given as a list or tuple!", str(params)
+                                    "Database parameters -> %s must be given as a list or tuple!", str(params),
                                 )
                                 continue
                             # Get the command verb (like "SELECT", "CREATE")
@@ -19098,7 +19084,7 @@ class Payload:
                                 continue
                             if params:
                                 self.logger.info(
-                                    "Execute database command -> '%s' with parameters -> %s...", cmd, str(params)
+                                    "Execute database command -> '%s' with parameters -> %s...", cmd, str(params),
                                 )
                             else:
                                 self.logger.info("Execute database command -> '%s' without parameters...", cmd)
@@ -19656,12 +19642,11 @@ class Payload:
                 # Stop the impersonation as a user:
                 result = self.stop_impersonation()
                 return False
-            else:
-                self.logger.info(
-                    "Successfully generated draft process with ID -> %s%s.",
-                    str(draftprocess_id),
-                    " attching document IDs -> " + str(documents) if documents else "",
-                )
+            self.logger.info(
+                "Successfully generated draft process with ID -> %s%s.",
+                str(draftprocess_id),
+                " attching document IDs -> " + str(documents) if documents else "",
+            )
             workflow_step["draftprocess_id"] = draftprocess_id
 
             # Check if a due date is specified. The payload has
@@ -20037,7 +20022,7 @@ class Payload:
             base_url = browser_automation.get("base_url")
             if not base_url:
                 self.logger.error(
-                    "%s automation -> '%s' is missing 'base_url' parameter. Skipping...", automation_type, name
+                    "%s automation -> '%s' is missing 'base_url' parameter. Skipping...", automation_type, name,
                 )
                 browser_automation["result"] = "failure"
                 success = False
@@ -20772,8 +20757,7 @@ class Payload:
         def extract_company_from_url(url: str) -> str:
             parsed_url = urlparse(url)
             query_params = parse_qs(parsed_url.query)
-            company_value = query_params.get("company", [""])[0]
-            return company_value
+            return query_params.get("company", [""])[0]
 
         if not sucessfactors_external_system:
             return None
@@ -20892,7 +20876,7 @@ class Payload:
         self.logger.info("Guidewire application URL = %s", as_url)
         self.logger.info("Guidewire username        = %s", username)
         self.logger.debug("Guidewire password        = %s", password)
-        guidewire_object = Guidewire(
+        return Guidewire(
             base_url=base_url,
             as_url=as_url,
             auth_type=auth_type,
@@ -20901,7 +20885,6 @@ class Payload:
             logger=self.logger,
         )
 
-        return guidewire_object
 
     # end method definition
 
@@ -21265,11 +21248,10 @@ class Payload:
                 otcs_protocol + "://" + otcs_hostname + otcs_basepath,
             )
             return None
-        else:
-            self.logger.info(
-                "Successfully authenticated at Content Server -> %s.",
-                otcs_protocol + "://" + otcs_hostname + otcs_basepath,
-            )
+        self.logger.info(
+            "Successfully authenticated at Content Server -> %s.",
+            otcs_protocol + "://" + otcs_hostname + otcs_basepath,
+        )
 
         # 4. Load the Content Server data into the Data object (Pandas DataFrame):
 
@@ -21399,11 +21381,10 @@ class Payload:
         if not auth_data:
             self.logger.error("Failed to authenticate at ServiceNow -> %s!", sn_base_url)
             return None
-        else:
-            self.logger.info(
-                "Successfully authenticated at ServiceNow -> %s.",
-                sn_base_url,
-            )
+        self.logger.info(
+            "Successfully authenticated at ServiceNow -> %s.",
+            sn_base_url,
+        )
 
         # 4. Load the ServiceNow data into the Data object (Pandas DataFrame):
         for item in sn_queries:
@@ -21515,11 +21496,10 @@ class Payload:
                 otmm_base_url,
             )
             return None
-        else:
-            self.logger.info(
-                "Successfully authenticated at OpenText Media Management -> %s.",
-                otmm_base_url,
-            )
+        self.logger.info(
+            "Successfully authenticated at OpenText Media Management -> %s.",
+            otmm_base_url,
+        )
 
         # 4. Load the OTMM assets into the Data object (Pandas DataFrame):
         if not self._otmm.load_assets():
@@ -21649,11 +21629,10 @@ class Payload:
                 pht_base_url,
             )
             return None
-        else:
-            self.logger.info(
-                "Successfully authenticated at OpenText PHT -> %s.",
-                pht_base_url,
-            )
+        self.logger.info(
+            "Successfully authenticated at OpenText PHT -> %s.",
+            pht_base_url,
+        )
 
         # 4. Load the PHT product information into the Data object (Pandas DataFrame):
         if not self._pht.load_products(attributes_to_extract=pht_product_attributes):
@@ -22186,7 +22165,7 @@ class Payload:
                 data_source_name,
             )
             return data_source["data"]
-        elif force_reload:
+        if force_reload:
             self.logger.info(
                 "Reload of data from data source -> '%s' is enforced. Building data...",
                 data_source_name,
@@ -22204,11 +22183,10 @@ class Payload:
                 )
                 if self.read_data_source_file(data_source=data_source):
                     return data_source["data"]
-                else:
-                    self.logger.warning(
-                        "Couldn't load the data source -> '%s' from file. Fall back to reloading it from the source...",
-                        data_source_name,
-                    )
+                self.logger.warning(
+                    "Couldn't load the data source -> '%s' from file. Fall back to reloading it from the source...",
+                    data_source_name,
+                )
 
         data_source_type = data_source.get("type", None)
         if not data_source_type:
@@ -22350,7 +22328,7 @@ class Payload:
             )
             if not result:
                 self.logger.error(
-                    "Failed to add column -> '%s' for data source -> '%s'", add_column["name"], data_source_name
+                    "Failed to add column -> '%s' for data source -> '%s'", add_column["name"], data_source_name,
                 )
 
         # Add columns with list values from a list of other columns
@@ -22367,7 +22345,7 @@ class Payload:
             )
             if not result:
                 self.logger.error(
-                    "Failed to add list column -> '%s' for data source -> '%s'", add_column["name"], data_source_name
+                    "Failed to add list column -> '%s' for data source -> '%s'", add_column["name"], data_source_name,
                 )
 
         # Add columns with list values from a list of other columns
@@ -22409,7 +22387,7 @@ class Payload:
             )
             if not result:
                 self.logger.error(
-                    "Failed to add table column -> '%s' for data source -> '%s'", add_column["name"], data_source_name
+                    "Failed to add table column -> '%s' for data source -> '%s'", add_column["name"], data_source_name,
                 )
 
         # Drop columns if specified in data_source:
@@ -23347,13 +23325,12 @@ class Payload:
         else:
             self.logger.debug("No empty rows to remove from sets.")
 
-        cleaned_categories = [
+        return [
             item
             for item in worker_categories_expanded
             if "set" not in item or "row" not in item or (item["set"], item["row"]) not in rows_to_remove
         ]
 
-        return cleaned_categories
 
     # end method definition
 
@@ -23474,7 +23451,7 @@ class Payload:
             {
                 "thread.id": thread_id,
                 "thread.name": thread_name,
-            }
+            },
         )
 
         self.logger.info(
@@ -25369,7 +25346,7 @@ class Payload:
     # end method definition
 
     @tracer.start_as_current_span(
-        attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_workspace_relationships_worker"
+        attributes=OTEL_TRACING_ATTRIBUTES, name="process_bulk_workspace_relationships_worker",
     )
     def process_bulk_workspace_relationships_worker(
         self,
@@ -25706,7 +25683,7 @@ class Payload:
     # end method definition
 
     def build_category_data(
-        self, categories_payload: list, node_id: int, response: dict, filter_category_name: str | None = None
+        self, categories_payload: list, node_id: int, response: dict, filter_category_name: str | None = None,
     ) -> dict | None:
         """Build the category data structure for subsequent document upload REST calls.
 
@@ -27183,14 +27160,13 @@ class Payload:
                     )
                     success = False
                     return None, success
-                else:
-                    self.logger.info(
-                        "Using path -> %s inside workspace -> '%s' (%s). Node ID for target folder -> %s.",
-                        str(workspace_path),
-                        workspace_name,
-                        workspace_id,
-                        str(parent_id),
-                    )
+                self.logger.info(
+                    "Using path -> %s inside workspace -> '%s' (%s). Node ID for target folder -> %s.",
+                    str(workspace_path),
+                    workspace_name,
+                    workspace_id,
+                    str(parent_id),
+                )
         # end if workspace_path
         else:
             self.logger.info(
@@ -27330,12 +27306,11 @@ class Payload:
                 parent_id = None
                 success = False
                 return None, success
-            else:
-                self.logger.info(
-                    "Successfully created sub-workspace -> '%s' (%s).",
-                    sub_workspace_name,
-                    sub_workspace_id,
-                )
+            self.logger.info(
+                "Successfully created sub-workspace -> '%s' (%s).",
+                sub_workspace_name,
+                sub_workspace_id,
+            )
 
             # Create Business Relationship between workspace and sub-workspace:
             if workspace_id and sub_workspace_id:
@@ -27500,14 +27475,13 @@ class Payload:
                     )
                     success = False
                     return None, success
-                else:
-                    self.logger.info(
-                        "Successfully created path -> %s in sub-workspace -> '%s' (%s). Node ID for target folder -> %s.",
-                        str(sub_workspace_path),
-                        sub_workspace_name,
-                        sub_workspace_id,
-                        str(parent_id),
-                    )
+                self.logger.info(
+                    "Successfully created path -> %s in sub-workspace -> '%s' (%s). Node ID for target folder -> %s.",
+                    str(sub_workspace_path),
+                    sub_workspace_name,
+                    sub_workspace_id,
+                    str(parent_id),
+                )
         else:
             self.logger.info(
                 "Folder path inside sub-workspace -> '%s' with sub workspace type -> '%s' is not specified. Using root of sub-workspace for document upload.",
@@ -27916,7 +27890,7 @@ class Payload:
                 # success will only be false if a config problem (failure)
                 # and not just a data problem (skipped) has occured:
                 parent_id, success = self.get_bulk_document_location(
-                    workspace=workspace, row=row, index=index, replacements=replacements, nickname=nickname
+                    workspace=workspace, row=row, index=index, replacements=replacements, nickname=nickname,
                 )
 
                 if parent_id is None:
@@ -28322,7 +28296,7 @@ class Payload:
                     if "purge" in update_operations:
                         max_versions = bulk_document.get("max_versions", 1)
                         response = self._otcs_frontend.purge_document_versions(
-                            node_id=document_id, versions_to_keep=max_versions
+                            node_id=document_id, versions_to_keep=max_versions,
                         )
                         if not response:
                             self.logger.error(
@@ -29988,7 +29962,7 @@ class Payload:
                     workspace_types = [workspace_types]
                 for workspace_type_name in workspace_types:
                     self.logger.info(
-                        "Embedding metadata of workspace instances with type -> '%s'...", workspace_type_name
+                        "Embedding metadata of workspace instances with type -> '%s'...", workspace_type_name,
                     )
                     workspace_instances = self._otcs.get_workspace_instances_iterator(type_name=workspace_type_name)
                     for workspace in workspace_instances:
@@ -30246,9 +30220,8 @@ class Payload:
                             lower=lower,
                         )
 
-            value = str(value)
+            return str(value)
 
-            return value
 
         # end sub-method replace()
 
@@ -31739,7 +31712,7 @@ class Payload:
 
             if "file" not in nifi_flow:
                 self.logger.error(
-                    "Knowledge Discovery Nifi flow -> '%s' needs a file! Skipping to next Nifi flow...", name
+                    "Knowledge Discovery Nifi flow -> '%s' needs a file! Skipping to next Nifi flow...", name,
                 )
                 success = False
                 continue
@@ -31766,7 +31739,7 @@ class Payload:
                 start = False
             else:
                 response = self._otkd.upload_process_group(
-                    file_path=filename, name=name, position_x=position_x, position_y=position_y
+                    file_path=filename, name=name, position_x=position_x, position_y=position_y,
                 )
                 if not response:
                     self.logger.error("Failed to upload new Nifi flow -> '%s' for Knowledge Discovery!", name)
@@ -31783,7 +31756,7 @@ class Payload:
                 parameter_name = parameter.get("name", None)
                 if not parameter_name:
                     self.logger.error(
-                        "Missing name in parameter of Nifi flow -> '%s', component -> '%s'!", name, component
+                        "Missing name in parameter of Nifi flow -> '%s', component -> '%s'!", name, component,
                     )
                     success = False
                     continue
@@ -31791,7 +31764,7 @@ class Payload:
                 parameter_value = parameter.get("value", None)
                 if not parameter_value:
                     self.logger.error(
-                        "Missing value in parameter of Nifi flow -> '%s', component -> '%s'!", name, component
+                        "Missing value in parameter of Nifi flow -> '%s', component -> '%s'!", name, component,
                     )
                     success = False
                     continue

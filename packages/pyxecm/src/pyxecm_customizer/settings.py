@@ -377,7 +377,7 @@ class CustomizerSettingsAviator(BaseModel):
     oauth_client: str = Field(default="", description="OAuth Client ID for Content Aviator")
     oauth_secret: str = Field(default="", description="OAuth Client Secret for Content Aviator")
     base_url: HttpUrl | None = Field(
-        default=HttpUrl("http://csai-chat-svc:3000"), description="Base URL for Content Aviator"
+        default=HttpUrl("http://csai-chat-svc:3000"), description="Base URL for Content Aviator",
     )
 
 

@@ -208,7 +208,7 @@ class M365:
         """
 
         # Use OAuth2 / ROPC (Resource Owner Password Credentials):
-        credentials = {
+        return {
             "client_id": self.config()["clientId"],
             "client_secret": self.config()["clientSecret"],
             "grant_type": "password",
@@ -217,7 +217,6 @@ class M365:
             "scope": scope,
         }
 
-        return credentials
 
     # end method definition
 
@@ -240,13 +239,12 @@ class M365:
             self.logger.warning("No M365 session is authenticated! Authenticating now...")
             self._access_token = self.authenticate()
 
-        request_header = {
+        return {
             "User-Agent": USER_AGENT,
             "Authorization": f"Bearer {self._access_token}",
             "Content-Type": content_type,
         }
 
-        return request_header
 
     # end method definition
 
@@ -430,10 +428,9 @@ class M365:
                         self.logger.info(success_message)
                     if parse_request_response:
                         return self.parse_request_response(response)
-                    else:
-                        return response
+                    return response
                 # Client errors that should fail fast (4xx except 401, 429)
-                elif response.status_code in [400, 403, 404]:
+                if response.status_code in [400, 403, 404]:
                     self._log_response_error(
                         response,
                         failure_message + " (not retrying; client error)",
@@ -441,7 +438,7 @@ class M365:
                     )
                     return None
                 # Check if Session has expired - then re-authenticate and try once more
-                elif response.status_code == 401 and retries == 0:
+                if response.status_code == 401 and retries == 0:
                     self.logger.debug("Session has expired - try to re-authenticate...")
                     new_token = self.authenticate(revalidate=True)
                     if not new_token:
@@ -669,10 +666,9 @@ class M365:
                 if isinstance(sub_structure, list):
                     sub_structure = sub_structure[index]
                 return sub_structure[key]
-            elif key in response:
+            if key in response:
                 return response[key]
-            else:
-                return None
+            return None
 
         values = response["value"]
         if not values or not isinstance(values, list) or len(values) - 1 < index:
@@ -680,15 +676,14 @@ class M365:
 
         if not sub_dict_name:
             return values[index][key]
-        else:
-            sub_structure = values[index][sub_dict_name]
-            if isinstance(sub_structure, list):
-                # here we assume it is the first element of the
-                # substructure. If really required for specific
-                # use cases we may introduce a second index in
-                # the future.
-                sub_structure = sub_structure[0]
-            return sub_structure[key]
+        sub_structure = values[index][sub_dict_name]
+        if isinstance(sub_structure, list):
+            # here we assume it is the first element of the
+            # substructure. If really required for specific
+            # use cases we may introduce a second index in
+            # the future.
+            sub_structure = sub_structure[0]
+        return sub_structure[key]
 
     # end method definition
 
@@ -736,9 +731,8 @@ class M365:
                 results = results[sub_dict_name]
             if key in results and results[key] == value and return_key in results:
                 return results[return_key]
-            else:
-                return None
-        elif isinstance(results, list):
+            return None
+        if isinstance(results, list):
             # result is a list - we need index value
             for result in results:
                 if sub_dict_name and sub_dict_name in result:
@@ -746,12 +740,11 @@ class M365:
                 if key in result and result[key] == value and return_key in result:
                     return result[return_key]
             return None
-        else:
-            self.logger.error(
-                "Result needs to be a list or dictionary but it is of type -> '%s'!",
-                str(type(results)),
-            )
-            return None
+        self.logger.error(
+            "Result needs to be a list or dictionary but it is of type -> '%s'!",
+            str(type(results)),
+        )
+        return None
 
     # end method definition
 
@@ -951,7 +944,7 @@ class M365:
         if order_by:
             params["$orderby"] = order_by
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
@@ -960,7 +953,6 @@ class M365:
             failure_message="Failed to get list of M365 users!",
         )
 
-        return response
 
     # end method definition
 
@@ -1591,7 +1583,7 @@ class M365:
         if order_by:
             params["$orderby"] = order_by
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
@@ -1600,7 +1592,6 @@ class M365:
             failure_message="Failed to get list of M365 groups",
         )
 
-        return response
 
     # end method definition
 
@@ -2203,7 +2194,7 @@ class M365:
         if response and response.status_code == 200:  # Group has a Team assigned!
             self.logger.debug("Group -> '%s' (%s) has a M365 Team connected.", group_name, group_id)
             return True
-        elif not response or response.status_code == 404:  # Group does not have a Team assigned!
+        if not response or response.status_code == 404:  # Group does not have a Team assigned!
             self.logger.debug("Group -> '%s' (%s) has no M365 Team connected.", group_name, group_id)
             return False
 
@@ -2494,12 +2485,10 @@ class M365:
                     "have" if counter > 1 else "has",
                 )
                 return True
-            else:
-                self.logger.info("No M365 Team with name -> '%s' found.", name)
-                return False
-        else:
-            self.logger.error("Failed to retrieve M365 Teams with name -> '%s'!", name)
+            self.logger.info("No M365 Team with name -> '%s' found.", name)
             return False
+        self.logger.error("Failed to retrieve M365 Teams with name -> '%s'!", name)
+        return False
 
     # end method definition
 
@@ -2881,7 +2870,7 @@ class M365:
 
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
@@ -2889,7 +2878,6 @@ class M365:
             failure_message=f"Failed to get M365 Teams app with ID -> {app_id}",
         )
 
-        return response
 
     # end method definition
 
@@ -2928,7 +2916,7 @@ class M365:
 
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
@@ -2936,7 +2924,6 @@ class M365:
             failure_message=f"Failed to get M365 Teams apps for user -> {user_id}",
         )
 
-        return response
 
     # end method definition
 
@@ -3005,9 +2992,8 @@ class M365:
         with zipfile.ZipFile(app_path, "r") as zip_ref:
             manifest_data = zip_ref.read("manifest.json")
             manifest_json = json.loads(manifest_data)
-            version = manifest_json.get("version")
+            return manifest_json.get("version")
 
-            return version
 
     # end method definition
 
@@ -3853,13 +3839,12 @@ class M365:
         if response and response.status_code == 201:
             self.logger.debug("Label -> '%s' has been created successfully!", name)
             return response
-        else:
-            self.logger.error(
-                "Failed to create the M365 label -> '%s'! Response status code -> %s",
-                name,
-                response.status_code,
-            )
-            return None
+        self.logger.error(
+            "Failed to create the M365 label -> '%s'! Response status code -> %s",
+            name,
+            response.status_code,
+        )
+        return None
 
     # end method definition
 
@@ -3930,9 +3915,8 @@ class M365:
             app_path,
         )
 
-        response = None
+        return None
 
-        return response
 
     # end method definition
 
@@ -4684,22 +4668,20 @@ class M365:
                         )
                     # We have success now and can break from the while loop
                     return True
-                else:
-                    self.logger.error(
-                        "Failed to process e-mail verification for user -> %s!",
-                        user_email,
-                    )
-                    return False
-            # end if response and response["value"]
-            else:
-                self.logger.info(
-                    "Verification email not yet received (no mails with sender -> %s and subject -> '%s' found). Waiting %s seconds...",
-                    sender,
-                    subject,
-                    10 * (retries + 1),
+                self.logger.error(
+                    "Failed to process e-mail verification for user -> %s!",
+                    user_email,
                 )
-                time.sleep(10 * (retries + 1))
-                retries += 1
+                return False
+            # end if response and response["value"]
+            self.logger.info(
+                "Verification email not yet received (no mails with sender -> %s and subject -> '%s' found). Waiting %s seconds...",
+                sender,
+                subject,
+                10 * (retries + 1),
+            )
+            time.sleep(10 * (retries + 1))
+            retries += 1
         # end while
 
         self.logger.warning(
@@ -4792,7 +4774,7 @@ class M365:
             request_url = next_page_url
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
@@ -4800,7 +4782,6 @@ class M365:
             failure_message="Cannot get SharePoint sites",
         )
 
-        return response
 
     # end method definition
 
@@ -4813,12 +4794,11 @@ class M365:
 
         """
 
-        response = self.get_sharepoint_sites(
+        return self.get_sharepoint_sites(
             select="siteCollection,webUrl",
             filter_expression="siteCollection/root ne null",
         )
 
-        return response
 
     # end method definition
 
@@ -4922,7 +4902,7 @@ class M365:
 
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
@@ -4930,7 +4910,6 @@ class M365:
             failure_message=f"Cannot get SharePoint site with ID -> '{site_id}'",
         )
 
-        return response
 
     # end method definition
 
@@ -5020,7 +4999,7 @@ class M365:
         request_url = self.config()["groupsUrl"] + "/" + group_id + "/sites/root"
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
@@ -5028,7 +5007,6 @@ class M365:
             failure_message=f"Cannot get SharePoint site for group with ID -> '{group_id}'",
         )
 
-        return response
 
     # end method definition
 
@@ -5082,7 +5060,7 @@ class M365:
 
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
@@ -5090,7 +5068,6 @@ class M365:
             failure_message=f"Cannot get pages of SharePoint site with ID -> '{site_id}'",
         )
 
-        return response
 
     # end method definition
 
@@ -5149,7 +5126,7 @@ class M365:
 
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
@@ -5157,7 +5134,6 @@ class M365:
             failure_message=f"Cannot get SharePoint page -> '{page_id}' for site -> '{site_id}'",
         )
 
-        return response
 
     # end method definition
 
@@ -5308,7 +5284,7 @@ class M365:
 
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
@@ -5326,7 +5302,6 @@ class M365:
             show_error=show_error,
         )
 
-        return response
 
     # end method definition
 
@@ -5369,7 +5344,7 @@ class M365:
 
         """
 
-        response = self.get_sharepoint_sections(
+        return self.get_sharepoint_sections(
             site_id=site_id,
             page_id=page_id,
             section_type=section_type,
@@ -5377,7 +5352,6 @@ class M365:
             show_error=show_error,
         )
 
-        return response
 
     # end method definition
 
@@ -5536,7 +5510,7 @@ class M365:
 
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="DELETE",
             headers=request_header,
@@ -5544,7 +5518,6 @@ class M365:
             failure_message=f"Failed to delete SharePoint section of type -> '{section_type}' on SharePoint page -> '{page_id}' in Sharepoint site -> '{site_id}', ",
         )
 
-        return response
 
     # end method definition
 
@@ -5695,7 +5668,7 @@ class M365:
 
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
@@ -5703,7 +5676,6 @@ class M365:
             failure_message=f"Cannot get webparts for page -> '{page_id}' of SharePoint site -> '{site_id}'",
         )
 
-        return response
 
     # end method definition
 
@@ -5785,7 +5757,7 @@ class M365:
 
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
@@ -5793,7 +5765,6 @@ class M365:
             failure_message=f"Cannot get SharePoint webpart -> '{webpart_id}' on SharePoint page -> '{page_id}' in SharePoint site -> '{site_id}'",
         )
 
-        return response
 
     # end method definition
 
@@ -6080,7 +6051,7 @@ class M365:
             "value": [{"id": site_id}],
         }
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="POST",
             headers=request_header,
@@ -6091,6 +6062,5 @@ class M365:
             show_warning=True,
         )
 
-        return response
 
     # end method definition

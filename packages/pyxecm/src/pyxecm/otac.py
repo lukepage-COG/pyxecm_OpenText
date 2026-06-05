@@ -416,10 +416,9 @@ class OTAC:
             )
             if not authenticate_list:
                 return None
-            else:
-                authenticate_dict = authenticate_list[1]
-                otac_ticket = authenticate_dict["TOKEN"]
-                self.logger.debug("Ticket -> %s", otac_ticket)
+            authenticate_dict = authenticate_list[1]
+            otac_ticket = authenticate_dict["TOKEN"]
+            self.logger.debug("Ticket -> %s", otac_ticket)
         else:
             self.logger.error(
                 "Failed to request an OTAC ticket; error -> %s",
@@ -639,7 +638,7 @@ class OTAC:
             if not response:
                 self.logger.debug("Archive Center certificate has been activated.")
                 return True
-            elif response.code == 500:
+            if response.code == 500:
                 self.logger.error(
                     "Failed to activate Archive Center certificate for Client -> %s on Archive -> '%s'!",
                     auth_id,
@@ -723,7 +722,7 @@ class OTAC:
                 )
                 return self.parse_request_response(response)
             # Check if Session has expired - then re-authenticate and try once more
-            elif response.status_code == 401 and retries == 0:
+            if response.status_code == 401 and retries == 0:
                 self.logger.debug("Session has expired - try to re-authenticate...")
                 self.authenticate(revalidate=True)
                 retries += 1

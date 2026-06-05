@@ -37,7 +37,7 @@ class CustomizerAPISettings(BaseSettings):
     reload: bool = Field(default=False, description="Enable or disable the autoreload feature")
 
     concurrent_payloads: int = Field(
-        default=3, description="Maximum number of concurrent payloads that are executed at the same time."
+        default=3, description="Maximum number of concurrent payloads that are executed at the same time.",
     )
     import_payload: bool = Field(default=False)
     payload: str = Field(
@@ -117,7 +117,7 @@ class CustomizerAPISettings(BaseSettings):
     upload_key: str = Field(default=str(uuid.uuid4()), description="Upload key for the Logs")
 
     upload_url: str = Field(
-        default="http://customizer:8000/api/v1/otcs/logs/upload", description="Upload URL for the Logs"
+        default="http://customizer:8000/api/v1/otcs/logs/upload", description="Upload URL for the Logs",
     )
 
     ws_terminal: bool = Field(

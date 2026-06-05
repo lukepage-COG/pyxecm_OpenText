@@ -469,11 +469,10 @@ class XML:
                             )
                         return  # Don't proceed further if zip extraction fails
 
-                    else:
-                        logger.info(
-                            "Zip file is already extracted (path -> '%s' exists). Reusing extracted data...",
-                            zip_file_folder,
-                        )
+                    logger.info(
+                        "Zip file is already extracted (path -> '%s' exists). Reusing extracted data...",
+                        zip_file_folder,
+                    )
                     path_to_root = zip_file_folder
                 # end if path_to_root.endswith(".zip")
 
@@ -597,9 +596,8 @@ class XML:
         tree = etree.fromstring(xml_content)
 
         # Find the XML element specified by XPath
-        element = tree.find(xpath)
+        return tree.find(xpath)
 
-        return element
 
     # end method definition
 
@@ -681,10 +679,8 @@ class XML:
         match = re.search(pattern, element_text)
         if match:
             setting_line = match.group(0)
-            setting_value = setting_line.split(":")[1]
-            return setting_value
-        else:
-            return None
+            return setting_line.split(":")[1]
+        return None
 
     # end method definition
 
@@ -735,9 +731,8 @@ class XML:
         else:
             pattern = rf'"{setting_key}":"([^"]*)"'
 
-        new_text = re.sub(pattern, new_value, element_text)
+        return re.sub(pattern, new_value, element_text)
 
-        return new_text
 
     # end method definition
 

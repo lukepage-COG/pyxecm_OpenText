@@ -50,9 +50,8 @@ class Assoc:
 
         """
 
-        encoded_string = assoc_string.encode("unicode_escape")  # .decode()
+        return assoc_string.encode("unicode_escape")  # .decode()
 
-        return encoded_string
 
     # end method definition
 
@@ -110,8 +109,7 @@ class Assoc:
 
         """
 
-        decoded_string = html.unescape(assoc_string)
-        return decoded_string
+        return html.unescape(assoc_string)
 
     # end method definition
 

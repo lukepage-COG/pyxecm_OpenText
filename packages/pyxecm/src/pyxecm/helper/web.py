@@ -390,10 +390,9 @@ class HTTP:
             elements = tree.xpath(xpath)
 
             # Get text content of all elements and join them
-            content = "\n".join([elem.text_content().strip() for elem in elements])
+            return "\n".join([elem.text_content().strip() for elem in elements])
 
             # Return the extracted content:
-            return content
 
         # If request was not successful, print error message:
         self.logger.error(

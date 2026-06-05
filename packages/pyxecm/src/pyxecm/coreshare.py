@@ -396,10 +396,9 @@ class CoreShare:
                         self.logger.info(success_message)
                     if parse_request_response:
                         return self.parse_request_response(response)
-                    else:
-                        return response
+                    return response
                 # Check if Session has expired - then re-authenticate and try once more
-                elif response.status_code == 401 and retries == 0:
+                if response.status_code == 401 and retries == 0:
                     if user_credentials:
                         self.logger.debug(
                             "User session has expired - try to re-authenticate...",
@@ -673,8 +672,7 @@ class CoreShare:
                 return None
             if key not in response[index]:
                 return None
-            value = response[index][key]
-            return value
+            return response[index][key]
 
         if isinstance(response, dict):
             # Does response have a "results" substructure?
@@ -753,24 +751,23 @@ class CoreShare:
             authenticate_dict = self.parse_request_response(response)
             if not authenticate_dict:
                 return None
+            cookies = response.cookies
+            if "AccessToken" in cookies:
+                access_token = cookies["AccessToken"]
+
+                # String manipulation to extract pure AccessToken
+                if access_token.startswith("s%3A"):
+                    access_token = access_token[4:]
+                    access_token = access_token.rsplit(".", 1)[0]
+
+                # Store authentication access_token:
+                self._access_token_admin = access_token
+                self.logger.debug(
+                    "Tenant Admin Access Token -> %s",
+                    self._access_token_admin,
+                )
             else:
-                cookies = response.cookies
-                if "AccessToken" in cookies:
-                    access_token = cookies["AccessToken"]
-
-                    # String manipulation to extract pure AccessToken
-                    if access_token.startswith("s%3A"):
-                        access_token = access_token[4:]
-                        access_token = access_token.rsplit(".", 1)[0]
-
-                    # Store authentication access_token:
-                    self._access_token_admin = access_token
-                    self.logger.debug(
-                        "Tenant Admin Access Token -> %s",
-                        self._access_token_admin,
-                    )
-                else:
-                    return None
+                return None
         else:
             self.logger.error(
                 "Failed to request a Core Share Tenant Admin Access Token; error -> %s",
@@ -851,13 +848,12 @@ class CoreShare:
             authenticate_dict = self.parse_request_response(response)
             if not authenticate_dict:
                 return None
-            else:
-                # Store authentication access_token:
-                self._access_token_user = authenticate_dict["access_token"]
-                self.logger.debug(
-                    "Tenant Service User Access Token -> %s",
-                    self._access_token_user,
-                )
+            # Store authentication access_token:
+            self._access_token_user = authenticate_dict["access_token"]
+            self.logger.debug(
+                "Tenant Service User Access Token -> %s",
+                self._access_token_user,
+            )
         else:
             self.logger.error(
                 "Failed to request a Core Share Tenant Service User Access Token; error -> %s",
@@ -1347,11 +1343,10 @@ class CoreShare:
 
         """
 
-        groups = self.search_groups(
+        return self.search_groups(
             query_string=name,
         )
 
-        return groups
 
     # end method definition
 
@@ -1608,12 +1603,11 @@ class CoreShare:
         """
 
         # Search the users with this first and last name (and hope this is unique ;-).
-        users = self.search_users(
+        return self.search_users(
             query_string=first_name + " " + last_name,
             user_status=user_status,
         )
 
-        return users
 
     # end method definition
 
@@ -1642,12 +1636,11 @@ class CoreShare:
         """
 
         # Search the users with this first and last name (and hope this is unique ;-).
-        users = self.search_users(
+        return self.search_users(
             query_string=email,
             user_status=user_status,
         )
 
-        return users
 
     # end method definition
 
@@ -2176,7 +2169,7 @@ class CoreShare:
         except OSError:
             # Handle any errors that occurred while reading the photo file
             self.logger.error(
-                "Error reading photo file -> '%s' for Core Share user with ID -> '%s'!", photo_path, user_id
+                "Error reading photo file -> '%s' for Core Share user with ID -> '%s'!", photo_path, user_id,
             )
             return None
 

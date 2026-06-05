@@ -284,10 +284,9 @@ class Salesforce:
                         self.logger.info(success_message)
                     if parse_request_response:
                         return self.parse_request_response(response)
-                    else:
-                        return response
+                    return response
                 # Check if Session has expired - then re-authenticate and try once more
-                elif response.status_code == 401 and retries == 0:
+                if response.status_code == 401 and retries == 0:
                     self.logger.debug("Session has expired - try to re-authenticate...")
                     self.authenticate(revalidate=True)
                     # Make sure to not change an existing content type
@@ -561,12 +560,11 @@ class Salesforce:
             authenticate_dict = self.parse_request_response(response)
             if not authenticate_dict:
                 return None
-            else:
-                # Store authentication access_token:
-                self._access_token = authenticate_dict["access_token"]
-                self.logger.debug("Access Token -> %s", self._access_token)
-                self._instance_url = authenticate_dict["instance_url"]
-                self.logger.debug("Instance URL -> %s", self._instance_url)
+            # Store authentication access_token:
+            self._access_token = authenticate_dict["access_token"]
+            self.logger.debug("Access Token -> %s", self._access_token)
+            self._instance_url = authenticate_dict["instance_url"]
+            self.logger.debug("Instance URL -> %s", self._instance_url)
         else:
             self.logger.error(
                 "Failed to request an Salesforce Access Token; error -> %s",

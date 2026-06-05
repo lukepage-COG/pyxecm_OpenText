@@ -76,14 +76,13 @@ ignore = [
   "PLR0913",
   "PLR0915",
   "PLR2004",
-  "FBT001",
-  "FBT002",
-  "RET504",
-  "RET505",
+  "FBT001",  # boolean positional args — 875 sites, too disruptive to public API to convert all to keyword-only
+  "FBT002",  # boolean default args — same rationale as FBT001
+
   "C901",
   "B019",
   "TRY400",
-  "COM812",
+
 ]
 fixable = ["ALL"]
 unfixable = []

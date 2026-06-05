@@ -189,12 +189,11 @@ class SuccessFactors:
 
         """
 
-        request_header = {
+        return {
             "Authorization": f"Bearer {self._access_token}",
             "Content-Type": content_type,
             "Accept": content_type,
         }
-        return request_header
 
     # end method definition
 
@@ -642,14 +641,13 @@ class SuccessFactors:
 
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
             failure_message="Failed to retrieve country data",
         )
-        return response
 
     # end method definition
 
@@ -772,14 +770,13 @@ class SuccessFactors:
 
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
             failure_message="Failed to retrieve user data",
         )
-        return response
 
     # end method definition
 
@@ -831,7 +828,7 @@ class SuccessFactors:
 
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
@@ -840,7 +837,6 @@ class SuccessFactors:
             show_warning=True,
             warning_message="Failed to retrieve user data from SuccessFactors",
         )
-        return response
 
     # end method definition
 
@@ -886,8 +882,7 @@ class SuccessFactors:
         if response:
             self.logger.debug("User with ID -> %s updated successfully.", user_id)
             return response
-        else:
-            return None
+        return None
 
     # end method definition
 
@@ -1031,14 +1026,13 @@ class SuccessFactors:
 
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
             failure_message="Failed to retrieve employee data",
         )
-        return response
 
     # end method definition
 
@@ -1080,8 +1074,7 @@ class SuccessFactors:
         )
         if response and response.status_code == 200:
             return xmltodict.parse(response.text)
-        else:
-            return None
+        return None
 
     # end method definition
 
@@ -1108,14 +1101,13 @@ class SuccessFactors:
 
         request_header = self.request_header()
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
             failure_message="Failed to retrieve entity data",
         )
-        return response
 
     # end method definition
 
@@ -1173,7 +1165,6 @@ class SuccessFactors:
                 email_address,
             )
             return response
-        else:
-            return None
+        return None
 
     # end method definition

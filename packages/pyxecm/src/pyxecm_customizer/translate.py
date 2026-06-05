@@ -115,9 +115,8 @@ class Translator:
             self.logger.error("Failed to translate text -> %s", response.content)
             return None
 
-        translated_text = response.json()["data"]["translations"][0]["translatedText"]
+        return response.json()["data"]["translations"][0]["translatedText"]
 
-        return translated_text
 
     # end method definition
 
@@ -162,8 +161,7 @@ class Translator:
         except Exception as error:
             self.logger.error("Failed translation request; error -> %s", str(error))
 
-        translated_text = response.json()["data"]["translations"][0]["translatedText"]
+        return response.json()["data"]["translations"][0]["translatedText"]
 
-        return translated_text
 
     # end method definition

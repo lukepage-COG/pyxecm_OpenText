@@ -51,7 +51,7 @@ def get_groups(response: dict, token: str) -> list:
 
 
 async def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)], api_key: Annotated[str, Depends(apikey_header)]
+    token: Annotated[str, Depends(oauth2_scheme)], api_key: Annotated[str, Depends(apikey_header)],
 ) -> User:
     """Get the current user from OTDS and verify it."""
 

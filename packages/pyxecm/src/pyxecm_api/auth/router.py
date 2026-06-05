@@ -71,8 +71,7 @@ async def read_users_me(current_user: Annotated[User, Depends(get_current_user)]
 
     if "otadmins@otds.admin" in current_user.groups:
         return JSONResponse(current_user.model_dump())
-    else:
-        raise HTTPException(
-            status_code=403,
-            detail=f"User {current_user.id} is not authorized",
-        )
+    raise HTTPException(
+        status_code=403,
+        detail=f"User {current_user.id} is not authorized",
+    )

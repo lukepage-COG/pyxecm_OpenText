@@ -92,11 +92,9 @@ class PayloadList:
                 duration = now - start_time
                 hours, remainder = divmod(duration.total_seconds(), 3600)
                 minutes, seconds = divmod(remainder, 60)
-                formatted_duration = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
+                return f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
 
-                return formatted_duration
-            else:
-                return str(row["duration"])  # or whatever the original value should be
+            return str(row["duration"])  # or whatever the original value should be
 
         # updates the "duration" column of the DataFrame self.payload_items
         # by applying the method calculate_duration() to each row:
@@ -200,9 +198,8 @@ class PayloadList:
             )
             return None
 
-        filtered_items = self.payload_items[self.payload_items[column] == value]
+        return self.payload_items[self.payload_items[column] == value]
 
-        return filtered_items
 
     # end method definition
 
@@ -352,9 +349,8 @@ class PayloadList:
 
         self.payload_items.iloc[[index - 1, index]] = self.payload_items.iloc[[index, index - 1]].to_numpy()
 
-        new_position = self.payload_items.index.get_loc(index)
+        return self.payload_items.index.get_loc(index)
 
-        return new_position
 
     # end method definition
 
@@ -380,9 +376,8 @@ class PayloadList:
 
         self.payload_items.iloc[[index, index + 1]] = self.payload_items.iloc[[index + 1, index]].to_numpy()
 
-        new_position = self.payload_items.index.get_loc(index)
+        return self.payload_items.index.get_loc(index)
 
-        return new_position
 
     # end method definition
 

@@ -379,10 +379,9 @@ class OTKD:
                         self.logger.info(success_message)
                     if parse_request_response:
                         return self.parse_request_response(response)
-                    else:
-                        return response
+                    return response
                 # Check if Session has expired - then re-authenticate and try once more
-                elif response.status_code == 401 and retries == 0:
+                if response.status_code == 401 and retries == 0:
                     self.logger.info("Session has expired - try to re-authenticate...")
                     self.authenticate(revalidate=True)
                     retries += 1
@@ -560,13 +559,12 @@ class OTKD:
             self.logger.debug("NiFi access token -> %s", token)
             self._otkd_token = token
             return token
-        else:
-            self.logger.error(
-                "Failed to request an Nifi access token; status -> %s, error -> %s",
-                response.status_code,
-                response.text,
-            )
-            return None
+        self.logger.error(
+            "Failed to request an Nifi access token; status -> %s, error -> %s",
+            response.status_code,
+            response.text,
+        )
+        return None
 
     # end method definition
 
@@ -679,7 +677,7 @@ class OTKD:
         request_header = self.request_json_header()
 
         process_groups = self.do_request(
-            url=request_url, method="GET", headers=request_header, failure_message="Failed to get process groups"
+            url=request_url, method="GET", headers=request_header, failure_message="Failed to get process groups",
         )
 
         if not process_groups:
@@ -784,12 +782,11 @@ class OTKD:
         if process_groups is None:
             return None
 
-        process_group = next(
+        return next(
             (group for group in process_groups if group["component"]["name"] == name),
             None,
         )
 
-        return process_group
 
     # end method definition
 
@@ -817,7 +814,7 @@ class OTKD:
     # end method definition
 
     def upload_process_group(
-        self, file_path: str, name: str, position_x: float = 0.0, position_y: float = 0.0
+        self, file_path: str, name: str, position_x: float = 0.0, position_y: float = 0.0,
     ) -> dict | None:
         """Upload Nifi flow from JSON file.
 
@@ -1010,7 +1007,7 @@ class OTKD:
             return None
 
         parameter_context = next(
-            (context for context in parameter_contexts if context["component"]["name"] == name), None
+            (context for context in parameter_contexts if context["component"]["name"] == name), None,
         )
 
         if not parameter_context:
@@ -1022,7 +1019,7 @@ class OTKD:
     # end method definition
 
     def update_parameter(
-        self, component: str, parameter: str, value: str | float | bool, sensitive: bool = False, description: str = ""
+        self, component: str, parameter: str, value: str | float | bool, sensitive: bool = False, description: str = "",
     ) -> dict | None:
         """Update a parameter in a given parameter context.
 
@@ -1128,7 +1125,7 @@ class OTKD:
                             "sensitive": sensitive,
                             "description": description,
                             "value": value,
-                        }
+                        },
                     },
                 ],
                 "inheritedParameterContexts": [],
@@ -1139,7 +1136,7 @@ class OTKD:
         request_header = self.request_json_header()
 
         response = self.do_request(
-            url=request_url, method="POST", headers=request_header, json_data=json_body, failure_message=""
+            url=request_url, method="POST", headers=request_header, json_data=json_body, failure_message="",
         )
 
         if response:
@@ -1361,7 +1358,7 @@ class OTKD:
         if components:
             json_body["components"] = components
 
-        response = self.do_request(
+        return self.do_request(
             url=request_url,
             method="PUT",
             headers=request_header,
@@ -1370,6 +1367,5 @@ class OTKD:
             show_error=True,
         )
 
-        return response
 
     # end method definition

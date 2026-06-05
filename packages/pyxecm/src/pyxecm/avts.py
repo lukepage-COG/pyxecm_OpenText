@@ -217,7 +217,7 @@ class AVTS:
                     if success_message:
                         self.logger.debug(success_message)
                     return self.parse_request_response(response)
-                elif (
+                if (
                     response.status_code == 500
                     and "Cannot modify configuration" in response.text
                     and "while the Processor is running" in response.text

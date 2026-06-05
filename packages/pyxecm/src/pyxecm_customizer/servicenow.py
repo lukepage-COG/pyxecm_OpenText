@@ -385,14 +385,13 @@ class ServiceNow:
                 self._session = requests.Session()
             self._session.auth = HTTPBasicAuth(username, password)
             return self._session.auth
-        elif auth_type == "oauth":
+        if auth_type == "oauth":
             token = self.get_oauth_token()
             self._session.headers.update({"Authorization": f"Bearer {token}"})
 
             return token
-        else:
-            self.logger.error("Unsupported authentication type -> %s!", auth_type)
-            return None
+        self.logger.error("Unsupported authentication type -> %s!", auth_type)
+        return None
 
     # end method definition
 
@@ -421,10 +420,9 @@ class ServiceNow:
             authenticate_dict = self.parse_request_response(response)
             if not authenticate_dict:
                 return None
-            else:
-                # Store authentication access_token:
-                self._access_token = authenticate_dict["access_token"]
-                self.logger.debug("Access Token -> %s", self._access_token)
+            # Store authentication access_token:
+            self._access_token = authenticate_dict["access_token"]
+            self.logger.debug("Access Token -> %s", self._access_token)
         else:
             self.logger.error(
                 "Failed to request an Service Now Access Token; error -> %s",
@@ -569,7 +567,7 @@ class ServiceNow:
 
                 if response.status_code == 200:
                     return data.get("result", [])
-                elif response.status_code == 202:
+                if response.status_code == 202:
                     self.logger.warning(
                         "Service Now returned <202 Accepted> -> throtteling, retrying ...",
                     )
@@ -632,7 +630,7 @@ class ServiceNow:
             self.logger.error("HTTP error occurred when trying to get the table count for table -> '%s'!", table_name)
         except RequestException:
             self.logger.error(
-                "Request error occurred when trying to get the table count for table -> '%s'!", table_name
+                "Request error occurred when trying to get the table count for table -> '%s'!", table_name,
             )
         except Exception:
             self.logger.error("An error occurred when trying to get the table count for table -> '%s'!", table_name)
@@ -979,13 +977,12 @@ class ServiceNow:
                     article_number,
                 )
                 return []
-            else:
-                self.logger.debug(
-                    "Knowledge base article -> %s has %s attachments.",
-                    article_number,
-                    len(attachments),
-                )
-                return attachments
+            self.logger.debug(
+                "Knowledge base article -> %s has %s attachments.",
+                article_number,
+                len(attachments),
+            )
+            return attachments
 
         except HTTPError:
             self.logger.error(
@@ -1046,13 +1043,12 @@ class ServiceNow:
             )
             article["has_attachments"] = False
             return False
-        else:
-            self.logger.info(
-                "Knowledge base article -> %s has %s attachments to download...",
-                article_number,
-                len(attachments),
-            )
-            article["has_attachments"] = True
+        self.logger.info(
+            "Knowledge base article -> %s has %s attachments to download...",
+            article_number,
+            len(attachments),
+        )
+        article["has_attachments"] = True
 
         # Service Now can have multiple files with the same name - we need to
         # resolve this for Extended ECM:

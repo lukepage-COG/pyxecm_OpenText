@@ -429,9 +429,8 @@ class OTMM:
             )
             return None
 
-        values = lookup_domain.get("lookup_domain_resource").get("lookup_domain").get("domainValues")
+        return lookup_domain.get("lookup_domain_resource").get("lookup_domain").get("domainValues")
 
-        return values
 
     # end method definition
 
@@ -929,7 +928,7 @@ class OTMM:
                 self.logger.error("Request error requesting -> %s!", request_url)
             except OSError as os_error:
                 self.logger.error(
-                    "File system error while writing to file -> '%s'; error -> %s", file_name, str(os_error)
+                    "File system error while writing to file -> '%s'; error -> %s", file_name, str(os_error),
                 )
             except Exception:
                 self.logger.error("Unexpected error requesting -> %s!", request_url)
@@ -1615,7 +1614,7 @@ class OTMM:
             # Collect assets for new (rebranded) products:
             #
             products = self.get_products(
-                domain=OTMM.PRODUCT_NEW_LOOKUP_DOMAIN
+                domain=OTMM.PRODUCT_NEW_LOOKUP_DOMAIN,
             )  # dictionary with key = name and value = ID
 
             if self._product_inclusions is not None:

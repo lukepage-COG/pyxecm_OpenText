@@ -45,8 +45,7 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> Jinja2
             },
             status_code=513,
         )
-    else:
-        return templates.TemplateResponse("error.html", {"request": request, "status_code": exc.status_code})
+    return templates.TemplateResponse("error.html", {"request": request, "status_code": exc.status_code})
 
 
 def run_maintenance_page() -> None:

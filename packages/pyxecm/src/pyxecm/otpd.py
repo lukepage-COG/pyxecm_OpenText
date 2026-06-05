@@ -323,19 +323,17 @@ class OTPD:
                 self._jsessionid = session_dict["JSESSIONID"]
                 request_headers["Cookie"] = "JSESSIONID=" + self._jsessionid
                 return session_response
-            else:
-                self.logger.error(
-                    "Fetching session id from -> %s failed! Response -> %s",
-                    auth_url,
-                    session_response.text,
-                )
-                return None
-        else:
             self.logger.error(
                 "Fetching session id from -> %s failed! Response -> %s",
-                request_url,
-                response.text,
+                auth_url,
+                session_response.text,
             )
+            return None
+        self.logger.error(
+            "Fetching session id from -> %s failed! Response -> %s",
+            request_url,
+            response.text,
+        )
         return None
 
     # end method definition
@@ -398,14 +396,13 @@ class OTPD:
                 if response.ok:
                     self.logger.info("Database backup imported successfully.")
                     return response.json()
-                else:
-                    self.logger.error(
-                        "Failed to import PowerDocs database backup from -> %s into -> %s; error -> %s",
-                        file_path,
-                        request_url,
-                        response.text,
-                    )
-                    return None
+                self.logger.error(
+                    "Failed to import PowerDocs database backup from -> %s into -> %s; error -> %s",
+                    file_path,
+                    request_url,
+                    response.text,
+                )
+                return None
 
         except FileNotFoundError:
             self.logger.error("File -> '%s' not found!", file_path)
@@ -493,11 +490,10 @@ class OTPD:
                     message += "; maximum retries reached - aborting!"
                     self.logger.error(message)
                     return None
-                else:
-                    message += "; retrying..."
-                    self.logger.warning(message)
-                    retries += 1
-                    time.sleep(REQUEST_RETRY_DELAY * retries)  # Add a delay before retrying
+                message += "; retrying..."
+                self.logger.warning(message)
+                retries += 1
+                time.sleep(REQUEST_RETRY_DELAY * retries)  # Add a delay before retrying
 
     # end method definition
 
@@ -589,40 +585,38 @@ class OTPD:
                         self.logger.info(success_message)
                     if parse_request_response:
                         return self.parse_request_response(response)
-                    else:
-                        return response
-                else:
-                    # Handle plain HTML responses to not pollute the logs
-                    content_type = response.headers.get("content-type", None)
-                    response_text = (
-                        "HTML content (only printed in debug log)" if content_type == "text/html" else response.text
-                    )
+                    return response
+                # Handle plain HTML responses to not pollute the logs
+                content_type = response.headers.get("content-type", None)
+                response_text = (
+                    "HTML content (only printed in debug log)" if content_type == "text/html" else response.text
+                )
 
-                    if show_error:
-                        self.logger.error(
-                            "%s; status -> %s/%s; error -> %s",
-                            failure_message,
-                            response.status_code,
-                            HTTPStatus(response.status_code).phrase,
-                            response_text,
-                        )
-                    elif show_warning:
-                        self.logger.warning(
-                            "%s; status -> %s/%s; warning -> %s",
-                            warning_message or failure_message,
-                            response.status_code,
-                            HTTPStatus(response.status_code).phrase,
-                            response_text,
-                        )
-                    if content_type == "text/html":
-                        self.logger.debug(
-                            "%s; status -> %s/%s; warning -> %s",
-                            failure_message,
-                            response.status_code,
-                            HTTPStatus(response.status_code).phrase,
-                            response.text,
-                        )
-                    return None
+                if show_error:
+                    self.logger.error(
+                        "%s; status -> %s/%s; error -> %s",
+                        failure_message,
+                        response.status_code,
+                        HTTPStatus(response.status_code).phrase,
+                        response_text,
+                    )
+                elif show_warning:
+                    self.logger.warning(
+                        "%s; status -> %s/%s; warning -> %s",
+                        warning_message or failure_message,
+                        response.status_code,
+                        HTTPStatus(response.status_code).phrase,
+                        response_text,
+                    )
+                if content_type == "text/html":
+                    self.logger.debug(
+                        "%s; status -> %s/%s; warning -> %s",
+                        failure_message,
+                        response.status_code,
+                        HTTPStatus(response.status_code).phrase,
+                        response.text,
+                    )
+                return None
             except requests.exceptions.Timeout:
                 if retries <= max_retries:
                     self.logger.warning(
@@ -694,7 +688,7 @@ class OTPD:
 
         body = {"documentgeneration": payload}
 
-        response = self.do_request(
+        return self.do_request(
             url=url,
             method="POST",
             headers=REQUEST_FORM_HEADERS,
@@ -704,4 +698,3 @@ class OTPD:
             parse_request_response=False,
         )
 
-        return response

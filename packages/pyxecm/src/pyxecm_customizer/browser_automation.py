@@ -186,7 +186,7 @@ class BrowserAutomation:
         self.wait_until = wait_until or DEFAULT_WAIT_UNTIL_STRATEGY
 
         self.screenshot_directory = str(
-            Path(tempfile.gettempdir()) / "browser_automations" / self.screenshot_names / "screenshots"
+            Path(tempfile.gettempdir()) / "browser_automations" / self.screenshot_names / "screenshots",
         )
         self.logger.debug("Creating screenshot directory... -> %s", self.screenshot_directory)
         if self.take_screenshots and not Path(self.screenshot_directory).exists():
@@ -252,13 +252,13 @@ class BrowserAutomation:
             case "chromium":
                 try:
                     self.browser: Browser = self.playwright.chromium.launch(
-                        headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy
+                        headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy,
                     )
                 except Exception:
                     result = self.install_browser(browser=browser)
                     if result:
                         self.browser: Browser = self.playwright.chromium.launch(
-                            headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy
+                            headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy,
                         )
 
             case "chrome":
@@ -300,25 +300,25 @@ class BrowserAutomation:
             case "webkit":
                 try:
                     self.browser: Browser = self.playwright.webkit.launch(
-                        headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy
+                        headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy,
                     )
                 except Exception:
                     result = self.install_browser(browser=browser)
                     if result:
                         self.browser: Browser = self.playwright.webkit.launch(
-                            headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy
+                            headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy,
                         )
 
             case "firefox":
                 try:
                     self.browser: Browser = self.playwright.firefox.launch(
-                        headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy
+                        headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy,
                     )
                 except Exception:
                     result = self.install_browser(browser=browser)
                     if result:
                         self.browser: Browser = self.playwright.firefox.launch(
-                            headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy
+                            headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy,
                         )
             case _:
                 self.logger.error("Unknown browser -> '%s'. Cannot install and launch it.", browser)
@@ -523,7 +523,7 @@ class BrowserAutomation:
                 if "Execution context was destroyed" in str(e):
                     if attempt < retry_attempts:
                         self.logger.info(
-                            "Execution context was destroyed, retrying after %s seconds...", REQUEST_RETRY_DELAY
+                            "Execution context was destroyed, retrying after %s seconds...", REQUEST_RETRY_DELAY,
                         )
                         time.sleep(REQUEST_RETRY_DELAY)
                         self.logger.info("Retry attempt %d/%d", attempt + 1, REQUEST_MAX_RETRIES)
@@ -647,7 +647,7 @@ class BrowserAutomation:
             # Apply filter if needed
             if any([filter_has_text, filter_has, filter_has_not_text, filter_has_not]):
                 locator = locator.filter(
-                    has_text=filter_has_text, has=filter_has, has_not_text=filter_has_not_text, has_not=filter_has_not
+                    has_text=filter_has_text, has=filter_has, has_not_text=filter_has_not_text, has_not=filter_has_not,
                 )
 
         except PlaywrightError as e:
@@ -799,7 +799,7 @@ class BrowserAutomation:
                 )
                 time.sleep(repeat_reload_delay)
                 self.logger.warning(
-                    "Reloading page -> %s (retry %d) to retrieve updates from server...", self.page.url, i + 1
+                    "Reloading page -> %s (retry %d) to retrieve updates from server...", self.page.url, i + 1,
                 )
                 self.page.reload()
                 locator = do_find()
@@ -1042,11 +1042,11 @@ class BrowserAutomation:
         except PlaywrightError as e:
             if show_error:
                 self.logger.error(
-                    "Cannot click page element -> '%s' (%s); error -> %s", selector, selector_type, str(e)
+                    "Cannot click page element -> '%s' (%s); error -> %s", selector, selector_type, str(e),
                 )
             else:
                 self.logger.warning(
-                    "Cannot click page element -> '%s' (%s); warning -> %s", selector, selector_type, str(e)
+                    "Cannot click page element -> '%s' (%s); warning -> %s", selector, selector_type, str(e),
                 )
             success = not show_error
 
@@ -1158,7 +1158,7 @@ class BrowserAutomation:
             return False
 
         self.logger.info(
-            "Set element -> '%s' to value -> '%s'...", selector, value if not is_sensitive else "<sensitive>"
+            "Set element -> '%s' to value -> '%s'...", selector, value if not is_sensitive else "<sensitive>",
         )
 
         try:
@@ -1363,7 +1363,7 @@ class BrowserAutomation:
         )
         if not locator:
             self.logger.error(
-                "Failed to check if elements -> '%s' (%s) exist! Locator is undefined.", selector, selector_type
+                "Failed to check if elements -> '%s' (%s) exist! Locator is undefined.", selector, selector_type,
             )
             return (None, 0)
 
@@ -1553,10 +1553,10 @@ class BrowserAutomation:
             not self.get_page(url=page, wait_until=wait_until)
             or not self.find_elem_and_set(selector=user_field, selector_type=selector_type, value=self.user_name)
             or not self.find_elem_and_set(
-                selector=password_field, selector_type=selector_type, value=self.user_password, is_sensitive=True
+                selector=password_field, selector_type=selector_type, value=self.user_password, is_sensitive=True,
             )
             or not self.find_elem_and_click(
-                selector=login_button, selector_type=selector_type, is_navigation_trigger=True, wait_until=wait_until
+                selector=login_button, selector_type=selector_type, is_navigation_trigger=True, wait_until=wait_until,
             )
         ):
             self.logger.error(
@@ -1637,7 +1637,7 @@ class BrowserAutomation:
     # end method definition
 
     def __exit__(
-        self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback_obj: TracebackType | None
+        self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback_obj: TracebackType | None,
     ) -> None:
         """Handle cleanup when exiting a context manager block ('with' statement).
 

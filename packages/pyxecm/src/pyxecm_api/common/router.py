@@ -83,7 +83,7 @@ def list_browser_automation_files(
     """List all browser automation files."""
 
     result = list_files_in_directory(
-        str(Path(tempfile.gettempdir()) / "browser_automations")
+        str(Path(tempfile.gettempdir()) / "browser_automations"),
     )
 
     return JSONResponse(result)

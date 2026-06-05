@@ -95,7 +95,7 @@ async def create_payload_item(
             dependencies=dependencies or [],
             enabled=enabled,
             loglevel=loglevel,
-        )
+        ),
     )
 
 

@@ -284,7 +284,7 @@ class OTDS:
             json_data=token_info_body,
             timeout=None,
             failure_message="Failed to get OAuth token info{}".format(
-                f" for resource -> '{resource_id}'" if resource_id else ""
+                f" for resource -> '{resource_id}'" if resource_id else "",
             ),
         )
 
@@ -307,7 +307,7 @@ class OTDS:
     # end method definition
 
     def client_credentials(
-        self, grant_type: str = "client_credentials", scope: str | None = None, **kwargs: dict[str, str]
+        self, grant_type: str = "client_credentials", scope: str | None = None, **kwargs: dict[str, str],
     ) -> dict:
         """Return the client credentials (client_id + client_secret).
 
@@ -696,7 +696,7 @@ class OTDS:
                         self.logger.info(success_message)
                     return self.parse_request_response(response) if parse_request_response else response
                 # Check if Session has expired - then re-authenticate and try once more
-                elif retries == 0 and (response.status_code == 401 or (response.status_code == 400 and expired_token)):
+                if retries == 0 and (response.status_code == 401 or (response.status_code == 400 and expired_token)):
                     self.logger.info("Session expired. Re-authenticating and retrying...")
                     self.authenticate(revalidate=True)
                     retries += 1
@@ -835,7 +835,7 @@ class OTDS:
 
     @tracer.start_as_current_span(attributes=OTEL_TRACING_ATTRIBUTES, name="authenticate")
     def authenticate(
-        self, revalidate: bool = False, grant_type: str | None = None, show_error: bool = True
+        self, revalidate: bool = False, grant_type: str | None = None, show_error: bool = True,
     ) -> dict | None:
         """Authenticate at Directory Services and retrieve OTDS ticket.
 
@@ -872,7 +872,7 @@ class OTDS:
         otds_ticket = "NotSet"
 
         self.logger.debug(
-            "Requesting OTDS ticket from -> %s using grant type -> '%s'...", self.credential_url(), grant_type
+            "Requesting OTDS ticket from -> %s using grant type -> '%s'...", self.credential_url(), grant_type,
         )
 
         response = None
@@ -884,7 +884,7 @@ class OTDS:
                 grant_type = "client_credentials"
             else:
                 self.logger.error(
-                    "Cannot determine grant type automatically - please provide username/password or client_id/client_secret for authentication."
+                    "Cannot determine grant type automatically - please provide username/password or client_id/client_secret for authentication.",
                 )
                 return None
 
@@ -923,9 +923,8 @@ class OTDS:
             authenticate_dict = self.parse_request_response(response)
             if not authenticate_dict:
                 return None
-            else:
-                otds_ticket = authenticate_dict[result_value]
-                self.logger.debug("Ticket / token -> %s", otds_ticket)
+            otds_ticket = authenticate_dict[result_value]
+            self.logger.debug("Ticket / token -> %s", otds_ticket)
         else:
             if show_error:
                 self.logger.error(
@@ -945,7 +944,7 @@ class OTDS:
             self._cookie = {"OTDSTicket": otds_ticket}
             self._token = None
             return self._cookie
-        elif grant_type == "client_credentials":
+        if grant_type == "client_credentials":
             self._token = otds_ticket
             self._cookie = None
             return self._token
@@ -1149,12 +1148,11 @@ class OTDS:
             show_error=show_error,
         )
 
-        role = next(
+        return next(
             (role for role in response.get("roles") if role["name"] == name and role["userPartitionID"] == partition),
             None,
         )
 
-        return role
 
     # end method definition
 
@@ -1272,7 +1270,7 @@ class OTDS:
             group_location = group["location"]
         else:
             self.logger.error(
-                "Cannot find group -> '%s'! Cannot assign group to application role -> '%s'.", group_id, role_name
+                "Cannot find group -> '%s'! Cannot assign group to application role -> '%s'.", group_id, role_name,
             )
             return False
 
@@ -2932,19 +2930,18 @@ class OTDS:
                     resource_id,
                 ),
             )
-        else:
-            # Do a REST POST call for creation of a new license:
-            return self.do_request(
-                url=request_url,
-                method="POST",
-                json_data=license_post_body_json,
-                timeout=None,
-                failure_message="Failed to add product license -> '{}' for product -> '{}' to resource -> '{}'".format(
-                    path_to_license_file,
-                    f"{product_name} ({product_description})" if product_description else product_name,
-                    resource_id,
-                ),
-            )
+        # Do a REST POST call for creation of a new license:
+        return self.do_request(
+            url=request_url,
+            method="POST",
+            json_data=license_post_body_json,
+            timeout=None,
+            failure_message="Failed to add product license -> '{}' for product -> '{}' to resource -> '{}'".format(
+                path_to_license_file,
+                f"{product_name} ({product_description})" if product_description else product_name,
+                resource_id,
+            ),
+        )
 
     # end method definition
 
