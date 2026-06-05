@@ -8,11 +8,11 @@ __email__ = "mdiefenb@opentext.com"
 
 import logging
 import os
-from pathlib import Path
 import tempfile
 import threading
 import time
 from datetime import UTC, datetime
+from pathlib import Path
 
 import requests
 
@@ -1492,7 +1492,7 @@ class Customizer:
                 )
                 filename = str(Path(tempfile.gettempdir()) / "customizer" / "packages" / "otpd_db_import.zip")
                 # Ensure the directory exists
-                Path(str(Path(filename).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
+                Path(filename).parent.mkdir(parents=True, exist_ok=True)
 
                 with Path(filename).open(mode="wb") as localfile:
                     localfile.write(package.content)
@@ -1866,7 +1866,7 @@ class Customizer:
                     )
                     cust_payload = str(Path(tempfile.gettempdir()) / "customizer" / "payloads" / payload_file)
                     # Ensure the directory exists
-                    Path(str(Path(cust_payload).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
+                    Path(cust_payload).parent.mkdir(parents=True, exist_ok=True)
 
                     with Path(cust_payload).open("w", encoding="utf-8") as file:
                         yaml.dump(

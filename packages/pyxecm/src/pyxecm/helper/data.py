@@ -6,6 +6,8 @@ This code implements a class called "Data" which is a wrapper
 to Pandas data frame.
 """
 
+from __future__ import annotations
+
 __author__ = "Dr. Marc Diefenbruch"
 __copyright__ = "Copyright (C) 2024-2025, OpenText"
 __credits__ = ["Kai-Philip Gatzweiler"]
@@ -15,10 +17,10 @@ __email__ = "mdiefenb@opentext.com"
 import json
 import logging
 import os
-from pathlib import Path
 import re
 import threading
 from io import StringIO
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
@@ -868,8 +870,8 @@ class Data:
         # Save data to JSON file
         try:
             if self._df is not None:
-                if not Path(str(Path(json_path).parent).exists()):
-                    Path(str(Path(json_path).mkdir(parents=True, exist_ok=True).parent), exist_ok=True)
+                if not Path(json_path).parent.exists():
+                    Path(json_path).parent.mkdir(parents=True, exist_ok=True)
 
                 # index parameter is only allowed if orient has one of the following values:
                 if orient in ("columns", "index", "table", "split"):

@@ -7,8 +7,8 @@ __maintainer__ = "Dr. Marc Diefenbruch"
 __email__ = "mdiefenb@opentext.com"
 
 import logging
-from pathlib import Path
 import sys
+from pathlib import Path
 
 from .customizer import Customizer
 from .payload import load_payload

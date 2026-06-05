@@ -1,9 +1,9 @@
 """Maintenance Page that can be enabled by the customizer."""
 
 import logging
-from pathlib import Path
 import threading
 from datetime import UTC, datetime
+from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
@@ -17,8 +17,8 @@ logger = logging.getLogger("pyxecm_customizer.maintenance_page")
 
 app = FastAPI(openapi_url=None)
 
-base_dir = str(Path(str(Path(__file__).resolve()).parent))
-static_dir = str(Path(base_dir) / "static")
+base_dir = Path(__file__).resolve().parent
+static_dir = str(base_dir / "static")
 templates = Jinja2Templates(directory=settings.templates_dir)
 
 

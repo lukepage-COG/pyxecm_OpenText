@@ -10,12 +10,12 @@ __maintainer__ = "Dr. Marc Diefenbruch"
 __email__ = "mdiefenb@opentext.com"
 
 import logging
-from pathlib import Path
 import pprint
 import threading
 import time
 import traceback
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pandas as pd
 from opentelemetry import trace

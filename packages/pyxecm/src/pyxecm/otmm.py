@@ -12,24 +12,22 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-from pathlib import Path
 import threading
 import traceback
 import urllib.parse
 from collections.abc import Callable
 from datetime import UTC, datetime
-
-from pyxecm.helper.useragent import build_user_agent
 from json import JSONDecodeError
+from pathlib import Path
 
 import requests
 from requests.adapters import HTTPAdapter
 from requests.exceptions import HTTPError, RequestException
 
 from pyxecm.helper import Data
+from pyxecm.helper.useragent import build_user_agent
 
-
-MODULE_NAME = APP_NAME + ".otmm"
+MODULE_NAME = "pyxecm.otmm"
 USER_AGENT = build_user_agent("pyxecm.otmm")
 
 REQUEST_HEADERS = {

@@ -11,9 +11,9 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-from pathlib import Path
 import time
 from http import HTTPStatus
+from pathlib import Path
 
 import requests
 
@@ -690,7 +690,7 @@ class Salesforce:
         query = "SELECT {} FROM {}".format(", ".join(result_fields), object_type)
         if search_field and search_value:
             query += f" WHERE {search_field}='{search_value}'"
-        query += f" LIMIT {str(limit)}"
+        query += f" LIMIT {limit!s}"
 
         request_header = self.request_header()
         request_url = self.config()["queryUrl"] + f"?q={query}"

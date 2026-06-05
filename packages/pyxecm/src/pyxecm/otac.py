@@ -11,14 +11,13 @@ import json
 import logging
 from pathlib import Path
 
-from pyxecm.helper.useragent import build_user_agent
-
 import requests
 from suds import WebFault
 from suds.client import Client
 
+from pyxecm.helper.useragent import build_user_agent
 
-MODULE_NAME = APP_NAME + ".otac"
+MODULE_NAME = "pyxecm.otac"
 USER_AGENT = build_user_agent("pyxecm.otac")
 
 REQUEST_FORM_HEADERS = {

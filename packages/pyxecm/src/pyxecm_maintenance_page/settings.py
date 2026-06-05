@@ -19,7 +19,7 @@ class MaintenancePageSettings(BaseSettings):
     loglevel: Literal["INFO", "DEBUG", "WARNING", "ERROR"] = "INFO"
     host: str | list[str] = Field(default=["::", "0.0.0.0"], frozen=True)  # noqa: S104
     port: int = Field(default=5555, frozen=True)
-    templates_dir: str = Field(default=str(Path(str(Path(str(Path(__file__).resolve()).parent))) / "templates"))
+    templates_dir: str = Field(default=str(Path(__file__).resolve().parent / "templates"))
 
     model_config = SettingsConfigDict(env_prefix="MAINTENANCE_PAGE_")
 

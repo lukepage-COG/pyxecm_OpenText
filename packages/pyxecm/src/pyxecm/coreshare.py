@@ -20,18 +20,17 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-from pathlib import Path
 import time
 import urllib.parse
 from http import HTTPStatus
-
-from pyxecm.helper.useragent import build_user_agent
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import requests
 
+from pyxecm.helper.useragent import build_user_agent
 
-MODULE_NAME = APP_NAME + ".coreshare"
+MODULE_NAME = "pyxecm.coreshare"
 USER_AGENT = build_user_agent("pyxecm.coreshare")
 
 default_logger = logging.getLogger(MODULE_NAME)

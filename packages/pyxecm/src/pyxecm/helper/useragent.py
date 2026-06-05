@@ -2,9 +2,9 @@
 
 import platform
 import sys
+from importlib.metadata import version
 
 import requests
-from importlib.metadata import version
 
 APP_NAME = "pyxecm"
 APP_VERSION = version("pyxecm")

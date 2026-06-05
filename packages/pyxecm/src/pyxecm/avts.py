@@ -10,15 +10,14 @@ import base64
 import json
 import logging
 import os
-from pathlib import Path
 import time
-
-from pyxecm.helper.useragent import build_user_agent
+from pathlib import Path
 
 import requests
 
+from pyxecm.helper.useragent import build_user_agent
 
-MODULE_NAME = APP_NAME + ".avts"
+MODULE_NAME = "pyxecm.avts"
 USER_AGENT = build_user_agent("pyxecm.avts")
 
 REQUEST_HEADERS = {"User-Agent": USER_AGENT, "accept": "application/json", "Content-Type": "application/json"}

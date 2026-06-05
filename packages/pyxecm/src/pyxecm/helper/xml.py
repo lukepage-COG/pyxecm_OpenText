@@ -9,10 +9,10 @@ __email__ = "mdiefenb@opentext.com"
 import fnmatch
 import logging
 import os
-from pathlib import Path
 import re
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from queue import Queue
 
 import xmltodict

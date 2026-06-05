@@ -8,11 +8,11 @@ __email__ = "mdiefenb@opentext.com"
 
 import logging
 import os
-from pathlib import Path
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from importlib.metadata import version
+from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI
@@ -43,7 +43,7 @@ tracer = trace.get_tracer(__name__)
 logger = logging.getLogger("CustomizerAPI")
 
 # Check if Logfile and folder exists and is unique
-if Path(str(Path(api_settings.logfolder) / api_settings.logfile).is_file()):
+if (Path(api_settings.logfolder) / api_settings.logfile).is_file():
     customizer_start_time = datetime.now(UTC).strftime(
         "%Y-%m-%d_%H-%M",
     )
@@ -166,7 +166,7 @@ def run_api() -> None:
         Path(api_settings.logfolder).mkdir(parents=True, exist_ok=True)
 
     # Check if Logfile and exists and is unique
-    if Path(str(Path(api_settings.logfolder) / api_settings.logfile).is_file()):
+    if (Path(api_settings.logfolder) / api_settings.logfile).is_file():
         customizer_start_time = datetime.now(UTC).strftime(
             "%Y-%m-%d_%H-%M",
         )

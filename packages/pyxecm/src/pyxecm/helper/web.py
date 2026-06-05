@@ -7,19 +7,18 @@ __maintainer__ = "Dr. Marc Diefenbruch"
 __email__ = "mdiefenb@opentext.com"
 
 import logging
-from pathlib import Path
 import socket
 import time
-
-from pyxecm.helper.useragent import build_user_agent
+from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
 from lxml import html
 
+from pyxecm.helper.useragent import build_user_agent
 
-MODULE_NAME = APP_NAME + ".helper.web"
-USER_AGENT = build_user_agent("pyxecm.helper.web")
+MODULE_NAME = "pyxecm.helper.web"
+USER_AGENT = build_user_agent(MODULE_NAME)
 
 REQUEST_FORM_HEADERS = {
     "User-Agent": USER_AGENT,

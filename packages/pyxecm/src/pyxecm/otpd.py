@@ -8,16 +8,15 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-from pathlib import Path
 import time
 from http import HTTPStatus
-
-from pyxecm.helper.useragent import build_user_agent
+from pathlib import Path
 
 import requests
 from requests.auth import HTTPBasicAuth
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
+from pyxecm.helper.useragent import build_user_agent
 
 USER_AGENT = build_user_agent("pyxecm.otpd")
 

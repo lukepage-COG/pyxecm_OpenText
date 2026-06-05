@@ -21,7 +21,6 @@ import json
 import logging
 import mimetypes
 import os
-from pathlib import Path
 import re
 import shutil
 import tempfile
@@ -31,14 +30,13 @@ import urllib.parse
 import warnings
 import xml.etree.ElementTree as ET
 import zipfile
+from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, date, datetime
 from functools import cache
 from http import HTTPStatus
-
-from pyxecm.helper.useragent import build_user_agent
+from pathlib import Path
 from queue import Empty, LifoQueue, Queue
-from collections.abc import Iterator
 from typing import Any, Literal
 
 import requests
@@ -49,12 +47,13 @@ from zeep.helpers import serialize_object
 from zeep.transports import Transport
 
 from pyxecm.helper import XML, Data
+from pyxecm.helper.useragent import build_user_agent
 from pyxecm.otds import OTDS
 
 tracer = trace.get_tracer(__name__)
 
 OTEL_TRACING_ATTRIBUTES = {"class": "otcs"}
-MODULE_NAME = APP_NAME + ".otcs"
+MODULE_NAME = "pyxecm.otcs"
 USER_AGENT = build_user_agent("pyxecm.otcs")
 
 
@@ -9077,7 +9076,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message=f"Failed to get list of versions of document with node ID -> {str(node_id)}",
+            failure_message=f"Failed to get list of versions of document with node ID -> {node_id!s}",
         )
 
     # end method definition
@@ -9187,7 +9186,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message=f"Failed to get latest version of document with node ID -> {str(node_id)}",
+            failure_message=f"Failed to get latest version of document with node ID -> {node_id!s}",
         )
 
     # end method definition
@@ -9242,7 +9241,7 @@ class OTCS:
             headers=request_header,
             data=purge_delete_body,
             timeout=None,
-            failure_message=f"Failed to purge to {versions_to_keep} versions of document with node ID -> {str(node_id)}",
+            failure_message=f"Failed to purge to {versions_to_keep} versions of document with node ID -> {node_id!s}",
         )
 
     # end method definition
@@ -16942,7 +16941,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message=f"Failed to get categories for node ID -> {str(node_id)}",
+            failure_message=f"Failed to get categories for node ID -> {node_id!s}",
         )
 
     # end method definition
@@ -21173,7 +21172,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message=f"Failed to get workflows of kind -> {kind} and status -> {str(status)}",
+            failure_message=f"Failed to get workflows of kind -> {kind} and status -> {status!s}",
         )
 
     # end method definition

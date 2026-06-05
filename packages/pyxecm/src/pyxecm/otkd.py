@@ -14,13 +14,13 @@ import json
 import logging
 import time
 from http import HTTPStatus
-
-from pyxecm.helper.useragent import build_user_agent
+from pathlib import Path
 
 import requests
 
+from pyxecm.helper.useragent import build_user_agent
 
-MODULE_NAME = APP_NAME + ".otkd"
+MODULE_NAME = "pyxecm.otkd"
 USER_AGENT = build_user_agent("pyxecm.otkd")
 
 REQUEST_FORM_HEADERS = {

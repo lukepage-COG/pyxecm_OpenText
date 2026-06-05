@@ -16,14 +16,12 @@ import json
 import logging
 import time
 
-from pyxecm.helper.useragent import build_user_agent
-
 import requests
 
+from pyxecm.helper.useragent import build_user_agent
 from pyxecm.otcs import OTCS
 
-
-MODULE_NAME = APP_NAME + ".otca"
+MODULE_NAME = "pyxecm.otca"
 USER_AGENT = build_user_agent("pyxecm.otca")
 
 REQUEST_HEADERS = {"User-Agent": USER_AGENT, "accept": "application/json", "Content-Type": "application/json"}

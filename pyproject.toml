@@ -78,9 +78,11 @@ ignore = [
   "PLR2004",
   "FBT001",  # boolean positional args — 875 sites, too disruptive to public API to convert all to keyword-only
   "FBT002",  # boolean default args — same rationale as FBT001
+  "ANN401",  # Any type — legitimate for dynamic/generic APIs like database connections and **kwargs
 
   "C901",
   "B019",
+  "TRY300",  # return in try — pre-existing pattern for early returns in exception-heavy code
   "TRY400",
 
 ]
@@ -94,7 +96,7 @@ exclude = []
 
 [tool.ruff.lint.extend-per-file-ignores]
 "**/tests/*.py" = [
-    "INP001","D100","D103","ANN",
+    "INP001","D100","D101","D102","D103","ANN",
     "S101", # asserts allowed in tests...
     "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
     "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
@@ -102,7 +104,7 @@ exclude = []
     "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
 ]
 "**/**/test_*.py" = [
-    "INP001","D100","D103","ANN",
+    "INP001","D100","D101","D102","D103","ANN",
     "S101", # asserts allowed in tests...
     "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
     "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
@@ -112,3 +114,7 @@ exclude = []
 "**/__init__.py" = [
   "D104"
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["packages/pyxecm/tests"]
+addopts = "--cov=pyxecm --cov=pyxecm_api --cov=pyxecm_customizer --cov-report=term-missing -q"

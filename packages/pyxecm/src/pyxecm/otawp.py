@@ -13,15 +13,13 @@ import time
 import uuid
 from http import HTTPStatus
 
-from pyxecm.helper.useragent import build_user_agent
-
 import requests
 
+from pyxecm.helper.useragent import build_user_agent
 from pyxecm.helper.xml import XML
 from pyxecm.otds import OTDS
 
-
-MODULE_NAME = APP_NAME + ".otawp"
+MODULE_NAME = "pyxecm.otawp"
 USER_AGENT = build_user_agent("pyxecm.otawp")
 
 REQUEST_HEADERS_XML = {
@@ -940,7 +938,7 @@ class OTAWP:
                 self.authenticate(revalidate=True)
                 retries += 1
                 continue
-            elif show_error:
+            if show_error:
                 self.logger.error(
                     "%s; status -> %s/%s; error -> %s",
                     failure_message,

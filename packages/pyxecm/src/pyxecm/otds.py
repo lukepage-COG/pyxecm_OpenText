@@ -19,21 +19,21 @@ __email__ = "mdiefenb@opentext.com"
 import base64
 import json
 import logging
-from pathlib import Path
 import tempfile
 import time
 import urllib.parse
 from http import HTTPStatus
-
-from pyxecm.helper.useragent import build_user_agent
+from pathlib import Path
 
 import requests
 from opentelemetry import trace
 
+from pyxecm.helper.useragent import build_user_agent
+
 tracer = trace.get_tracer(__name__)
 
 OTEL_TRACING_ATTRIBUTES = {"class": "otds"}
-MODULE_NAME = APP_NAME + ".otds"
+MODULE_NAME = "pyxecm.otds"
 USER_AGENT = build_user_agent("pyxecm.otds")
 
 
@@ -904,7 +904,7 @@ class OTDS:
             self.logger.warning(
                 "Unable to connect to OTDS authentication endpoint -> %s%s. OTDS service may not be ready yet.",
                 self.credential_url(),
-                f"; error -> {str(exception)}" if str(exception) else "",
+                f"; error -> {exception!s}" if str(exception) else "",
             )
             return None
 
