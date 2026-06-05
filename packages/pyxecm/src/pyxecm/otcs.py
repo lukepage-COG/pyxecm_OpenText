@@ -307,14 +307,10 @@ class OTCS:
                         parsed_date = None
 
         if parsed_date is None:
-            message = "Unsupported reminder date value -> {}".format(reminder_date_value)
+            message = f"Unsupported reminder date value -> {reminder_date_value}"
             raise ValueError(message)
 
-        return "D/{}/{}/{}:0:0:0".format(
-            parsed_date.year,
-            parsed_date.month,
-            parsed_date.day,
-        )
+        return f"D/{parsed_date.year}/{parsed_date.month}/{parsed_date.day}:0:0:0"
 
     # end method definition
 
@@ -504,7 +500,7 @@ class OTCS:
 
         otcs_base_url = protocol + "://" + otcs_config["hostname"]
         if str(port) not in ["80", "443"]:
-            otcs_base_url += ":{}".format(port)
+            otcs_base_url += f":{port}"
         otcs_config["baseUrl"] = otcs_base_url
         otcs_support_url = otcs_base_url + support_path
         otcs_config["supportUrl"] = otcs_support_url
@@ -1098,7 +1094,7 @@ class OTCS:
                 file_url=file_path,
                 file_name=self.ONTOLOGY_FILE_NAME,
                 mime_type="application/json",
-                description="Updated ontology file -> '{}' in admin workspace.".format(self.ONTOLOGY_FILE_NAME),
+                description=f"Updated ontology file -> '{self.ONTOLOGY_FILE_NAME}' in admin workspace.",
             )
         else:
             response = self._otcs.upload_file_to_parent(
@@ -1392,14 +1388,10 @@ class OTCS:
                     self.logger.warning(
                         (
                             warning_message
-                            + " (it already exists); details -> {}".format(
-                                response.text,
-                            )
+                            + f" (it already exists); details -> {response.text}"
                             if warning_message
                             else failure_message
-                            + " (it already exists); details -> {}".format(
-                                response.text,
-                            )
+                            + f" (it already exists); details -> {response.text}"
                         ),
                     )
                     if parse_error_response:
@@ -1564,16 +1556,9 @@ class OTCS:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; response object -> {}; error -> {}".format(
-                    additional_error_message,
-                    response_object,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; response object -> {response_object}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; response object -> {}; error -> {}".format(
-                    response_object,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; response object -> {response_object}; error -> {exception}"
             if show_error:
                 # Raise ConnectionError instead of returning None
                 raise requests.exceptions.ConnectionError(message) from exception
@@ -1623,16 +1608,9 @@ class OTCS:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; response object -> {}; error -> {}".format(
-                    additional_error_message,
-                    response_object,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; response object -> {response_object}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; response object -> {}; error -> {}".format(
-                    response_object,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; response object -> {response_object}; error -> {exception}"
             if show_error:
                 # Raise ConnectionError instead of returning None
                 raise requests.exceptions.ConnectionError(message) from exception
@@ -2738,12 +2716,8 @@ class OTCS:
                 headers=request_header,
                 files=llconfig_file,
                 timeout=None,
-                success_message="Admin settings in file -> '{}' have been applied.".format(
-                    xml_file_path,
-                ),
-                failure_message="Failed to import settings file -> '{}'".format(
-                    xml_file_path,
-                ),
+                success_message=f"Admin settings in file -> '{xml_file_path}' have been applied.",
+                failure_message=f"Failed to import settings file -> '{xml_file_path}'",
             )
 
     # end method definition
@@ -2903,19 +2877,19 @@ class OTCS:
         query["where_type"] = where_type
         if where_name:
             query["where_name"] = where_name
-            filter_string += " login name -> '{}'".format(where_name) if where_name else ""
+            filter_string += f" login name -> '{where_name}'" if where_name else ""
         if where_first_name:
             query["where_first_name"] = where_first_name
-            filter_string += " first name -> '{}'".format(where_first_name) if where_first_name else ""
+            filter_string += f" first name -> '{where_first_name}'" if where_first_name else ""
         if where_last_name:
             query["where_last_name"] = where_last_name
-            filter_string += " last name -> '{}'".format(where_last_name) if where_last_name else ""
+            filter_string += f" last name -> '{where_last_name}'" if where_last_name else ""
         if where_business_email:
             query["where_business_email"] = where_business_email
-            filter_string += " business email -> '{}'".format(where_business_email) if where_business_email else ""
+            filter_string += f" business email -> '{where_business_email}'" if where_business_email else ""
         if query_string:
             query["query"] = query_string
-            filter_string += " query -> '{}'".format(query_string) if where_business_email else ""
+            filter_string += f" query -> '{query_string}'" if where_business_email else ""
         if sort:
             query["sort"] = sort
         if limit:
@@ -2928,13 +2902,13 @@ class OTCS:
         if page:
             query["page"] = page
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-        request_url = self.config()["membersUrlv2"] + "?{}".format(encoded_query)
+        request_url = self.config()["membersUrlv2"] + f"?{encoded_query}"
 
         request_header = self.request_form_header()
 
         self.logger.debug(
             "Get users%s; calling -> %s",
-            " with{}".format(filter_string) if filter_string else "",
+            f" with{filter_string}" if filter_string else "",
             request_url,
         )
 
@@ -2943,8 +2917,8 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get users{}".format(" with{}".format(filter_string) if filter_string else ""),
-            warning_message="Couldn't find users{}".format(" with{}".format(filter_string) if filter_string else ""),
+            failure_message="Failed to get users{}".format(f" with{filter_string}" if filter_string else ""),
+            warning_message="Couldn't find users{}".format(f" with{filter_string}" if filter_string else ""),
             show_error=show_error,
         )
 
@@ -3204,7 +3178,7 @@ class OTCS:
             # Using type = 0 for OTCS groups or type = 17 for service user:
             query = {"where_type": user_type, "where_name": name}
             encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-            request_url = self.config()["membersUrlv2"] + "?{}".format(encoded_query)
+            request_url = self.config()["membersUrlv2"] + f"?{encoded_query}"
         else:
             request_url = self.config()["membersUrlv2"] + "/" + str(user_id)
 
@@ -3212,7 +3186,7 @@ class OTCS:
 
         self.logger.debug(
             "Get user with %s%s; calling -> %s",
-            "login name -> '{}'".format(name) if name is not None else "user ID -> '{}'".format(user_id),
+            f"login name -> '{name}'" if name is not None else f"user ID -> '{user_id}'",
             ", type -> 'service user'" if user_type == 17 else "",
             request_url,
         )
@@ -3223,11 +3197,11 @@ class OTCS:
             headers=request_header,
             timeout=None,
             failure_message="Failed to get user with {} and type -> {}".format(
-                "login name -> '{}'".format(name) if name is not None else "user ID -> {}".format(user_id),
+                f"login name -> '{name}'" if name is not None else f"user ID -> {user_id}",
                 user_type,
             ),
             warning_message="Couldn't find user with {} and type -> {}".format(
-                "login name -> '{}'".format(name) if name is not None else "user ID -> {}".format(user_id),
+                f"login name -> '{name}'" if name is not None else f"user ID -> {user_id}",
                 user_type,
             ),
             show_error=show_error,
@@ -3423,7 +3397,7 @@ class OTCS:
             headers=request_header,
             data=user_post_body,
             timeout=None,
-            failure_message="Failed to add user -> '{}'".format(name),
+            failure_message=f"Failed to add user -> '{name}'",
         )
 
     # end method definition
@@ -3469,7 +3443,7 @@ class OTCS:
             headers=request_header,
             data=user_put_body,
             timeout=None,
-            failure_message="Failed to update user with ID -> {}".format(user_id),
+            failure_message=f"Failed to update user with ID -> {user_id}",
         )
 
     # end method definition
@@ -3599,7 +3573,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get photo of user with ID -> {}".format(user_id),
+            failure_message=f"Failed to get photo of user with ID -> {user_id}",
         )
 
     # end method definition
@@ -3638,7 +3612,7 @@ class OTCS:
             headers=request_header,
             data=update_user_put_body,
             timeout=None,
-            failure_message="Failed to update user with ID -> {}".format(user_id),
+            failure_message=f"Failed to update user with ID -> {user_id}",
         )
 
     # end method definition
@@ -3814,9 +3788,7 @@ class OTCS:
             headers=request_header,
             data=post_data,
             timeout=None,
-            failure_message="Failed to assign proxy user with ID -> {} to current user".format(
-                proxy_user_id,
-            ),
+            failure_message=f"Failed to assign proxy user with ID -> {proxy_user_id} to current user",
         )
 
     # end method definition
@@ -3958,7 +3930,7 @@ class OTCS:
             method="POST",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to add favorite for node ID -> {}".format(node_id),
+            failure_message=f"Failed to add favorite for node ID -> {node_id}",
         )
 
     # end method definition
@@ -4011,7 +3983,7 @@ class OTCS:
             headers=request_header,
             data=favorite_tab_post_body,
             timeout=None,
-            failure_message="Failed to add favorite tab -> {}".format(tab_name),
+            failure_message=f"Failed to add favorite tab -> {tab_name}",
         )
 
     # end method definition
@@ -4528,13 +4500,13 @@ class OTCS:
         if page:
             query["page"] = page
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-        request_url = self.config()["membersUrlv2"] + "?{}".format(encoded_query)
+        request_url = self.config()["membersUrlv2"] + f"?{encoded_query}"
 
         request_header = self.request_form_header()
 
         self.logger.debug(
             "Get groups%s; calling -> %s",
-            " with name -> '{}'".format(where_name) if where_name else "",
+            f" with name -> '{where_name}'" if where_name else "",
             request_url,
         )
 
@@ -4544,10 +4516,10 @@ class OTCS:
             headers=request_header,
             timeout=None,
             failure_message="Failed to get groups{}".format(
-                " with name -> '{}'".format(where_name) if where_name else ""
+                f" with name -> '{where_name}'" if where_name else ""
             ),
             warning_message="Groups{} do not yet exist!".format(
-                " with name -> '{}'".format(where_name) if where_name else ""
+                f" with name -> '{where_name}'" if where_name else ""
             ),
             show_error=show_error,
         )
@@ -4742,7 +4714,7 @@ class OTCS:
             query = {"where_type": group_type}
             query["where_name"] = name
             encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-            request_url = self.config()["membersUrlv2"] + "?{}".format(encoded_query)
+            request_url = self.config()["membersUrlv2"] + f"?{encoded_query}"
         else:
             # If a group ID is provided, we use the direct URL to that group:
             request_url = self.config()["membersUrlv2"] + "/" + str(group_id)
@@ -4751,7 +4723,7 @@ class OTCS:
 
         self.logger.debug(
             "Get group with%s; calling -> %s",
-            " name -> '{}'".format(name) if name else "ID -> {}".format(group_id),
+            f" name -> '{name}'" if name else f"ID -> {group_id}",
             request_url,
         )
 
@@ -4760,8 +4732,8 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get group -> '{}'".format(name or group_id),
-            warning_message="Group -> '{}' does not yet exist".format(name or group_id),
+            failure_message=f"Failed to get group -> '{name or group_id}'",
+            warning_message=f"Group -> '{name or group_id}' does not yet exist",
             show_error=show_error,
         )
 
@@ -4810,7 +4782,7 @@ class OTCS:
             headers=request_header,
             data=group_post_body,
             timeout=None,
-            failure_message="Failed to add group -> '{}'".format(name),
+            failure_message=f"Failed to add group -> '{name}'",
         )
 
     # end method definition
@@ -4974,7 +4946,7 @@ class OTCS:
 
         query_params = {"limit": limit, "query": query}
         encoded_query = urllib.parse.urlencode(query=query_params, doseq=True)
-        request_url = self.config()["membersUrlv2"] + "/signingusers?{}".format(encoded_query)
+        request_url = self.config()["membersUrlv2"] + f"/signingusers?{encoded_query}"
 
         request_header = self.request_form_header()
 
@@ -5063,7 +5035,7 @@ class OTCS:
         if page:
             query["page"] = page
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-        request_url = self.config()["membersUrlv2"] + "/" + str(group) + "/members?{}".format(encoded_query)
+        request_url = self.config()["membersUrlv2"] + "/" + str(group) + f"/members?{encoded_query}"
 
         request_header = self.request_form_header()
 
@@ -5078,9 +5050,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get members of group with ID -> {}".format(
-                group,
-            ),
+            failure_message=f"Failed to get members of group with ID -> {group}",
         )
 
     # end method definition
@@ -5235,10 +5205,7 @@ class OTCS:
             headers=request_header,
             data=group_member_post_body,
             timeout=None,
-            failure_message="Failed to add member with ID -> {} to group with ID -> {}".format(
-                member_id,
-                group_id,
-            ),
+            failure_message=f"Failed to add member with ID -> {member_id} to group with ID -> {group_id}",
         )
 
     # end method definition
@@ -5280,7 +5247,7 @@ class OTCS:
             headers=request_header,
             data=request_body,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update privilege {}".format(privilege_id),
+            failure_message=f"Failed to update privilege {privilege_id}",
         )
 
         if response:
@@ -5810,7 +5777,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["nodesUrlv2"] + "/" + str(node_id) + "?{}".format(encoded_query)
+        request_url = self.config()["nodesUrlv2"] + "/" + str(node_id) + f"?{encoded_query}"
         if metadata:
             request_url += "&metadata"
 
@@ -5827,7 +5794,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=timeout,
-            failure_message="Failed to get node with ID -> {}".format(node_id),
+            failure_message=f"Failed to get node with ID -> {node_id}",
         )
 
     # end method definition
@@ -5894,7 +5861,7 @@ class OTCS:
             query["fields"] = fields
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["nodesUrlv2"] + "/" + str(parent_id) + "/nodes?{}".format(encoded_query)
+        request_url = self.config()["nodesUrlv2"] + "/" + str(parent_id) + f"/nodes?{encoded_query}"
         if metadata:
             request_url += "&metadata"
 
@@ -5912,14 +5879,8 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            warning_message="Node with name -> '{}' and parent ID -> {} does not exist".format(
-                name,
-                parent_id,
-            ),
-            failure_message="Failed to get node with name -> '{}' and parent ID -> {}".format(
-                name,
-                parent_id,
-            ),
+            warning_message=f"Node with name -> '{name}' and parent ID -> {parent_id} does not exist",
+            failure_message=f"Failed to get node with name -> '{name}' and parent ID -> {parent_id}",
             show_error=show_error,
         )
 
@@ -6256,10 +6217,8 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            warning_message="Node with nickname -> '{}' does not exist".format(
-                nickname,
-            ),
-            failure_message="Failed to get node with nickname -> '{}'".format(nickname),
+            warning_message=f"Node with nickname -> '{nickname}' does not exist",
+            failure_message=f"Failed to get node with nickname -> '{nickname}'",
             show_error=show_error,
         )
 
@@ -6324,14 +6283,8 @@ class OTCS:
             headers=request_header,
             data=nickname_put_body,
             timeout=None,
-            warning_message="Cannot assign nickname -> '{}' to node ID -> {}. Maybe the nickname is already in use or the node does not exist.".format(
-                nickname,
-                node_id,
-            ),
-            failure_message="Failed to assign nickname -> '{}' to node ID -> {}".format(
-                nickname,
-                node_id,
-            ),
+            warning_message=f"Cannot assign nickname -> '{nickname}' to node ID -> {node_id}. Maybe the nickname is already in use or the node does not exist.",
+            failure_message=f"Failed to assign nickname -> '{nickname}' to node ID -> {node_id}",
             show_error=show_error,
         )
 
@@ -6474,7 +6427,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["nodesUrlv2"] + "/" + str(parent_node_id) + "/nodes" + "?{}".format(encoded_query)
+        request_url = self.config()["nodesUrlv2"] + "/" + str(parent_node_id) + "/nodes" + f"?{encoded_query}"
         if metadata:
             request_url += "&metadata"
 
@@ -6493,9 +6446,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get subnodes for parent node with ID -> {}".format(
-                parent_node_id,
-            ),
+            failure_message=f"Failed to get subnodes for parent node with ID -> {parent_node_id}",
         )
 
     # end method definition
@@ -6711,7 +6662,7 @@ class OTCS:
                     continue
                 # Join list values with pipe (this is a facet OR operation). Scalar values are used as string:
                 value = "|".join(str(item) for item in v) if isinstance(v, list) else str(v)
-                where_facet.append("{}:{}".format(k, value))
+                where_facet.append(f"{k}:{value}")
             if where_facet:
                 query["where_facet"] = where_facet
         if sort:
@@ -6723,15 +6674,15 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["facetBrowseUrl"] + "/" + str(parent_id) + "?{}".format(encoded_query)
+        request_url = self.config()["facetBrowseUrl"] + "/" + str(parent_id) + f"?{encoded_query}"
 
         request_header = self.request_form_header()
 
         self.logger.debug(
             "Get nodes of parent with ID -> %d%s%s (page -> %d, item limit -> %d); calling -> %s",
             parent_id,
-            " and name -> '{}'".format(name) if name else "",
-            " and facet values -> {}".format(facet_values) if facet_values else "",
+            f" and name -> '{name}'" if name else "",
+            f" and facet values -> {facet_values}" if facet_values else "",
             page,
             page_size,
             request_url,
@@ -6742,9 +6693,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get nodes for parent with ID -> {}".format(
-                parent_id,
-            ),
+            failure_message=f"Failed to get nodes for parent with ID -> {parent_id}",
         )
 
     # end method definition
@@ -7288,9 +7237,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get columns for node with ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to get columns for node with ID -> {node_id}",
         )
 
     # end method definition
@@ -7378,9 +7325,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get ancestors for node with ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to get ancestors for node with ID -> {node_id}",
         )
 
     # end method definition
@@ -7487,18 +7432,18 @@ class OTCS:
         if facet_values_limit:
             query["top_values_limit"] = facet_values_limit
         if facet_values:
-            query["where_facet"] = ["{}:{}".format(k, v) for k, v in facet_values.items()]
+            query["where_facet"] = [f"{k}:{v}" for k, v in facet_values.items()]
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["facetsUrl"] + "/" + str(node_id) + "?{}".format(encoded_query)
+        request_url = self.config()["facetsUrl"] + "/" + str(node_id) + f"?{encoded_query}"
 
         request_header = self.request_form_header()
 
         self.logger.debug(
             "Get facets for node with ID -> %d%s; calling -> %s",
             node_id,
-            " and preselected facets -> {}".format(facet_values) if facet_values else "",
+            f" and preselected facets -> {facet_values}" if facet_values else "",
             request_url,
         )
 
@@ -7507,9 +7452,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get facets for node with ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to get facets for node with ID -> {node_id}",
         )
 
     # end method definition
@@ -7658,9 +7601,7 @@ class OTCS:
             headers=request_header,
             data=actions_post_body,
             timeout=None,
-            failure_message="Failed to get actions for node with ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to get actions for node with ID -> {node_id}",
         )
 
     # end method definition
@@ -7723,10 +7664,7 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(rename_node_put_body)},
             timeout=None,
-            failure_message="Failed to rename node with ID -> {} to -> '{}'".format(
-                node_id,
-                name,
-            ),
+            failure_message=f"Failed to rename node with ID -> {node_id} to -> '{name}'",
             parse_error_response=parse_error_response,
         )
 
@@ -7781,7 +7719,7 @@ class OTCS:
             method="DELETE",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to delete node with ID -> {}".format(node_id),
+            failure_message=f"Failed to delete node with ID -> {node_id}",
         )
 
         # Do we want to immediately purge it from the Recycle Bin?
@@ -7824,9 +7762,7 @@ class OTCS:
             headers=request_header,
             data=purge_data,
             timeout=None,
-            failure_message="Failed to purge node with ID -> {} from the recycle bin".format(
-                node_id,
-            ),
+            failure_message=f"Failed to purge node with ID -> {node_id} from the recycle bin",
         )
 
     # end method definition
@@ -7874,9 +7810,7 @@ class OTCS:
             headers=request_header,
             data=restore_data,
             timeout=None,
-            failure_message="Failed to restore node(s) with ID(s) -> {} from the recycle bin".format(
-                node_id,
-            ),
+            failure_message=f"Failed to restore node(s) with ID(s) -> {node_id} from the recycle bin",
         )
 
     # end method definition
@@ -8017,7 +7951,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["nodesUrlv2"] + "/" + str(node_id) + "/audit" + "?{}".format(encoded_query)
+        request_url = self.config()["nodesUrlv2"] + "/" + str(node_id) + "/audit" + f"?{encoded_query}"
 
         request_header = self.request_form_header()
 
@@ -8034,9 +7968,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get audit for node with ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to get audit for node with ID -> {node_id}",
         )
 
     # end method definition
@@ -8273,7 +8205,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=timeout,
-            failure_message="Failed to get volume of type -> {}".format(volume_type),
+            failure_message=f"Failed to get volume of type -> {volume_type}",
         )
 
     # end method definition
@@ -8327,10 +8259,7 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(check_node_name_post_data)},
             timeout=None,
-            failure_message="Failed to check if node name -> '{}' can be created in parent with ID -> {}".format(
-                node_name,
-                parent_id,
-            ),
+            failure_message=f"Failed to check if node name -> '{node_name}' can be created in parent with ID -> {parent_id}",
         )
 
     # end method definition
@@ -8447,10 +8376,7 @@ class OTCS:
             data=upload_post_data,
             files=upload_post_files,
             timeout=None,
-            failure_message="Failed to upload file -> '{}' to volume of type -> {}".format(
-                path_or_url,
-                volume_type,
-            ),
+            failure_message=f"Failed to upload file -> '{path_or_url}' to volume of type -> {volume_type}",
         )
 
     # end method definition
@@ -8741,12 +8667,12 @@ class OTCS:
             timeout=None,
             warning_message="Cannot upload file -> '{}'{} to parent with ID -> {}".format(
                 file_name,
-                " from -> '{}' ".format(file_url) if file_url is not None else "",
+                f" from -> '{file_url}' " if file_url is not None else "",
                 parent_id,
             ),
             failure_message="Failed to upload file -> '{}'{}to parent with ID -> {}".format(
                 file_name,
-                " from -> '{}' ".format(file_url) if file_url is not None else "",
+                f" from -> '{file_url}' " if file_url is not None else "",
                 parent_id,
             ),
             show_error=show_error,
@@ -9107,10 +9033,7 @@ class OTCS:
             data=upload_post_data,
             files=upload_post_files,
             timeout=None,
-            failure_message="Failed to add file -> '{}' as new version to document with ID -> {}".format(
-                file_url,
-                node_id,
-            ),
+            failure_message=f"Failed to add file -> '{file_url}' as new version to document with ID -> {node_id}",
         )
 
     # end method definition
@@ -9183,9 +9106,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get list of versions of document with node ID -> {}".format(
-                str(node_id),
-            ),
+            failure_message=f"Failed to get list of versions of document with node ID -> {str(node_id)}",
         )
 
     # end method definition
@@ -9261,10 +9182,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get version -> {} of document with node ID -> {}".format(
-                version_number,
-                node_id,
-            ),
+            failure_message=f"Failed to get version -> {version_number} of document with node ID -> {node_id}",
         )
 
     # end method definition
@@ -9298,9 +9216,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get latest version of document with node ID -> {}".format(
-                str(node_id),
-            ),
+            failure_message=f"Failed to get latest version of document with node ID -> {str(node_id)}",
         )
 
     # end method definition
@@ -9343,7 +9259,7 @@ class OTCS:
 
         self.logger.debug(
             "Purge document versions down to the newest%s version%s of document with node ID -> %d; calling -> %s",
-            " {}".format(versions_to_keep) if versions_to_keep > 1 else "",
+            f" {versions_to_keep}" if versions_to_keep > 1 else "",
             "s" if versions_to_keep > 1 else "",
             node_id,
             request_url,
@@ -9355,10 +9271,7 @@ class OTCS:
             headers=request_header,
             data=purge_delete_body,
             timeout=None,
-            failure_message="Failed to purge to {} versions of document with node ID -> {}".format(
-                versions_to_keep,
-                str(node_id),
-            ),
+            failure_message=f"Failed to purge to {versions_to_keep} versions of document with node ID -> {str(node_id)}",
         )
 
     # end method definition
@@ -9415,9 +9328,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get content of document with node ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to get content of document with node ID -> {node_id}",
             parse_request_response=parse_request_response,
         )
 
@@ -9523,9 +9434,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to download document with node ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to download document with node ID -> {node_id}",
             parse_request_response=False,
             stream=True,  # as we may download large documents we better enable streaming here
         )
@@ -9944,7 +9853,7 @@ class OTCS:
             headers=request_header,
             data=search_post_body,
             timeout=None,
-            failure_message="Failed to search for term -> '{}'".format(search_term),
+            failure_message=f"Failed to search for term -> '{search_term}'",
         )
 
     # end method definition
@@ -10272,12 +10181,8 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            warning_message="External system connection -> '{}' does not yet exist".format(
-                connection_name,
-            ),
-            failure_message="Failed to get external system connection -> '{}'".format(
-                connection_name,
-            ),
+            warning_message=f"External system connection -> '{connection_name}' does not yet exist",
+            failure_message=f"Failed to get external system connection -> '{connection_name}'",
             show_error=show_error,
         )
 
@@ -10397,9 +10302,7 @@ class OTCS:
             headers=request_header,
             data=external_system_post_body,
             timeout=None,
-            failure_message="Failed to create external system connection -> '{}'".format(
-                connection_name,
-            ),
+            failure_message=f"Failed to create external system connection -> '{connection_name}'",
         )
 
     # end method definition
@@ -10438,9 +10341,7 @@ class OTCS:
             headers=request_header,
             data=create_worbench_post_data,
             timeout=None,
-            failure_message="Failed to create transport workbench -> {}".format(
-                workbench_name,
-            ),
+            failure_message=f"Failed to create transport workbench -> {workbench_name}",
         )
 
     # end method definition
@@ -10483,10 +10384,7 @@ class OTCS:
             headers=request_header,
             data=unpack_package_post_data,
             timeout=None,
-            failure_message="Failed to unpack package with ID -> {} to workbench with ID -> {}".format(
-                package_id,
-                workbench_id,
-            ),
+            failure_message=f"Failed to unpack package with ID -> {package_id} to workbench with ID -> {workbench_id}",
         )
 
     # end method definition
@@ -10554,9 +10452,7 @@ class OTCS:
                 method="POST",
                 headers=request_header,
                 timeout=None,
-                failure_message="Failed to deploy workbench with ID -> {}".format(
-                    workbench_id,
-                ),
+                failure_message=f"Failed to deploy workbench with ID -> {workbench_id}",
             )
 
             # Transport packages can also partly fail to deploy.
@@ -11328,7 +11224,7 @@ class OTCS:
             + external_system_id
             + "/botypes/"
             + encoded_type_name
-            + "?{}".format(encoded_query)
+            + f"?{encoded_query}"
         )
         request_header = self.request_form_header()
 
@@ -11344,10 +11240,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get business object type -> '{}' for external system -> {}".format(
-                type_name,
-                external_system_id,
-            ),
+            failure_message=f"Failed to get business object type -> '{type_name}' for external system -> {external_system_id}",
         )
 
     # end method definition
@@ -11468,7 +11361,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get business object type -> {}".format(type_id),
+            failure_message=f"Failed to get business object type -> {type_id}",
         )
 
     # end method definition
@@ -11585,7 +11478,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["businessObjectsUrl"] + "?{}".format(encoded_query)
+        request_url = self.config()["businessObjectsUrl"] + f"?{encoded_query}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -11813,9 +11706,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["businessObjectsSearchUrl"] + "?{}".format(
-            encoded_query,
-        )
+        request_url = self.config()["businessObjectsSearchUrl"] + f"?{encoded_query}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -12122,7 +12013,7 @@ class OTCS:
         # Add the required query parameter
         query = {"smart_document_type_id": smart_document_type_id}
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-        request_url += "?{}".format(encoded_query)
+        request_url += f"?{encoded_query}"
 
         self.logger.debug(
             "Get Smart Document Type -> %d; calling -> %s",
@@ -12135,7 +12026,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get Smart Document Type -> {}".format(smart_document_type_id),
+            failure_message=f"Failed to get Smart Document Type -> {smart_document_type_id}",
         )
 
     # end method definition
@@ -12162,10 +12053,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["smartDocumentTypesUrl"] + "/{}/template/{}".format(
-            smart_document_type_id,
-            template_id,
-        )
+        request_url = self.config()["smartDocumentTypesUrl"] + f"/{smart_document_type_id}/template/{template_id}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -12180,10 +12068,7 @@ class OTCS:
             method="DELETE",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to delete template -> {} from Smart Document Type -> {}".format(
-                template_id,
-                smart_document_type_id,
-            ),
+            failure_message=f"Failed to delete template -> {template_id} from Smart Document Type -> {smart_document_type_id}",
         )
 
     # end method definition
@@ -12335,9 +12220,7 @@ class OTCS:
             headers=request_header,
             data=post_data,
             timeout=None,
-            failure_message="Failed to create Smart Document Type rule for type -> {}".format(
-                smart_document_type_id,
-            ),
+            failure_message=f"Failed to create Smart Document Type rule for type -> {smart_document_type_id}",
         )
 
     # end method definition
@@ -12358,7 +12241,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["smartDocumentTypesUrl"] + "/rules/{}".format(rule_id)
+        request_url = self.config()["smartDocumentTypesUrl"] + f"/rules/{rule_id}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -12372,7 +12255,7 @@ class OTCS:
             method="DELETE",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to delete Smart Document Type rule -> {}".format(rule_id),
+            failure_message=f"Failed to delete Smart Document Type rule -> {rule_id}",
         )
 
     # end method definition
@@ -12404,7 +12287,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["smartDocumentTypesUrl"] + "/rules/{}/bots".format(rule_id)
+        request_url = self.config()["smartDocumentTypesUrl"] + f"/rules/{rule_id}/bots"
         request_header = self.request_form_header()
 
         # Add optional query parameters
@@ -12415,7 +12298,7 @@ class OTCS:
             query["action"] = action
         if query:
             encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-            request_url += "?{}".format(encoded_query)
+            request_url += f"?{encoded_query}"
 
         self.logger.debug(
             "Get Smart Document Type bots for rule -> %d; calling -> %s",
@@ -12428,7 +12311,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get Smart Document Type bots for rule -> {}".format(rule_id),
+            failure_message=f"Failed to get Smart Document Type bots for rule -> {rule_id}",
         )
 
     # end method definition
@@ -12460,7 +12343,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["smartDocumentTypesUrl"] + "/rules/{}/bots/{}".format(rule_id, bot_key)
+        request_url = self.config()["smartDocumentTypesUrl"] + f"/rules/{rule_id}/bots/{bot_key}"
         request_header = self.request_form_header()
 
         # Build formData payload
@@ -12481,10 +12364,7 @@ class OTCS:
             headers=request_header,
             data=post_data,
             timeout=None,
-            failure_message="Failed to save Smart Document Type bot -> '{}' for rule -> {}".format(
-                bot_key,
-                rule_id,
-            ),
+            failure_message=f"Failed to save Smart Document Type bot -> '{bot_key}' for rule -> {rule_id}",
         )
 
     # end method definition
@@ -12507,7 +12387,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["smartDocumentTypesUrl"] + "/rules/{}/bots/{}".format(rule_id, bot_key)
+        request_url = self.config()["smartDocumentTypesUrl"] + f"/rules/{rule_id}/bots/{bot_key}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -12522,10 +12402,7 @@ class OTCS:
             method="DELETE",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to delete Smart Document Type bot -> '{}' for rule -> {}".format(
-                bot_key,
-                rule_id,
-            ),
+            failure_message=f"Failed to delete Smart Document Type bot -> '{bot_key}' for rule -> {rule_id}",
         )
 
     # end method definition
@@ -12565,7 +12442,7 @@ class OTCS:
             "key": key,
         }
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-        request_url += "?{}".format(encoded_query)
+        request_url += f"?{encoded_query}"
 
         self.logger.debug(
             "Get Expression Builder data; calling -> %s",
@@ -12691,7 +12568,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["businessWorkspaceTypesUrlv2"] + "?{}".format(encoded_query)
+        request_url = self.config()["businessWorkspaceTypesUrlv2"] + f"?{encoded_query}"
         request_header = self.request_form_header()
 
         self.logger.debug("Get workspace types; calling -> %s", request_url)
@@ -12701,7 +12578,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get workspace types with URL -> {}".format(request_url),
+            failure_message=f"Failed to get workspace types with URL -> {request_url}",
             show_error=show_error,
         )
 
@@ -12813,7 +12690,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get workspace type with ID -> {}".format(type_id),
+            failure_message=f"Failed to get workspace type with ID -> {type_id}",
         )
 
     # end method definition
@@ -12937,7 +12814,7 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(workspace_type_put_body)},
             timeout=None,
-            failure_message="Failed to update workspace type with ID -> {}".format(type_id),
+            failure_message=f"Failed to update workspace type with ID -> {type_id}",
         )
 
     # end method definition
@@ -13018,15 +12895,15 @@ class OTCS:
 
         """
 
-        request_url = self.config()["businessworkspacecreateform"] + "?template_id={}".format(template_id)
+        request_url = self.config()["businessworkspacecreateform"] + f"?template_id={template_id}"
         # Is a parent ID specifified? Then we need to add it to the request URL
         if parent_id is not None:
-            request_url += "&parent_id={}".format(parent_id)
+            request_url += f"&parent_id={parent_id}"
         # Is this workspace connected to a business application / external system?
         if external_system_id and bo_type and bo_id:
-            request_url += "&ext_system_id={}".format(external_system_id)
-            request_url += "&bo_type={}".format(bo_type)
-            request_url += "&bo_id={}".format(bo_id)
+            request_url += f"&ext_system_id={external_system_id}"
+            request_url += f"&bo_type={bo_type}"
+            request_url += f"&bo_id={bo_id}"
             self.logger.debug(
                 "Include business object connection -> (%s, %s, %s) in workspace create form...",
                 external_system_id,
@@ -13042,15 +12919,10 @@ class OTCS:
         )
 
         if parent_id:
-            failure_message = "Failed to get workspace create form for template -> {} and parent ID -> {}".format(
-                template_id,
-                parent_id,
-            )
+            failure_message = f"Failed to get workspace create form for template -> {template_id} and parent ID -> {parent_id}"
         else:
             failure_message = (
-                "Failed to get workspace create form for template with ID -> {} (called without parent ID)".format(
-                    template_id,
-                )
+                f"Failed to get workspace create form for template with ID -> {template_id} (called without parent ID)"
             )
 
         return self.do_request(
@@ -13259,7 +13131,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get workspace with ID -> {}".format(node_id),
+            failure_message=f"Failed to get workspace with ID -> {node_id}",
         )
 
     # end method definition
@@ -13696,9 +13568,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["businessWorkspacesUrl"] + "?{}".format(
-            encoded_query,
-        )
+        request_url = self.config()["businessWorkspacesUrl"] + f"?{encoded_query}"
         if metadata:
             request_url += "&metadata"
 
@@ -13712,10 +13582,7 @@ class OTCS:
                     type_name,
                     request_url,
                 )
-                failure_message = "Failed to get workspace with name -> '{}' and type -> '{}'".format(
-                    name,
-                    type_name,
-                )
+                failure_message = f"Failed to get workspace with name -> '{name}' and type -> '{type_name}'"
             else:
                 self.logger.debug(
                     "Get workspace with name -> '%s' and type ID -> %d; calling -> %s",
@@ -13723,10 +13590,7 @@ class OTCS:
                     type_id,
                     request_url,
                 )
-                failure_message = "Failed to get workspace with name -> '{}' and type ID -> '{}'".format(
-                    name,
-                    type_id,
-                )
+                failure_message = f"Failed to get workspace with name -> '{name}' and type ID -> '{type_id}'"
         elif type_name:
             self.logger.debug(
                 "Get %s workspace instances of type -> '%s'; calling -> %s",
@@ -13920,16 +13784,8 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            warning_message="Cannot get workspace via external system -> '{}', Business Object Type -> '{}', and Business Object ID -> {}. It does not exist.".format(
-                external_system_name,
-                business_object_type,
-                business_object_id,
-            ),
-            failure_message="Failed to get workspace via external system -> '{}', Business Object Type -> '{}', and Business Object ID -> {}".format(
-                external_system_name,
-                business_object_type,
-                business_object_id,
-            ),
+            warning_message=f"Cannot get workspace via external system -> '{external_system_name}', Business Object Type -> '{business_object_type}', and Business Object ID -> {business_object_id}. It does not exist.",
+            failure_message=f"Failed to get workspace via external system -> '{external_system_name}', Business Object Type -> '{business_object_type}', and Business Object ID -> {business_object_id}",
             show_error=show_error,
         )
 
@@ -14122,18 +13978,8 @@ class OTCS:
             headers=request_header,
             data=workspace_put_data,
             timeout=None,
-            warning_message="Cannot update reference for workspace ID -> {} with business object connection -> ('{}', '{}', {})".format(
-                workspace_id,
-                external_system_id,
-                bo_type,
-                bo_id,
-            ),
-            failure_message="Failed to update reference for workspace ID -> {} with business object connection -> ('{}', '{}', {})".format(
-                workspace_id,
-                external_system_id,
-                bo_type,
-                bo_id,
-            ),
+            warning_message=f"Cannot update reference for workspace ID -> {workspace_id} with business object connection -> ('{external_system_id}', '{bo_type}', {bo_id})",
+            failure_message=f"Failed to update reference for workspace ID -> {workspace_id} with business object connection -> ('{external_system_id}', '{bo_type}', {bo_id})",
             show_error=show_error,
         )
 
@@ -14197,18 +14043,8 @@ class OTCS:
             headers=request_header,
             data=workspace_put_data,
             timeout=None,
-            warning_message="Cannot delete reference for workspace ID -> {} with business object connection -> ({}, {}, {})".format(
-                workspace_id,
-                external_system_id,
-                bo_type,
-                bo_id,
-            ),
-            failure_message="Failed to delete reference for workspace ID -> {} with business object connection -> ({}, {}, {})".format(
-                workspace_id,
-                external_system_id,
-                bo_type,
-                bo_id,
-            ),
+            warning_message=f"Cannot delete reference for workspace ID -> {workspace_id} with business object connection -> ({external_system_id}, {bo_type}, {bo_id})",
+            failure_message=f"Failed to delete reference for workspace ID -> {workspace_id} with business object connection -> ({external_system_id}, {bo_type}, {bo_id})",
             show_error=show_error,
         )
 
@@ -14389,14 +14225,8 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(create_workspace_post_data)},
             timeout=None,
-            warning_message="Failed to create workspace -> '{}' from template with ID -> {}".format(
-                workspace_name,
-                workspace_template_id,
-            ),
-            failure_message="Failed to create workspace -> '{}' from template with ID -> {}".format(
-                workspace_name,
-                workspace_template_id,
-            ),
+            warning_message=f"Failed to create workspace -> '{workspace_name}' from template with ID -> {workspace_template_id}",
+            failure_message=f"Failed to create workspace -> '{workspace_name}' from template with ID -> {workspace_template_id}",
             show_error=show_error,
             show_warning=(not show_error),
         )
@@ -14546,7 +14376,7 @@ class OTCS:
             "rel_type": relationship_type,
         }
 
-        request_url = self.config()["businessWorkspacesUrl"] + "/{}/relateditems".format(workspace_id)
+        request_url = self.config()["businessWorkspacesUrl"] + f"/{workspace_id}/relateditems"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -14563,16 +14393,8 @@ class OTCS:
             headers=request_header,
             data=create_workspace_relationship_post_data,
             timeout=None,
-            warning_message="Cannot create workspace relationship between -> {} and -> {} of type -> {}. It may already exist.".format(
-                workspace_id,
-                related_workspace_id,
-                relationship_type,
-            ),
-            failure_message="Failed to create workspace relationship between -> {} and -> {} or type -> '{}'".format(
-                workspace_id,
-                related_workspace_id,
-                relationship_type,
-            ),
+            warning_message=f"Cannot create workspace relationship between -> {workspace_id} and -> {related_workspace_id} of type -> {relationship_type}. It may already exist.",
+            failure_message=f"Failed to create workspace relationship between -> {workspace_id} and -> {related_workspace_id} or type -> '{relationship_type}'",
             show_error=show_error,
         )
 
@@ -14768,7 +14590,7 @@ class OTCS:
             query["action"] = "properties-"
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=False)
-        request_url += "?{}".format(encoded_query)
+        request_url += f"?{encoded_query}"
         if metadata:
             request_url += "&metadata"
 
@@ -14785,9 +14607,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get related workspaces of workspace with ID -> {}".format(
-                workspace_id,
-            ),
+            failure_message=f"Failed to get related workspaces of workspace with ID -> {workspace_id}",
         )
 
     # end method definition
@@ -14929,11 +14749,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["businessWorkspacesUrl"] + "/{}/relateditems/{}?rel_type={}".format(
-            workspace_id,
-            related_workspace_id,
-            relationship_type,
-        )
+        request_url = self.config()["businessWorkspacesUrl"] + f"/{workspace_id}/relateditems/{related_workspace_id}?rel_type={relationship_type}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -14948,14 +14764,8 @@ class OTCS:
             method="DELETE",
             headers=request_header,
             timeout=None,
-            warning_message="Cannot delete workspace relationship between -> {} and -> {}. It may already exist.".format(
-                workspace_id,
-                related_workspace_id,
-            ),
-            failure_message="Failed to delete workspace relationship between -> {} and -> {}".format(
-                workspace_id,
-                related_workspace_id,
-            ),
+            warning_message=f"Cannot delete workspace relationship between -> {workspace_id} and -> {related_workspace_id}. It may already exist.",
+            failure_message=f"Failed to delete workspace relationship between -> {workspace_id} and -> {related_workspace_id}",
             show_error=show_error,
         )
 
@@ -15048,9 +14858,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get roles of workspace with ID -> {}".format(
-                workspace_id,
-            ),
+            failure_message=f"Failed to get roles of workspace with ID -> {workspace_id}",
         )
 
     # end method definition
@@ -15071,7 +14879,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["businessWorkspacesUrl"] + "/{}/roles/{}/members".format(workspace_id, role_id)
+        request_url = self.config()["businessWorkspacesUrl"] + f"/{workspace_id}/roles/{role_id}/members"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -15086,9 +14894,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get workspace members for workspace with ID -> {} and role with ID -> {}".format(
-                workspace_id, role_id
-            ),
+            failure_message=f"Failed to get workspace members for workspace with ID -> {workspace_id} and role with ID -> {role_id}",
         )
 
     # end method definition
@@ -15187,7 +14993,7 @@ class OTCS:
 
         add_workspace_member_post_data = {"id": str(member_id)}
 
-        request_url = self.config()["businessWorkspacesUrl"] + "/{}/roles/{}/members".format(workspace_id, role_id)
+        request_url = self.config()["businessWorkspacesUrl"] + f"/{workspace_id}/roles/{role_id}/members"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -15204,11 +15010,7 @@ class OTCS:
             headers=request_header,
             data=add_workspace_member_post_data,
             timeout=None,
-            failure_message="Failed to add user/group with ID -> {} to role with ID -> {} of workspace with ID -> {}".format(
-                member_id,
-                role_id,
-                workspace_id,
-            ),
+            failure_message=f"Failed to add user/group with ID -> {member_id} to role with ID -> {role_id} of workspace with ID -> {workspace_id}",
         )
 
     # end method definition
@@ -15265,11 +15067,7 @@ class OTCS:
                 )
             return None
 
-        request_url = self.config()["businessWorkspacesUrl"] + "/{}/roles/{}/members/{}".format(
-            workspace_id,
-            role_id,
-            member_id,
-        )
+        request_url = self.config()["businessWorkspacesUrl"] + f"/{workspace_id}/roles/{role_id}/members/{member_id}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -15285,11 +15083,7 @@ class OTCS:
             method="DELETE",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to remove user/group with ID -> {} from role with ID -> {} of workspace with ID -> {}".format(
-                member_id,
-                role_id,
-                workspace_id,
-            ),
+            failure_message=f"Failed to remove user/group with ID -> {member_id} from role with ID -> {role_id} of workspace with ID -> {workspace_id}",
         )
 
     # end method definition
@@ -15389,10 +15183,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["businessWorkspacesUrl"] + "/{}/roles/{}".format(
-            workspace_id,
-            role_id,
-        )
+        request_url = self.config()["businessWorkspacesUrl"] + f"/{workspace_id}/roles/{role_id}"
 
         request_header = self.request_form_header()
 
@@ -15415,10 +15206,7 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(permission_put_data)},
             timeout=None,
-            failure_message="Failed to update permissions for role with ID -> {} of workspace with ID -> {}".format(
-                role_id,
-                workspace_id,
-            ),
+            failure_message=f"Failed to update permissions for role with ID -> {role_id} of workspace with ID -> {workspace_id}",
         )
 
     # end method definition
@@ -15485,10 +15273,7 @@ class OTCS:
                 data=update_workspace_icon_post_body,
                 files=upload_workspace_icon_post_files,
                 timeout=None,
-                failure_message="Failed to update workspace ID -> {} with new icon -> '{}'".format(
-                    workspace_id,
-                    file_path,
-                ),
+                failure_message=f"Failed to update workspace ID -> {workspace_id} with new icon -> '{file_path}'",
             )
 
     # end method definition
@@ -15541,7 +15326,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["uniqueNamesUrl"] + "?{}".format(encoded_query)
+        request_url = self.config()["uniqueNamesUrl"] + f"?{encoded_query}"
         request_header = self.request_form_header()
 
         if subtype:
@@ -15551,17 +15336,14 @@ class OTCS:
                 str(subtype),
                 request_url,
             )
-            warning_message = "Failed to get unique names -> {} of subtype -> {}".format(
-                names,
-                subtype,
-            )
+            warning_message = f"Failed to get unique names -> {names} of subtype -> {subtype}"
         else:
             self.logger.debug(
                 "Get unique names -> %s; calling -> %s",
                 str(names),
                 request_url,
             )
-            warning_message = "Failed to get unique names -> {}".format(names)
+            warning_message = f"Failed to get unique names -> {names}"
 
         return self.do_request(
             url=request_url,
@@ -15736,8 +15518,8 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(create_item_post_data)} if body else create_item_post_data,
             timeout=None,
-            warning_message="Cannot create item -> '{}'".format(item_name),
-            failure_message="Failed to create item -> '{}'".format(item_name),
+            warning_message=f"Cannot create item -> '{item_name}'",
+            failure_message=f"Failed to create item -> '{item_name}'",
             show_error=show_error,
             parse_error_response=parse_error_response,
         )
@@ -15787,7 +15569,7 @@ class OTCS:
             data={"body": json.dumps(create_document_post_data)},
             timeout=None,
             parse_error_response=parse_error_response,
-            failure_message="Failed to create item -> '{}' ({})".format(new_name, node_id),
+            failure_message=f"Failed to create item -> '{new_name}' ({node_id})",
         )
 
     # end method definition
@@ -15863,7 +15645,7 @@ class OTCS:
         if update_item_put_data:
             self.logger.debug(
                 "Update item %s with new data -> %s; calling -> %s",
-                "-> '{}' ({})".format(item_name, node_id) if item_name else "with ID -> {}".format(node_id),
+                f"-> '{item_name}' ({node_id})" if item_name else f"with ID -> {node_id}",
                 str(update_item_put_data),
                 request_url,
             )
@@ -15875,7 +15657,7 @@ class OTCS:
                 data={"body": json.dumps(update_item_put_data)} if body else update_item_put_data,
                 timeout=None,
                 failure_message="Failed to update item {}".format(
-                    "-> '{}' ({})".format(item_name, node_id) if item_name else "with ID -> {}".format(node_id),
+                    f"-> '{item_name}' ({node_id})" if item_name else f"with ID -> {node_id}",
                 ),
             )
         else:
@@ -15888,7 +15670,7 @@ class OTCS:
             for category_id in category_data:
                 self.logger.debug(
                     "Update item %s, category ID -> %s with new category data -> %s",
-                    "-> '{}' ({})".format(item_name, node_id) if item_name else "with ID -> {}".format(node_id),
+                    f"-> '{item_name}' ({node_id})" if item_name else f"with ID -> {node_id}",
                     str(category_id),
                     str(category_data[category_id]),
                 )
@@ -15940,20 +15722,17 @@ class OTCS:
             str(category_ids),
         )
 
-        request_url = self.config()["nodesFormUrl"] + "/create?parent_id={}&type={}".format(parent_id, subtype)
+        request_url = self.config()["nodesFormUrl"] + f"/create?parent_id={parent_id}&type={subtype}"
 
         for cat_id in category_ids:
-            request_url += "&category_id={}".format(cat_id)
+            request_url += f"&category_id={cat_id}"
 
         response = self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Cannot get create form for parent ID -> {} and category IDs -> {}".format(
-                parent_id,
-                category_ids,
-            ),
+            failure_message=f"Cannot get create form for parent ID -> {parent_id} and category IDs -> {category_ids}",
         )
 
         return response
@@ -16085,20 +15864,14 @@ class OTCS:
             str(category_id),
         )
 
-        request_url = self.config()["nodesFormUrl"] + "/categories/{}?id={}&category_id={}".format(
-            operation, node_id, category_id
-        )
+        request_url = self.config()["nodesFormUrl"] + f"/categories/{operation}?id={node_id}&category_id={category_id}"
 
         response = self.do_request(
             url=request_url,
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Cannot get category {} form for node ID -> {} and category ID -> {}".format(
-                operation,
-                node_id,
-                category_id,
-            ),
+            failure_message=f"Cannot get category {operation} form for node ID -> {node_id} and category ID -> {category_id}",
         )
 
         return response
@@ -16136,9 +15909,7 @@ class OTCS:
             method="PUT",
             headers=request_header,
             data=system_attributes,
-            failure_message="Failed to update system attributes of item -> '{}' with values -> %s".format(
-                node_id,
-            ),
+            failure_message=f"Failed to update system attributes of item -> '{node_id}' with values -> %s",
         )
 
     # end method definition
@@ -16192,10 +15963,7 @@ class OTCS:
             self.config()["nodesUrlv2"]
             + "/"
             + str(parent_id)
-            + "/doctemplates?subtypes={}&sidepanel_subtypes={}".format(
-                self.ITEM_TYPE_DOCUMENT,
-                self.ITEM_TYPE_DOCUMENT,
-            )
+            + f"/doctemplates?subtypes={self.ITEM_TYPE_DOCUMENT}&sidepanel_subtypes={self.ITEM_TYPE_DOCUMENT}"
         )
         request_header = self.request_form_header()
 
@@ -16210,9 +15978,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get document templates for parent folder with ID -> {}".format(
-                parent_id,
-            ),
+            failure_message=f"Failed to get document templates for parent folder with ID -> {parent_id}",
         )
 
     # end method definition
@@ -16297,7 +16063,7 @@ class OTCS:
             # form the documentation on developer.opentext.com
             data={"body": json.dumps(create_document_post_data)},
             timeout=None,
-            failure_message="Failed to create document -> '{}'".format(doc_name),
+            failure_message=f"Failed to create document -> '{doc_name}'",
         )
 
     # end method definition
@@ -16354,8 +16120,8 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(create_wiki_post_data)},
             timeout=None,
-            warning_message="Cannot create wiki -> '{}'".format(name),
-            failure_message="Failed to create wiki -> '{}'".format(name),
+            warning_message=f"Cannot create wiki -> '{name}'",
+            failure_message=f"Failed to create wiki -> '{name}'",
             show_error=show_error,
         )
 
@@ -16416,8 +16182,8 @@ class OTCS:
             headers=request_header,
             data=create_wiki_page_post_data,
             timeout=None,
-            warning_message="Cannot create wiki page -> '{}'".format(name),
-            failure_message="Failed to create wiki page -> '{}'".format(name),
+            warning_message=f"Cannot create wiki page -> '{name}'",
+            failure_message=f"Failed to create wiki page -> '{name}'",
             show_error=show_error,
         )
 
@@ -16465,9 +16231,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get parameters of Web Report with nickname -> '{}'".format(
-                nickname,
-            ),
+            failure_message=f"Failed to get parameters of Web Report with nickname -> '{nickname}'",
         )
 
         if response and "data" in response:
@@ -16516,9 +16280,7 @@ class OTCS:
             headers=request_header,
             data=web_report_parameters,
             timeout=None,
-            failure_message="Failed to run web report with nickname -> '{}'".format(
-                nickname,
-            ),
+            failure_message=f"Failed to run web report with nickname -> '{nickname}'",
         )
 
     # end method definition
@@ -16554,9 +16316,7 @@ class OTCS:
             headers=request_header,
             data=install_cs_application_post_data,
             timeout=None,
-            failure_message="Failed to install OTCS application -> '{}'".format(
-                application_name,
-            ),
+            failure_message=f"Failed to install OTCS application -> '{application_name}'",
         )
 
     # end method definition
@@ -16613,11 +16373,7 @@ class OTCS:
             headers=request_header,
             data={"add_assignment": json.dumps(assignment_post_data)},
             timeout=None,
-            failure_message="Failed to assign item with ID -> {} to assignees -> {} (subject -> '{}')".format(
-                node_id,
-                assignees,
-                subject,
-            ),
+            failure_message=f"Failed to assign item with ID -> {node_id} to assignees -> {assignees} (subject -> '{subject}')",
         )
 
     # end method definition
@@ -16804,9 +16560,7 @@ class OTCS:
                 headers=request_header,
                 data={"body": json.dumps(permission_post_data)},
                 timeout=None,
-                failure_message="Failed to assign 'custom' permissions -> {} to item with ID -> {} (apply to -> {})".format(
-                    permissions, node_id, apply_to
-                ),
+                failure_message=f"Failed to assign 'custom' permissions -> {permissions} to item with ID -> {node_id} (apply to -> {apply_to})",
             )
         else:
             # Owner, Owner Group and Public require REST PUT:
@@ -16816,9 +16570,7 @@ class OTCS:
                 headers=request_header,
                 data={"body": json.dumps(permission_post_data)},
                 timeout=None,
-                failure_message="Failed to assign -> '{}' permissions -> {} to item with ID -> {} (apply to -> {})".format(
-                    assignee_type, permissions, node_id, apply_to
-                ),
+                failure_message=f"Failed to assign -> '{assignee_type}' permissions -> {permissions} to item with ID -> {node_id} (apply to -> {apply_to})",
             )
 
     # end method definition
@@ -16856,7 +16608,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get permissions for user -> {} to item with ID -> {}".format(assignee, node_id),
+            failure_message=f"Failed to get permissions for user -> {assignee} to item with ID -> {node_id}",
         )
 
     # end method definition
@@ -16941,9 +16693,7 @@ class OTCS:
                 headers=request_header,
                 data={"body": json.dumps(permission_delete_data)},
                 timeout=None,
-                failure_message="Failed to delete 'custom' permissions from item with ID -> {} (apply to -> {})".format(
-                    node_id, apply_to
-                ),
+                failure_message=f"Failed to delete 'custom' permissions from item with ID -> {node_id} (apply to -> {apply_to})",
             )
         else:
             # Owner, Owner Group and Public require REST PUT:
@@ -16953,9 +16703,7 @@ class OTCS:
                 headers=request_header,
                 data={"body": json.dumps(permission_delete_data)},
                 timeout=None,
-                failure_message="Failed to delete -> '{}' permissions from item with ID -> {} (apply to -> {})".format(
-                    assignee_type, node_id, apply_to
-                ),
+                failure_message=f"Failed to delete -> '{assignee_type}' permissions from item with ID -> {node_id} (apply to -> {apply_to})",
             )
 
     # end method definition
@@ -17086,7 +16834,7 @@ class OTCS:
             method="POST",
             headers=request_header,
             data=post_data,
-            failure_message="Failed to get node context for nodes -> {}".format(node_ids),
+            failure_message=f"Failed to get node context for nodes -> {node_ids}",
         )
 
     # end method definition
@@ -17228,9 +16976,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get categories for node ID -> {}".format(
-                str(node_id),
-            ),
+            failure_message=f"Failed to get categories for node ID -> {str(node_id)}",
         )
 
     # end method definition
@@ -17275,10 +17021,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get category with ID -> {} for node ID -> {}".format(
-                category_id,
-                node_id,
-            ),
+            failure_message=f"Failed to get category with ID -> {category_id} for node ID -> {node_id}",
         )
 
     # end method definition
@@ -17614,15 +17357,15 @@ class OTCS:
             soap_type = type_map.get(raw_type, "StringAttribute")
 
             try:
-                attr_cls = soap_client.get_type("ns1:{}".format(soap_type))
+                attr_cls = soap_client.get_type(f"ns1:{soap_type}")
             except Exception:
-                attr_cls = soap_client.get_type("ns0:{}".format(soap_type))
+                attr_cls = soap_client.get_type(f"ns0:{soap_type}")
 
             soap_attributes.append(
                 attr_cls(
                     DisplayName=attribute.get("name"),
                     ID=int(attribute.get("ID") or attribute.get("id") or index),
-                    Key="attr_{}".format(index),
+                    Key=f"attr_{index}",
                     MaxValues=int(attribute.get("maxvalues", 1)),
                     MinValues=int(attribute.get("minvalues", 0)),
                     Required=bool(attribute.get("required", False)),
@@ -17956,10 +17699,7 @@ class OTCS:
                 headers=request_header,
                 data=category_post_data,
                 timeout=None,
-                failure_message="Failed to assign category with ID -> {} to node with ID -> {}".format(
-                    category_id,
-                    node_id,
-                ),
+                failure_message=f"Failed to assign category with ID -> {category_id} to node with ID -> {node_id}",
                 parse_request_response=False,
             )
 
@@ -18003,10 +17743,7 @@ class OTCS:
                 headers=request_header,
                 data={"body": json.dumps(category_post_data)},
                 timeout=None,
-                failure_message="Failed to apply category with ID -> {} to sub-items of node with ID -> {}".format(
-                    category_id,
-                    node_id,
-                ),
+                failure_message=f"Failed to apply category with ID -> {category_id} to sub-items of node with ID -> {node_id}",
                 parse_request_response=False,
             )
 
@@ -18207,16 +17944,9 @@ class OTCS:
             )
             category_put_data = {
                 "category_id": category_id,
-                "{}_{}_{}_{}".format(category_id, set_id, set_row, attribute_id): value,
+                f"{category_id}_{set_id}_{set_row}_{attribute_id}": value,
             }
-            failure_message = "Failed to set value -> '{}' for category with ID -> {}, set ID -> {}, set row -> {}, attribute ID -> {} on node ID -> {}".format(
-                value,
-                category_id,
-                set_id,
-                set_row,
-                attribute_id,
-                node_id,
-            )
+            failure_message = f"Failed to set value -> '{value}' for category with ID -> {category_id}, set ID -> {set_id}, set row -> {set_row}, attribute ID -> {attribute_id} on node ID -> {node_id}"
         else:
             self.logger.debug(
                 "Assign value -> '%s' to category ID -> %d, attribute ID -> %s on node with ID -> %d; calling -> %s",
@@ -18228,15 +17958,10 @@ class OTCS:
             )
             category_put_data = {
                 "category_id": category_id,
-                "{}_{}".format(category_id, attribute_id): value,
+                f"{category_id}_{attribute_id}": value,
             }
             failure_message = (
-                "Failed to set value -> '{}' for category with ID -> {}, attribute ID -> {} on node ID -> {}".format(
-                    value,
-                    category_id,
-                    attribute_id,
-                    node_id,
-                )
+                f"Failed to set value -> '{value}' for category with ID -> {category_id}, attribute ID -> {attribute_id} on node ID -> {node_id}"
             )
 
         return self.do_request(
@@ -18288,16 +18013,8 @@ class OTCS:
                 headers=request_header,
                 data=category_data,
                 timeout=None,
-                failure_message="Failed to set values -> {} for category with ID -> {}, on node ID -> {}".format(
-                    category_data,
-                    category_id,
-                    node_id,
-                ),
-                warning_message="Couldn't set values -> {} for category with ID -> {}, on node ID -> {}".format(
-                    category_data,
-                    category_id,
-                    node_id,
-                ),
+                failure_message=f"Failed to set values -> {category_data} for category with ID -> {category_id}, on node ID -> {node_id}",
+                warning_message=f"Couldn't set values -> {category_data} for category with ID -> {category_id}, on node ID -> {node_id}",
                 show_error=show_error,
                 show_warning=not show_error,
             )
@@ -18382,10 +18099,7 @@ class OTCS:
                 method="POST",
                 headers=request_header,
                 timeout=None,
-                failure_message="Failed to enable categories inheritance for node ID -> {} and category ID -> {}".format(
-                    node_id,
-                    category_id,
-                ),
+                failure_message=f"Failed to enable categories inheritance for node ID -> {node_id} and category ID -> {category_id}",
             )
         else:
             self.logger.debug(
@@ -18399,10 +18113,7 @@ class OTCS:
                 method="DELETE",
                 headers=request_header,
                 timeout=None,
-                failure_message="Failed to disable categories inheritance for node ID -> {} and category ID -> {}".format(
-                    node_id,
-                    category_id,
-                ),
+                failure_message=f"Failed to disable categories inheritance for node ID -> {node_id} and category ID -> {category_id}",
             )
 
     # end method definition
@@ -18762,11 +18473,7 @@ class OTCS:
             headers=request_header,
             data=collection_put_data,
             timeout=None,
-            failure_message="Failed to {} nodes with IDs -> {} to collection with ID -> {}".format(
-                operation,
-                node_ids,
-                collection_id,
-            ),
+            failure_message=f"Failed to {operation} nodes with IDs -> {node_ids} to collection with ID -> {collection_id}",
         )
 
     # end method definition
@@ -18944,9 +18651,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get classifications of node ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to get classifications of node ID -> {node_id}",
         )
 
     # end method definition
@@ -19027,10 +18732,7 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(classification_post_data)},
             timeout=None,
-            failure_message="Failed to assign classifications with IDs -> {} to item with ID -> {}".format(
-                classifications,
-                node_id,
-            ),
+            failure_message=f"Failed to assign classifications with IDs -> {classifications} to item with ID -> {node_id}",
         )
 
     # end method definition
@@ -19088,10 +18790,7 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(rm_classification_post_data)},
             timeout=None,
-            failure_message="Failed to assign RM classifications with ID -> {} to item with ID -> {}".format(
-                rm_classification,
-                node_id,
-            ),
+            failure_message=f"Failed to assign RM classifications with ID -> {rm_classification} to item with ID -> {node_id}",
         )
 
     # end method definition
@@ -19150,9 +18849,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get hold with name -> {}".format(
-                holdname,
-            ),
+            failure_message=f"Failed to get hold with name -> {holdname}",
         )
 
     # end method definition
@@ -19192,10 +18889,7 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(assign_hold_post_data)},
             timeout=None,
-            failure_message="Failed to assign hold with ID -> {} to item with ID -> {}".format(
-                hold_id,
-                node_id,
-            ),
+            failure_message=f"Failed to assign hold with ID -> {hold_id} to item with ID -> {node_id}",
         )
 
     # end method definition
@@ -19394,9 +19088,7 @@ class OTCS:
             headers=request_header,
             data=update_rm_codes_post_data,
             timeout=None,
-            failure_message="Failed to update Records Management codes with -> {}".format(
-                rm_codes,
-            ),
+            failure_message=f"Failed to update Records Management codes with -> {rm_codes}",
         )
 
         if response and "results" in response and response["results"]:
@@ -19471,9 +19163,7 @@ class OTCS:
             headers=request_header,
             data=create_rsi_post_data,
             timeout=None,
-            failure_message="Failed to create Records Management RSI -> '{}'".format(
-                name,
-            ),
+            failure_message=f"Failed to create Records Management RSI -> '{name}'",
         )
 
     # end method definition
@@ -19636,10 +19326,7 @@ class OTCS:
             headers=request_header,
             data=create_rsi_schedule_post_data,
             timeout=None,
-            failure_message="Failed to create Records Management RSI Schedule -> '{}' for RSI -> {}".format(
-                stage,
-                rsi_id,
-            ),
+            failure_message=f"Failed to create Records Management RSI Schedule -> '{stage}' for RSI -> {rsi_id}",
         )
 
     # end method definition
@@ -19712,9 +19399,7 @@ class OTCS:
             headers=request_header,
             data=create_hold_post_data,
             timeout=None,
-            failure_message="Failed to create Records Management Hold -> '{}'".format(
-                name,
-            ),
+            failure_message=f"Failed to create Records Management Hold -> '{name}'",
         )
 
     # end method definition
@@ -19835,9 +19520,7 @@ class OTCS:
                 headers=request_header,
                 files=settings_post_file,
                 timeout=None,
-                failure_message="Failed to import Records Management settings from file -> '{}'".format(
-                    file_path,
-                ),
+                failure_message=f"Failed to import Records Management settings from file -> '{file_path}'",
                 parse_request_response=False,
             )
 
@@ -19905,9 +19588,7 @@ class OTCS:
                 data=codes_post_data,
                 files=codes_post_file,
                 timeout=None,
-                failure_message="Failed to import Records Management codes from file -> '{}'".format(
-                    file_path,
-                ),
+                failure_message=f"Failed to import Records Management codes from file -> '{file_path}'",
                 parse_request_response=False,
             )
 
@@ -19980,9 +19661,7 @@ class OTCS:
                 data=rsis_post_data,
                 files=rsis_post_file,
                 timeout=None,
-                failure_message="Failed to import Records Management RSIs from file -> '{}'".format(
-                    file_path,
-                ),
+                failure_message=f"Failed to import Records Management RSIs from file -> '{file_path}'",
                 parse_request_response=False,
             )
 
@@ -20040,9 +19719,7 @@ class OTCS:
                 headers=request_header,
                 files=settings_post_file,
                 timeout=None,
-                failure_message="Failed to import Physical Objects settings from file -> '{}'".format(
-                    file_path,
-                ),
+                failure_message=f"Failed to import Physical Objects settings from file -> '{file_path}'",
                 parse_request_response=False,
             )
 
@@ -20109,9 +19786,7 @@ class OTCS:
                 data=codes_post_data,
                 files=codes_post_file,
                 timeout=None,
-                failure_message="Failed to import Physical Objects codes from file -> '{}'".format(
-                    file_path,
-                ),
+                failure_message=f"Failed to import Physical Objects codes from file -> '{file_path}'",
                 parse_request_response=False,
             )
 
@@ -20169,9 +19844,7 @@ class OTCS:
                 headers=request_header,
                 files=locators_post_file,
                 timeout=None,
-                failure_message="Failed to import Physical Objects locators from file -> '{}'".format(
-                    file_path,
-                ),
+                failure_message=f"Failed to import Physical Objects locators from file -> '{file_path}'",
                 parse_request_response=False,
             )
 
@@ -20238,9 +19911,7 @@ class OTCS:
                 data=codes_post_data,
                 files=codes_post_file,
                 timeout=None,
-                failure_message="Failed to import Security Clearance codes from file -> '{}'".format(
-                    file_path,
-                ),
+                failure_message=f"Failed to import Security Clearance codes from file -> '{file_path}'",
                 parse_request_response=False,
             )
 
@@ -20349,7 +20020,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["nodesUrl"] + "/{}/rmclassifications".format(node_id)
+        request_url = self.config()["nodesUrl"] + f"/{node_id}/rmclassifications"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -20363,7 +20034,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get records details of the node with ID -> {}".format(node_id),
+            failure_message=f"Failed to get records details of the node with ID -> {node_id}",
         )
 
     # end method definition
@@ -20432,7 +20103,7 @@ class OTCS:
             data={"body": json.dumps(put_records_detail_data)},
             headers=request_header,
             timeout=None,
-            failure_message="Failed to set records details of the node with ID -> {}".format(node_id),
+            failure_message=f"Failed to set records details of the node with ID -> {node_id}",
         )
 
     # end method definition
@@ -20454,7 +20125,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["nodesUrl"] + "/{}/securityclearances".format(node_id)
+        request_url = self.config()["nodesUrl"] + f"/{node_id}/securityclearances"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -20468,7 +20139,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get security clearances of the node with ID -> {}".format(node_id),
+            failure_message=f"Failed to get security clearances of the node with ID -> {node_id}",
         )
 
     # end method definition
@@ -20496,7 +20167,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["nodesUrl"] + "/{}/securityclearances".format(node_id)
+        request_url = self.config()["nodesUrl"] + f"/{node_id}/securityclearances"
         request_header = self.request_form_header()
 
         put_security_clearance_data = {}
@@ -20519,9 +20190,7 @@ class OTCS:
             data={"body": json.dumps(put_security_clearance_data)},
             headers=request_header,
             timeout=None,
-            failure_message="Failed to set security clearances and supplemental markings of the node with ID -> {}".format(
-                node_id
-            ),
+            failure_message=f"Failed to set security clearances and supplemental markings of the node with ID -> {node_id}",
         )
 
     # end method definition
@@ -20580,7 +20249,7 @@ class OTCS:
             "securityLevel": security_clearance,
         }
 
-        request_url = self.config()["userSecurityUrl"] + "/{}/securityclearancelevel".format(user_id)
+        request_url = self.config()["userSecurityUrl"] + f"/{user_id}/securityclearancelevel"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -20596,10 +20265,7 @@ class OTCS:
             headers=request_header,
             data=assign_user_security_clearance_post_data,
             timeout=None,
-            failure_message="Failed to assign security clearance -> {} to user with ID -> {}".format(
-                security_clearance,
-                user_id,
-            ),
+            failure_message=f"Failed to assign security clearance -> {security_clearance} to user with ID -> {user_id}",
         )
 
     # end method definition
@@ -20628,7 +20294,7 @@ class OTCS:
             "suppMarks": supplemental_markings,
         }
 
-        request_url = self.config()["userSecurityUrl"] + "/{}/supplementalmarkings".format(user_id)
+        request_url = self.config()["userSecurityUrl"] + f"/{user_id}/supplementalmarkings"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -20644,10 +20310,7 @@ class OTCS:
             headers=request_header,
             data=assign_user_supplemental_markings_post_data,
             timeout=None,
-            failure_message="Failed to assign supplemental markings -> {} to user with ID -> {}".format(
-                supplemental_markings,
-                user_id,
-            ),
+            failure_message=f"Failed to assign supplemental markings -> {supplemental_markings} to user with ID -> {user_id}",
         )
 
     # end method definition
@@ -20677,10 +20340,7 @@ class OTCS:
 
         #        on_off = "on" if enable else "off"
 
-        request_url = self.config()["fdaUsersUrl"] + "/{}/signingauthorityadmin/{}".format(
-            user_id,
-            enable,
-        )
+        request_url = self.config()["fdaUsersUrl"] + f"/{user_id}/signingauthorityadmin/{enable}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -20695,10 +20355,7 @@ class OTCS:
             method="POST",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to set signing authority admin -> '{}' for user with ID -> {}".format(
-                enable,
-                user_id,
-            ),
+            failure_message=f"Failed to set signing authority admin -> '{enable}' for user with ID -> {user_id}",
         )
 
     # end method definition
@@ -21100,9 +20757,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get definition of workflow with ID -> {}".format(
-                workflow_id,
-            ),
+            failure_message=f"Failed to get definition of workflow with ID -> {workflow_id}",
         )
 
     # end method definition
@@ -21258,7 +20913,7 @@ class OTCS:
             query = {"doc_id": node_id, "parent_id": parent_id}
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["docWorkflowUrl"] + "?{}".format(encoded_query)
+        request_url = self.config()["docWorkflowUrl"] + f"?{encoded_query}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -21273,10 +20928,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get workflows for node ID -> {} and parent ID -> {}".format(
-                node_ids if node_ids is not None else node_id,
-                parent_id,
-            ),
+            failure_message=f"Failed to get workflows for node ID -> {node_ids if node_ids is not None else node_id} and parent ID -> {parent_id}",
         )
 
     # end method definition
@@ -21541,7 +21193,7 @@ class OTCS:
             query["sort"] = sort
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["workflowUrl"] + "/status?{}".format(encoded_query)
+        request_url = self.config()["workflowUrl"] + f"/status?{encoded_query}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -21556,10 +21208,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get workflows of kind -> {} and status -> {}".format(
-                kind,
-                str(status),
-            ),
+            failure_message=f"Failed to get workflows of kind -> {kind} and status -> {str(status)}",
         )
 
     # end method definition
@@ -21670,9 +21319,7 @@ class OTCS:
 
         """
 
-        request_url = self.config()["workflowUrl"] + "/status/processes/{}".format(
-            process_id,
-        )
+        request_url = self.config()["workflowUrl"] + f"/status/processes/{process_id}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -21686,9 +21333,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get workflow status for process ID -> {}".format(
-                process_id,
-            ),
+            failure_message=f"Failed to get workflow status for process ID -> {process_id}",
         )
 
     # end method definition
@@ -21743,9 +21388,7 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(draft_process_body_post_data)},
             timeout=None,
-            failure_message="Failed to create draft process from workflow with ID -> {}".format(
-                workflow_id,
-            ),
+            failure_message=f"Failed to create draft process from workflow with ID -> {workflow_id}",
         )
 
     # end method definition
@@ -21787,9 +21430,7 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(initiate_process_body_post_data)},
             timeout=None,
-            failure_message="Failed to initiate a workflow with skip start step from workflow with ID -> {}".format(
-                workflow_id,
-            ),
+            failure_message=f"Failed to initiate a workflow with skip start step from workflow with ID -> {workflow_id}",
         )
 
     # end method definition
@@ -21850,9 +21491,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get draft process with ID -> {}".format(
-                draftprocess_id,
-            ),
+            failure_message=f"Failed to get draft process with ID -> {draftprocess_id}",
         )
 
     # end method definition
@@ -21917,10 +21556,7 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(update_draft_process_body_put_data)},
             timeout=None,
-            failure_message="Failed to update draft process with ID -> {} with these values -> {}".format(
-                draftprocess_id,
-                values,
-            ),
+            failure_message=f"Failed to update draft process with ID -> {draftprocess_id} with these values -> {values}",
         )
 
     # end method definition
@@ -21981,9 +21617,7 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(initiate_process_body_put_data)},
             timeout=None,
-            failure_message="Failed to initiate draft process with ID -> {}".format(
-                draftprocess_id,
-            ),
+            failure_message=f"Failed to initiate draft process with ID -> {draftprocess_id}",
         )
 
     # end method definition
@@ -22086,9 +21720,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to get task for process with ID -> {}".format(
-                process_id,
-            ),
+            failure_message=f"Failed to get task for process with ID -> {process_id}",
         )
 
     # end method definition
@@ -22203,11 +21835,7 @@ class OTCS:
             headers=request_header,
             data={"body": json.dumps(update_process_task_body_put_data)},
             timeout=None,
-            failure_message="Failed to update task with ID -> {} of process with ID -> {} with these values -> {}".format(
-                task_id,
-                process_id,
-                values,
-            ),
+            failure_message=f"Failed to update task with ID -> {task_id} of process with ID -> {process_id} with these values -> {values}",
         )
 
     # end method definition
@@ -22226,7 +21854,7 @@ class OTCS:
 
         """
 
-        registration_post_data = {"ids": "{{ {} }}".format(node_id)}
+        registration_post_data = {"ids": f"{{ {node_id} }}"}
 
         request_url = self.config()["xEngProjectTemplateUrl"]
 
@@ -22244,9 +21872,7 @@ class OTCS:
             headers=request_header,
             data=registration_post_data,
             timeout=None,
-            failure_message="Failed to register Workspace Template with ID -> {} for Extended ECM for Engineering".format(
-                node_id,
-            ),
+            failure_message=f"Failed to register Workspace Template with ID -> {node_id} for Extended ECM for Engineering",
         )
 
     # end method definition
@@ -22317,7 +21943,7 @@ class OTCS:
             "enabled": status,
         }
 
-        request_url = self.config()["aiNodesUrl"] + "/{}".format(workspace_id)
+        request_url = self.config()["aiNodesUrl"] + f"/{workspace_id}"
         request_header = self.request_form_header()
 
         if status is True:
@@ -22339,9 +21965,7 @@ class OTCS:
             headers=request_header,
             data=aviator_status_put_data,
             timeout=None,
-            failure_message="Failed to change status for Content Aviator on workspace with ID -> {}".format(
-                workspace_id,
-            ),
+            failure_message=f"Failed to change status for Content Aviator on workspace with ID -> {workspace_id}",
         )
 
     # end method definition
@@ -23177,9 +22801,9 @@ class OTCS:
                 "Stop at workspace -> '%s' (%d) of type %s as it has been processed before.",
                 workspace_name,
                 workspace_node_id,
-                "-> '{}' ({})".format(workspace_type_name, workspace_type_id)
+                f"-> '{workspace_type_name}' ({workspace_type_id})"
                 if workspace_type_name
-                else "ID -> {}".format(workspace_type_id),
+                else f"ID -> {workspace_type_id}",
             )
             return {"processed": processed, "traversed": traversed}
         processed_workspaces[workspace_node_id] = workspace_name
@@ -23240,9 +22864,9 @@ class OTCS:
                         rel_type,
                         related_workspace_name,
                         related_workspace_id,
-                        "-> '{}' ({})".format(related_workspace_type_name, related_workspace_type_id)
+                        f"-> '{related_workspace_type_name}' ({related_workspace_type_id})"
                         if related_workspace_type_name
-                        else "ID -> {}".format(related_workspace_type_id),
+                        else f"ID -> {related_workspace_type_id}",
                     )
                     # Recursive call for related workspace:
                     result = self.traverse_workspace(
@@ -23475,9 +23099,9 @@ class OTCS:
                                 "Stop at workspace -> '%s' (%d) of type %s as it has been processed before.",
                                 workspace_name,
                                 workspace_id,
-                                "-> '{}' ({})".format(workspace_type_name, workspace_type_id)
+                                f"-> '{workspace_type_name}' ({workspace_type_id})"
                                 if workspace_type_name
-                                else "ID -> {}".format(workspace_type_id),
+                                else f"ID -> {workspace_type_id}",
                             )
                             continue  # will jump to finally, declare task done and only then continue while loop
                         processed_workspaces[workspace_id] = workspace_name
@@ -23546,9 +23170,9 @@ class OTCS:
                                     self.logger.debug(
                                         "Skipping traversal of related %s workspace as its type %s does not match filter.",
                                         rel_type,
-                                        "-> '{}' ({})".format(related_workspace_type_name, related_workspace_type_id)
+                                        f"-> '{related_workspace_type_name}' ({related_workspace_type_id})"
                                         if related_workspace_type_name
-                                        else "ID -> {}".format(related_workspace_type_id),
+                                        else f"ID -> {related_workspace_type_id}",
                                     )
                                     continue  # the for loop
                                 self.logger.debug(
@@ -23556,9 +23180,9 @@ class OTCS:
                                     rel_type,
                                     related_workspace_name,
                                     related_workspace_id,
-                                    "-> '{}' ({})".format(related_workspace_type_name, related_workspace_type_id)
+                                    f"-> '{related_workspace_type_name}' ({related_workspace_type_id})"
                                     if related_workspace_type_name
-                                    else "ID -> {}".format(related_workspace_type_id),
+                                    else f"ID -> {related_workspace_type_id}",
                                     current_depth,
                                 )
 
@@ -24482,7 +24106,7 @@ class OTCS:
                 # issues with too long or not valid file names.
                 # As the Pandas DataFrame has all information
                 # this is easy to resolve at upload time.
-                file_path = "{}/{}".format(self._download_dir, node_id)
+                file_path = f"{self._download_dir}/{node_id}"
 
                 # We download only if not downloaded before or if downloaded
                 # before but forced to re-download:
@@ -24505,7 +24129,7 @@ class OTCS:
                     thread = threading.Thread(
                         target=self.download_document_multi_threading,
                         args=(node_id, file_path, extract_after_download),
-                        name="download_document_node_{}".format(node_id),
+                        name=f"download_document_node_{node_id}",
                     )
                     thread.start()
                     download_threads.append(thread)
@@ -24917,7 +24541,7 @@ class OTCS:
                 headers=request_header,
                 data=data,
                 timeout=None,
-                failure_message="Failed to get document templates for workspace with ID -> {}".format(workspace_id),
+                failure_message=f"Failed to get document templates for workspace with ID -> {workspace_id}",
                 parse_request_response=False,
             )
 
@@ -24941,7 +24565,7 @@ class OTCS:
                 method="GET",
                 headers=request_header,
                 timeout=None,
-                failure_message="Failed to get document templates for workspace with ID -> {}".format(workspace_id),
+                failure_message=f"Failed to get document templates for workspace with ID -> {workspace_id}",
                 parse_request_response=False,
             )
 
@@ -25420,7 +25044,7 @@ class OTCS:
         self.logger.error(
             "Reminder type with name -> '%s'%s  does not exist.",
             type_name,
-            " for client -> '{}'".format(client_name) if client_name else "",
+            f" for client -> '{client_name}'" if client_name else "",
         )
 
         return None
@@ -25470,7 +25094,7 @@ class OTCS:
         request_url = self.config()["nodesFormUrl"] + "/followup/getClientTypes"
         if query:
             encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-            request_url += "?{}".format(encoded_query)
+            request_url += f"?{encoded_query}"
 
         request_header = self.request_form_header()
 
@@ -25485,7 +25109,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get reminder types for client -> {}".format(client_id),
+            failure_message=f"Failed to get reminder types for client -> {client_id}",
         )
 
     # end method definition
@@ -25565,7 +25189,7 @@ class OTCS:
         request_url = self.config()["nodesUrlv2"] + "/" + str(node_id) + "/followups"
         if query:
             encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-            request_url += "?{}".format(encoded_query)
+            request_url += f"?{encoded_query}"
 
         request_header = self.request_form_header()
 
@@ -25580,9 +25204,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get reminders for node with ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to get reminders for node with ID -> {node_id}",
         )
 
         if not response or not escalation:
@@ -25755,7 +25377,7 @@ class OTCS:
         request_url = self.config()["nodesUrlv2"] + "/" + str(node_id) + "/followups/" + str(reminder_id)
         if query:
             encoded_query = urllib.parse.urlencode(query=query, doseq=True)
-            request_url += "?{}".format(encoded_query)
+            request_url += f"?{encoded_query}"
 
         request_header = self.request_form_header()
 
@@ -25771,10 +25393,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get reminder with ID -> {} for node with ID -> {}".format(
-                reminder_id,
-                node_id,
-            ),
+            failure_message=f"Failed to get reminder with ID -> {reminder_id} for node with ID -> {node_id}",
         )
 
         if not response or not escalation:
@@ -25963,7 +25582,7 @@ class OTCS:
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
         request_url = (
-            self.config()["nodesFormUrl"] + "/" + str(node_id) + "/reminder/view" + "?{}".format(encoded_query)
+            self.config()["nodesFormUrl"] + "/" + str(node_id) + "/reminder/view" + f"?{encoded_query}"
         )
         request_header = self.request_form_header()
 
@@ -25979,10 +25598,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get viewing form for reminder with ID -> {} and node with ID -> {}".format(
-                reminder_id,
-                node_id,
-            ),
+            failure_message=f"Failed to get viewing form for reminder with ID -> {reminder_id} and node with ID -> {node_id}",
         )
 
     # end method definition
@@ -26031,7 +25647,7 @@ class OTCS:
 
         encoded_query = urllib.parse.urlencode(query=query, doseq=True)
 
-        request_url = self.config()["nodesFormUrl"] + "/reminder/create" + "?{}".format(encoded_query)
+        request_url = self.config()["nodesFormUrl"] + "/reminder/create" + f"?{encoded_query}"
         request_header = self.request_form_header()
 
         self.logger.debug(
@@ -26046,9 +25662,7 @@ class OTCS:
             method="GET",
             headers=request_header,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get reminder create form (client_id -> {})".format(
-                client_id,
-            ),
+            failure_message=f"Failed to get reminder create form (client_id -> {client_id})",
         )
 
     # end method definition
@@ -26585,9 +26199,7 @@ class OTCS:
             headers=request_header,
             data={"data": json.dumps(post_data)},
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to add reminder for node with ID -> {}".format(
-                node_id,
-            ),
+            failure_message=f"Failed to add reminder for node with ID -> {node_id}",
         )
 
     # end method definition
@@ -26703,10 +26315,7 @@ class OTCS:
             headers=request_header,
             data=put_body,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update reminder with ID -> {} for node with ID -> {}".format(
-                reminder_id,
-                node_id,
-            ),
+            failure_message=f"Failed to update reminder with ID -> {reminder_id} for node with ID -> {node_id}",
         )
 
     # end method definition
@@ -26899,10 +26508,7 @@ class OTCS:
             headers=request_header,
             data={"data": json.dumps(put_data)},
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to update reminder with ID -> {} for node with ID -> {}".format(
-                reminder_id,
-                node_id,
-            ),
+            failure_message=f"Failed to update reminder with ID -> {reminder_id} for node with ID -> {node_id}",
         )
 
     # end method definition

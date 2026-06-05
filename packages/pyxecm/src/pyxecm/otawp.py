@@ -374,7 +374,7 @@ class OTAWP:
 
         server_url = "{}://{}".format(protocol, otawp_config["hostname"])
         if str(port) not in ["80", "443"]:
-            server_url += ":{}".format(port)
+            server_url += f":{port}"
 
         otawp_config["serverUrl"] = server_url
 
@@ -1010,14 +1010,9 @@ class OTAWP:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -1345,14 +1340,14 @@ class OTAWP:
                     "Failed to request an OTAWP ticket at authentication URL -> %s with user -> '%s'!%s",
                     self.credential_url(),
                     self.config()["username"],
-                    " Reason -> '{}'".format(response.reason) if response.reason else "",
+                    f" Reason -> '{response.reason}'" if response.reason else "",
                 )
                 return None
 
         self.logger.error(
             "Authentication at AppWorks platform failed after %d retries. %sBailing out.",
             REQUEST_MAX_RETRIES,
-            "{}. ".format(response.text) if response and response.text else "",
+            f"{response.text}. " if response and response.text else "",
         )
         return None
 
@@ -1578,7 +1573,7 @@ class OTAWP:
         if not workspace_id:
             self.logger.error(
                 "Cannot synchronize workspace%s without a workspace ID!",
-                " -> '{}'".format(workspace_name) if workspace_name else "",
+                f" -> '{workspace_name}'" if workspace_name else "",
             )
             return None
 
@@ -1711,7 +1706,7 @@ class OTAWP:
             if not value:
                 self.logger.error(
                     "Cannot publish project%s without a %s!",
-                    " -> '{}'".format(project_name) if project_name else "",
+                    f" -> '{project_name}'" if project_name else "",
                     name,
                 )
                 return None
@@ -1850,7 +1845,7 @@ class OTAWP:
             cookies=self.cookie(),
             json_data=create_priority_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Request to create priority -> '{}' failed".format(name),
+            failure_message=f"Request to create priority -> '{name}' failed",
         )
 
     # end method definition
@@ -2006,7 +2001,7 @@ class OTAWP:
             cookies=self.cookie(),
             json_data=create_customer_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Request to create customer -> '{}' failed".format(customer_name),
+            failure_message=f"Request to create customer -> '{customer_name}' failed",
         )
 
     # end method definition
@@ -2143,7 +2138,7 @@ class OTAWP:
             cookies=self.cookie(),
             json_data=create_case_type_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Request to create case type -> '{}' failed".format(name),
+            failure_message=f"Request to create case type -> '{name}' failed",
         )
 
     # end method definition
@@ -2307,7 +2302,7 @@ class OTAWP:
             cookies=self.cookie(),
             json_data=create_category_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to create category -> '{}'".format(name),
+            failure_message=f"Failed to create category -> '{name}'",
         )
 
     # end method definition
@@ -2477,9 +2472,7 @@ class OTAWP:
             cookies=self.cookie(),
             json_data=create_sub_category_data,
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to create sub-category -> '{}' with parent category ID -> {}".format(
-                name, parent_id
-            ),
+            failure_message=f"Failed to create sub-category -> '{name}' with parent category ID -> {parent_id}",
         )
 
     # end method definition
@@ -2538,7 +2531,7 @@ class OTAWP:
             headers=REQUEST_HEADERS_JSON,
             cookies=self.cookie(),
             timeout=REQUEST_TIMEOUT,
-            failure_message="Failed to get sub-categories for parent category with ID -> {}".format(parent_id),
+            failure_message=f"Failed to get sub-categories for parent category with ID -> {parent_id}",
         )
 
     # end method definition

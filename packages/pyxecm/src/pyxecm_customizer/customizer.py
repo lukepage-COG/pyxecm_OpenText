@@ -216,9 +216,7 @@ class Customizer:
                     self.settings.m365.teams_app_external_id,
                 )
                 response = m365_object.get_teams_apps(
-                    filter_expression="externalId eq '{}'".format(
-                        self.settings.m365.teams_app_external_id,
-                    ),
+                    filter_expression=f"externalId eq '{self.settings.m365.teams_app_external_id}'",
                 )
                 # this should always be True as ID is unique:
                 app_exist = m365_object.exist_result_item(
@@ -240,9 +238,7 @@ class Customizer:
                     self.settings.m365.teams_app_name,
                 )
                 response = m365_object.get_teams_apps(
-                    filter_expression="contains(displayName, '{}')".format(
-                        self.settings.m365.teams_app_name,
-                    ),
+                    filter_expression=f"contains(displayName, '{self.settings.m365.teams_app_name}')",
                 )
                 app_exist = m365_object.exist_result_item(
                     response=response,
@@ -602,9 +598,7 @@ class Customizer:
             sts_name=self.settings.k8s.sts_otcs_frontend,
         )
         if not otcs_frontend_scale:
-            msg = "Cannot find Kubernetes stateful set -> '{}' for OTCS Frontends".format(
-                self.settings.k8s.sts_otcs_frontend,
-            )
+            msg = f"Cannot find Kubernetes stateful set -> '{self.settings.k8s.sts_otcs_frontend}' for OTCS Frontends"
             self.logger.error(msg)
             raise RuntimeError(msg)
 
@@ -620,9 +614,7 @@ class Customizer:
             sts_name=self.settings.k8s.sts_otcs_admin,
         )
         if not otcs_backend_scale:
-            msg = "Cannot find Kubernetes stateful set -> '{}' for OTCS Backends".format(
-                self.settings.k8s.sts_otcs_admin,
-            )
+            msg = f"Cannot find Kubernetes stateful set -> '{self.settings.k8s.sts_otcs_admin}' for OTCS Backends"
             self.logger.error(msg)
             raise RuntimeError(msg)
 
@@ -912,9 +904,7 @@ class Customizer:
             )
 
         if self.settings.otawp.enabled:
-            otcs_resource["logoutURL"] = "{}://{}/home/system/wcp/sso/sso_logout.htm".format(
-                self.settings.otawp.public_protocol, self.settings.otawp.public_url
-            )
+            otcs_resource["logoutURL"] = f"{self.settings.otawp.public_protocol}://{self.settings.otawp.public_url}/home/system/wcp/sso/sso_logout.htm"
             otcs_resource["logoutMethod"] = "GET"
 
             self.otds_object.update_resource(name=self.settings.otcs.resource_name, resource=otcs_resource)
@@ -1786,7 +1776,7 @@ class Customizer:
                         "payload": cust_payload,
                     }
                 )
-                self.log_header("Start processing of payload -> '{}'".format(cust_payload))
+                self.log_header(f"Start processing of payload -> '{cust_payload}'")
 
                 # Set startTime for duration calculation
                 start_time = datetime.now(UTC)
@@ -1915,10 +1905,7 @@ class Customizer:
 
                 duration = datetime.now(UTC) - start_time
                 self.log_header(
-                    "Customizer completed processing of payload -> {} in {}".format(
-                        cust_payload,
-                        duration,
-                    ),
+                    f"Customizer completed processing of payload -> {cust_payload} in {duration}",
                 )
         # end for cust_payload in cust_payload_list
 
@@ -1972,9 +1959,7 @@ class Customizer:
 
         self.customizer_end_time = datetime.now(UTC)
         self.log_header(
-            "Customizer completed in {}".format(
-                self.customizer_end_time - self.customizer_start_time,
-            ),
+            f"Customizer completed in {self.customizer_end_time - self.customizer_start_time}",
         )
 
         # Return the success status:

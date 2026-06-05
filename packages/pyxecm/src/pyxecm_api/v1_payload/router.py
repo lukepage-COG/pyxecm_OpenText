@@ -90,7 +90,7 @@ async def create_payload_item(
             name=name,
             filename=file_name,
             status="planned",
-            logfile=os.path.join(settings.temp_dir, "{}.log".format(name)),
+            logfile=os.path.join(settings.temp_dir, f"{name}.log"),
             dependencies=dependencies or [],
             enabled=enabled,
             loglevel=loglevel,
@@ -163,7 +163,7 @@ async def get_payload_item(
     if data is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload with index -> {} not found".format(payload_id),
+            detail=f"Payload with index -> {payload_id} not found",
         )
 
     return PayloadListItem(index=payload_id, **data, asd="123")
@@ -212,7 +212,7 @@ async def update_payload_item(
     if payload_item is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload with ID -> {} not found.".format(payload_id),
+            detail=f"Payload with ID -> {payload_id} not found.",
         )
 
     update_data = {}
@@ -276,10 +276,7 @@ async def update_payload_item(
     if not result:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Failed to update Payload with ID -> {} with data -> {}".format(
-                payload_id,
-                update_data,
-            ),
+            detail=f"Failed to update Payload with ID -> {payload_id} with data -> {update_data}",
         )
 
     return UpdatedPayloadListItem(
@@ -310,7 +307,7 @@ async def delete_payload_item(
     if not result:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload with ID -> {} not found.".format(payload_id),
+            detail=f"Payload with ID -> {payload_id} not found.",
         )
 
 
@@ -338,9 +335,7 @@ async def move_payload_item_up(
     if position is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload item with index -> {} is either out of range or is already on top of the payload list!".format(
-                payload_id,
-            ),
+            detail=f"Payload item with index -> {payload_id} is either out of range or is already on top of the payload list!",
         )
 
     return {"result": {"new_position": position}}
@@ -371,9 +366,7 @@ async def move_payload_item_down(
     if position is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload item with index -> {} is either out of range or is already on bottom of the payload list!".format(
-                payload_id,
-            ),
+            detail=f"Payload item with index -> {payload_id} is either out of range or is already on bottom of the payload list!",
         )
 
     return {"result": {"new_position": position}}
@@ -407,7 +400,7 @@ async def get_payload_content(
     if data is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload with ID -> {} not found!".format(payload_id),
+            detail=f"Payload with ID -> {payload_id} not found!",
         )
 
     filename = data.filename
@@ -427,13 +420,13 @@ async def download_payload_content(
     if payload is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload with ID -> {} not found!".format(payload_id),
+            detail=f"Payload with ID -> {payload_id} not found!",
         )
 
     if not await anyio.to_thread.run_sync(os.path.isfile, payload.filename):
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload file -> '{}' not found".format(payload.filename),
+            detail=f"Payload file -> '{payload.filename}' not found",
         )
 
     async with await anyio.open_file(payload.filename, "rb") as file:
@@ -475,7 +468,7 @@ async def download_payload_logfile(
     if not await anyio.to_thread.run_sync(os.path.isfile, filename):
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Log file -> '{}' not found".format(filename),
+            detail=f"Log file -> '{filename}' not found",
         )
 
     async with await anyio.open_file(filename, "rb") as file:

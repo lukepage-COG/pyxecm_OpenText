@@ -103,7 +103,7 @@ def get_browser_automation_file(
     if not os.path.isfile(filename):
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="File -> '{}' not found".format(filename),
+            detail=f"File -> '{filename}' not found",
         )
 
     media_type, _ = mimetypes.guess_type(filename)
