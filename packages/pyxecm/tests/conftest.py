@@ -4,7 +4,6 @@ import logging
 
 import pytest
 import requests_mock as rm
-
 from pyxecm.helper.web import HTTP
 from pyxecm.otcs import OTCS
 from pyxecm.otds import OTDS

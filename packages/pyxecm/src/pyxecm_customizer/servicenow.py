@@ -163,7 +163,7 @@ class ServiceNow:
 
         try:
             target(*args, **kwargs)
-        except Exception:
+        except Exception:  # noqa: BLE001
             thread_name = threading.current_thread().name
             self.logger.error(
                 "Thread '%s': failed!",
@@ -480,7 +480,7 @@ class ServiceNow:
                 sys_id,
                 table_name,
             )
-        except Exception:
+        except Exception:  # noqa: BLE001
             self.logger.error(
                 "An error occurred while resolving -> '%s' in table -> '%s'!",
                 sys_id,
@@ -581,7 +581,7 @@ class ServiceNow:
             self.logger.error("%sHTTP error!", error_string)
         except RequestException:
             self.logger.error("%sRequest error!", error_string)
-        except Exception:
+        except requests.RequestException:
             self.logger.error("%s", error_string)
 
         return None
@@ -634,7 +634,7 @@ class ServiceNow:
             self.logger.error(
                 "Request error occurred when trying to get the table count for table -> '%s'!", table_name
             )
-        except Exception:
+        except ValueError:
             self.logger.error("An error occurred when trying to get the table count for table -> '%s'!", table_name)
 
         return None
@@ -1003,7 +1003,7 @@ class ServiceNow:
                 request_url,
                 params,
             )
-        except Exception:
+        except Exception:  # noqa: BLE001
             self.logger.error(
                 "An error occurred when trying to get the attachments for article -> '%s' (%s) with URL -> %s and parameters -> %s!",
                 article_number,

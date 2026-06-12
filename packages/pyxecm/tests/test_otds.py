@@ -1,7 +1,6 @@
 """Tests for the OTDS class."""
 
 import requests_mock as rm
-
 from pyxecm.otds import OTDS
 
 

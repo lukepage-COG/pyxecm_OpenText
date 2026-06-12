@@ -530,7 +530,7 @@ class OTAC:
             self.logger.error("Certificate file -> '%s' not found!", cert_path)
             return None
 
-        with Path(file=cert_path).open(encoding="utf-8") as cert_file:
+        with Path(cert_path).open(encoding="utf-8") as cert_file:
             cert_content = cert_file.read().strip()
 
         # Check that we have the pem certificate file - this is what OTAC expects.

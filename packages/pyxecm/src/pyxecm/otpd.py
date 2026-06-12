@@ -411,7 +411,7 @@ class OTPD:
             self.logger.error("File -> '%s' not found!", file_path)
         except requests.RequestException:
             self.logger.error("HTTP request to -> '%s' failed", request_url)
-        except Exception:
+        except ValueError:
             self.logger.error("An unexpected error occurred!")
 
         return None
@@ -469,7 +469,7 @@ class OTPD:
                     self.config()["username"],
                     self.config()["password"],
                 ),
-                verify=False,  # for localhost deployments this will fail otherwise # noqa: S501
+                verify=False,  # for localhost deployments this will fail otherwise  # noqa: S501
                 timeout=None,
             )
             if response.ok:

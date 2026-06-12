@@ -1597,7 +1597,7 @@ class Customizer:
                 if not self.k8s_object:
                     self.logger.error("Failed to initialize Kubernetes - exiting...")
                     return False
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 self.logger.error(
                     "Failed to initialize Kubernetes, disabling Kubernetes integration...",
                 )

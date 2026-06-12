@@ -440,7 +440,7 @@ class Payload:
 
         try:
             target(*args, **kwargs)
-        except Exception:
+        except Exception:  # noqa: BLE001
             thread_name = threading.current_thread().name
             self.logger.error(
                 "Thread '%s' failed!",
@@ -3359,7 +3359,7 @@ class Payload:
                         if "resource" in license_item:
                             try:
                                 resource_id = self._otds.get_resource(name=license_item["resource"])["resourceID"]
-                            except Exception:
+                            except Exception:  # noqa: BLE001
                                 self.logger.error(
                                     "Error getting resource ID from resource -> %s", license_item["resource"]
                                 )
@@ -3568,7 +3568,7 @@ class Payload:
                         if "resource" in license_item:
                             try:
                                 resource_id = self._otds.get_resource(name=license_item["resource"])["resourceID"]
-                            except Exception:
+                            except Exception:  # noqa: BLE001
                                 self.logger.error(
                                     "Error getting resource ID from resource -> '%s'!", license_item["resource"]
                                 )
@@ -3697,7 +3697,7 @@ class Payload:
             if "resource" in lic:
                 try:
                     resource_id = self._otds.get_resource(name=lic["resource"])["resourceID"]
-                except Exception:
+                except Exception:  # noqa: BLE001
                     self.logger.error("Error getting resource ID from resource -> '%s'!", lic["resource"])
                     success = False
                     continue
@@ -13944,7 +13944,7 @@ class Payload:
             for workspace in self._workspaces:
                 try:
                     result = self.process_workspace(workspace=workspace)
-                except Exception:
+                except Exception:  # noqa: BLE001
                     self.logger.error("Failed to process workspace -> %s", workspace)
                     result = False
                 success = success and result  # if a single result is False then mark this in 'success' variable.
@@ -18486,7 +18486,7 @@ class Payload:
                             resource_id = self._otds.get_resource(name=user_license_feature_dict["resource"])[
                                 "resourceID"
                             ]
-                        except Exception:
+                        except Exception:  # noqa: BLE001
                             self.logger.error(
                                 "Error retrieving resourceID for -> %s", user_license_feature_dict["resource"]
                             )
@@ -18614,7 +18614,7 @@ class Payload:
             try:
                 output = subprocess.run(command, stdout=subprocess.PIPE, check=False)
                 result = output.stdout.decode("utf-8")
-            except Exception:
+            except OSError:
                 self.logger.error(
                     "Execution of command -> %s failed!",
                     command,
@@ -20087,7 +20087,7 @@ class Payload:
                     wait_until=wait_until,
                     browser=browser_automation.get("browser"),  # None is acceptable
                 )
-            except Exception:
+            except Exception:  # noqa: BLE001
                 self.logger.error(
                     "Cannot execute browser automation -> '%s'. Initialization of browser automation object failed!",
                     name,
@@ -21708,7 +21708,7 @@ class Payload:
                     if chunk:
                         f.write(chunk)
 
-        except Exception:
+        except requests.RequestException:
             self.logger.error("Error downloading JSON data source -> '%s'!", filename)
 
         return tmp_filename

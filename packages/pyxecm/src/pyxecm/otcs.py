@@ -1162,7 +1162,7 @@ class OTCS:
                     "Cannot load ontology from JSON document -> %s (%s)", self.ONTOLOGY_FILE_NAME, document_id
                 )
                 return False
-        except Exception as json_error:
+        except ValueError as json_error:
             self.logger.error(
                 "Invalid JSON input in document -> %s (%s); error -> %s",
                 self.ONTOLOGY_FILE_NAME,
@@ -8322,7 +8322,7 @@ class OTCS:
 
         elif Path(path_or_url).exists():
             self.logger.debug("Uploading local file -> '%s'", path_or_url)
-            file_content = Path(file=path_or_url).open(mode="rb")  # noqa: SIM115
+            file_content = Path(path_or_url).open(mode="rb")  # noqa: SIM115
 
         else:
             self.logger.warning("Cannot access file -> '%s'", path_or_url)
@@ -8337,7 +8337,7 @@ class OTCS:
             try:
                 mime = magic.Magic(mime=True)
                 mime_type = mime.from_file(path_or_url)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 self.logger.error(
                     "Unknown mime type for document -> '%s' for upload to volume -> %s",
                     file_name,
@@ -8587,7 +8587,7 @@ class OTCS:
 
             elif Path(file_url).exists():
                 self.logger.debug("Uploading local file -> %s", file_url)
-                file_content = Path(file=file_url).open(mode="rb")  # noqa: SIM115
+                file_content = Path(file_url).open(mode="rb")  # noqa: SIM115
 
             else:
                 self.logger.warning("Cannot access file -> '%s'", file_url)
@@ -8625,7 +8625,7 @@ class OTCS:
             try:
                 mime = magic.Magic(mime=True)
                 mime_type = mime.from_file(file_url)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 self.logger.error(
                     "Unknown mime type for upload of document -> '%s' to parent ID -> %d",
                     file_name,
@@ -8977,7 +8977,7 @@ class OTCS:
 
             elif Path(file_url).exists():
                 self.logger.debug("Upload local file -> '%s' as new version.", file_url)
-                file_content = Path(file=file_url).open(mode="rb")  # noqa: SIM115
+                file_content = Path(file_url).open(mode="rb")  # noqa: SIM115
 
             else:
                 self.logger.warning("Cannot access file -> '%s'", file_url)
@@ -8993,7 +8993,7 @@ class OTCS:
             try:
                 mime = magic.Magic(mime=True)
                 mime_type = mime.from_file(file_url)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 self.logger.error(
                     "Unknown mime type for new version of document -> '%s' (%d)",
                     file_name,
@@ -9472,7 +9472,7 @@ class OTCS:
                         download_file.write(chunk)
                         bytes_downloaded += len(chunk)
 
-        except Exception as e:
+        except OSError as e:
             self.logger.error(
                 "Error while writing content to file -> %s after %d bytes downloaded; error -> %s",
                 file_path,
@@ -9564,7 +9564,7 @@ class OTCS:
             content = content.replace(search.encode("utf-8"), replace.encode("utf-8"))
 
         # Open file in write binary mode
-        with Path(file=file_path).open(mode="wb") as file:
+        with Path(file_path).open(mode="wb") as file:
             # Write the content to the file
             file.write(content)
 
@@ -10498,7 +10498,7 @@ class OTCS:
                     )
                     break
 
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 self.logger.debug(str(e))
                 break
         # end while retries <= 1
@@ -17286,7 +17286,7 @@ class OTCS:
             session.verify = False
             self._soap_transport = Transport(session=session)
             self._soap_docman_client = Client(wsdl=wsdl_url, transport=self._soap_transport)
-        except Exception:
+        except Exception:  # noqa: BLE001
             self.logger.error("Failed to initialize SOAP client with WSDL -> %s", wsdl_url)
             return None
         else:
@@ -17357,7 +17357,7 @@ class OTCS:
 
             try:
                 attr_cls = soap_client.get_type(f"ns1:{soap_type}")
-            except Exception:
+            except Exception:  # noqa: BLE001
                 attr_cls = soap_client.get_type(f"ns0:{soap_type}")
 
             soap_attributes.append(
@@ -17436,7 +17436,7 @@ class OTCS:
             )
             response_dict = serialize_object(response)
             result["data"] = response_dict["body"]["CreateCategoryResult"]
-        except Exception as exception:
+        except Exception as exception:  # noqa: BLE001
             result["ok"] = False
             result["error"] = str(exception)
             self.logger.error(
@@ -17486,7 +17486,7 @@ class OTCS:
             response = soap_client.service.GetCategoryDefinition(categoryID=category_id, _soapheaders=[auth_header])
             response_dict = serialize_object(response)
             result["category_data"] = response_dict["body"]["GetCategoryDefinitionResult"]
-        except Exception as exception:
+        except Exception as exception:  # noqa: BLE001
             result["ok"] = False
             result["error"] = str(exception)
             self.logger.error("Failed to get SOAP category definition for category ID -> %s", str(category_id))
@@ -18363,7 +18363,7 @@ class OTCS:
                     # end if persona == "category":
                 # end for attribute_key, attribute_schema in category_schema.items():
             # end for category_key, category_schema in category_schemas.items():
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self.logger.error("Something went wrong with getting the data schema! Error -> %s", str(e))
             return None
 
@@ -18417,7 +18417,7 @@ class OTCS:
                     current_dict[attribute_name] = value if value is not None else ""
                 # end for attribute_key, value in category_data.items():
             # end for for category_data in category_datas.values():
-        except Exception as e:
+        except ValueError as e:
             self.logger.error("Something went wrong while filling the data! Error -> %s", str(e))
             return None
 
@@ -19506,7 +19506,7 @@ class OTCS:
             )
             return False
 
-        with Path(file=file_path).open(encoding="utf-8") as settings_file:
+        with Path(file_path).open(encoding="utf-8") as settings_file:
             settings_post_file = {
                 "file": (filename, settings_file, "text/xml"),
             }
@@ -19573,7 +19573,7 @@ class OTCS:
             )
             return False
 
-        with Path(file=file_path).open(encoding="utf-8") as codes_file:
+        with Path(file_path).open(encoding="utf-8") as codes_file:
             codes_post_file = {
                 "file": (filename, codes_file, "text/xml"),
             }
@@ -19646,7 +19646,7 @@ class OTCS:
             )
             return False
 
-        with Path(file=file_path).open(encoding="utf-8") as rsis_file:
+        with Path(file_path).open(encoding="utf-8") as rsis_file:
             rsis_post_file = {
                 "file": (filename, rsis_file, "text/xml"),
             }
@@ -19705,7 +19705,7 @@ class OTCS:
             )
             return False
 
-        with Path(file=file_path).open(encoding="utf-8") as settings_file:
+        with Path(file_path).open(encoding="utf-8") as settings_file:
             settings_post_file = {
                 "file": (filename, settings_file, "text/xml"),
             }
@@ -19771,7 +19771,7 @@ class OTCS:
             )
             return False
 
-        with Path(file=file_path).open(encoding="utf-8") as codes_file:
+        with Path(file_path).open(encoding="utf-8") as codes_file:
             codes_post_file = {
                 "file": (filename, codes_file, "text/xml"),
             }
@@ -19830,7 +19830,7 @@ class OTCS:
             )
             return False
 
-        with Path(file=file_path).open(encoding="utf-8") as locators_file:
+        with Path(file_path).open(encoding="utf-8") as locators_file:
             locators_post_file = {
                 "file": (filename, locators_file, "text/xml"),
             }
@@ -19896,7 +19896,7 @@ class OTCS:
             )
             return False
 
-        with Path(file=file_path).open(encoding="utf-8") as codes_file:
+        with Path(file_path).open(encoding="utf-8") as codes_file:
             codes_post_file = {
                 "file": (filename, codes_file, "text/xml"),
             }
@@ -22375,7 +22375,7 @@ class OTCS:
                                 traverse = True
                             if not result_success:
                                 break
-                        except Exception as e:
+                        except Exception as e:  # noqa: BLE001
                             self.logger.error(
                                 "Failed to run executable on node -> '%s' (%s), error -> %s", node_name, node_id, str(e)
                             )
@@ -23125,7 +23125,7 @@ class OTCS:
                                 traverse = True
                             if not result_success:
                                 break
-                        except Exception as e:
+                        except Exception as e:  # noqa: BLE001
                             self.logger.error(
                                 "Failed to run workspace node executable on workspace -> '%s' (%s), error -> %s",
                                 workspace_name,
@@ -23196,7 +23196,7 @@ class OTCS:
                                             traverse = True
                                         if not result_success:
                                             break
-                                    except Exception as e:
+                                    except Exception as e:  # noqa: BLE001
                                         self.logger.error(
                                             "Failed to run workspace relationship executable on workspace -> '%s' (%d) and related workspace -> '%s' (%d), error -> %s",
                                             workspace_name,
@@ -23216,7 +23216,7 @@ class OTCS:
                         # end for rel_type in relationship_types:
                     # end if traverse and "child" in relationship_types:
 
-                except Exception as worker_error:
+                except ValueError as worker_error:
                     self.logger.error("Worker thread crashed unexpectedly; error -> %s", str(worker_error))
 
                 finally:
@@ -23304,7 +23304,7 @@ class OTCS:
                     file_path,
                 )
 
-            except Exception:
+            except OSError:
                 self.logger.error(
                     "Failed to unzip node (%d) -> %s",
                     node_id,
@@ -23322,7 +23322,7 @@ class OTCS:
                                     filename,
                                 )
                                 zip_file.extractall(str(Path(root) / filename[:-4]))
-                        except Exception:
+                        except ValueError:
                             self.logger.error(
                                 "Failed to unzip nested ZIP file -> '%s'!",
                                 filename,
@@ -24476,7 +24476,7 @@ class OTCS:
             )
             success = False
 
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             self.logger.error("Error during FEME WebSocket connection! -> %s", exc)
             success = False
 

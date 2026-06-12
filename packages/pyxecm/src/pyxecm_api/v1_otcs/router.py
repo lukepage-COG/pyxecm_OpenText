@@ -98,7 +98,7 @@ async def post_otcs_log_file(
                 if not chunk:
                     break
                 await f.write(chunk)
-    except Exception as e:
+    except OSError as e:
         raise HTTPException(status_code=500, detail="Something went wrong") from e
     finally:
         await file.close()
@@ -147,7 +147,7 @@ async def get_otcs_log_files(
                 else:
                     response["status"][host] = False
 
-        except Exception as e:
+        except ValueError as e:
             raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR) from e
 
     return JSONResponse(response, status_code=HTTPStatus.OK)
@@ -179,7 +179,7 @@ async def delete_otcs_log_file(
 
     try:
         await anyio.to_thread.run_sync(os.remove, str(file_path))
-    except Exception as e:
+    except OSError as e:
         raise HTTPException(status_code=500, detail=f"{e}") from e
 
     return JSONResponse({"message": f"Successfully deleted {file_name}"}, status_code=HTTPStatus.OK)

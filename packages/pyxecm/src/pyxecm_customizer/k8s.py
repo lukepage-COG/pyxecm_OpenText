@@ -1374,11 +1374,11 @@ class K8s:
                         self.logger.info(
                             "Pod '%s' in namespace '%s' has been deleted forcefully.", pod_name, self.get_namespace()
                         )
-                    except Exception as e:
+                    except Exception as e:  # noqa: BLE001
                         self.logger.error("Error occurred while deleting pod '%s': %s", pod_name, e)
                         success = False
 
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 self.logger.error("Error occurred while getting Deployment '%s': %s", deployment_name, e)
                 success = False
 

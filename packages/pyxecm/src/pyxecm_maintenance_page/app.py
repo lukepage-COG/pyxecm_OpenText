@@ -55,7 +55,7 @@ def run_maintenance_page() -> None:
     def start_server() -> None:
         try:
             uvicorn.run(app, host=settings.host, port=settings.port)
-        except Exception:
+        except Exception:  # noqa: BLE001
             logger.error("Could not start the maintenance page.")
 
     threading.Thread(target=start_server, name="MaintenancePage").start()

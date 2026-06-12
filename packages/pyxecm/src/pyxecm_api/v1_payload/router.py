@@ -236,7 +236,7 @@ async def update_payload_item(
     if customizer_settings is not None:
         try:
             update_data["customizer_settings"] = json.loads(customizer_settings)
-        except Exception as e:
+        except ValueError as e:
             raise HTTPException(detail=e, status_code=HTTPStatus.BAD_REQUEST) from e
 
     if "status" in update_data and update_data["status"] == "planned":

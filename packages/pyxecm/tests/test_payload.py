@@ -1,7 +1,6 @@
 """Tests for the Customizer Payload module."""
 
 import yaml
-
 from pyxecm_customizer.payload import load_payload
 
 

@@ -102,7 +102,7 @@ def import_payload(
             try:
                 payload_items = len(PAYLOAD_LIST.get_payload_items()) - 1
                 dependencies = [payload_items] if payload_items != -1 else []
-            except Exception:
+            except Exception:  # noqa: BLE001
                 dependencies = []
         else:
             dependencies = []

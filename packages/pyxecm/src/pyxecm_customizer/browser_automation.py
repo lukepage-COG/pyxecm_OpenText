@@ -243,7 +243,7 @@ class BrowserAutomation:
         try:
             self.logger.debug("Creating Playwright instance...")
             self.playwright = sync_playwright().start()
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self.logger.error("Failed to start Playwright! Error -> %s", str(e))
             return False
 
@@ -256,7 +256,7 @@ class BrowserAutomation:
                     self.browser: Browser = self.playwright.chromium.launch(
                         headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy
                     )
-                except Exception:
+                except Exception:  # noqa: BLE001
                     result = self.install_browser(browser=browser)
                     if result:
                         self.browser: Browser = self.playwright.chromium.launch(
@@ -271,7 +271,7 @@ class BrowserAutomation:
                         slow_mo=100 if not self.headless else None,
                         proxy=self.proxy,
                     )
-                except Exception:
+                except Exception:  # noqa: BLE001
                     result = self.install_browser(browser=browser)
                     if result:
                         self.browser: Browser = self.playwright.chromium.launch(
@@ -289,7 +289,7 @@ class BrowserAutomation:
                         slow_mo=100 if not self.headless else None,
                         proxy=self.proxy,
                     )
-                except Exception:
+                except Exception:  # noqa: BLE001
                     result = self.install_browser(browser=browser)
                     if result:
                         self.browser: Browser = self.playwright.chromium.launch(
@@ -304,7 +304,7 @@ class BrowserAutomation:
                     self.browser: Browser = self.playwright.webkit.launch(
                         headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy
                     )
-                except Exception:
+                except Exception:  # noqa: BLE001
                     result = self.install_browser(browser=browser)
                     if result:
                         self.browser: Browser = self.playwright.webkit.launch(
@@ -316,7 +316,7 @@ class BrowserAutomation:
                     self.browser: Browser = self.playwright.firefox.launch(
                         headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy
                     )
-                except Exception:
+                except Exception:  # noqa: BLE001
                     result = self.install_browser(browser=browser)
                     if result:
                         self.browser: Browser = self.playwright.firefox.launch(
@@ -409,7 +409,7 @@ class BrowserAutomation:
         try:
             self.page.screenshot(path=screenshot_file, full_page=self.screenshot_full_page)
             self.screenshot_counter += 1
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self.logger.error("Failed to take screenshot; error -> %s", e)
             return False
 
@@ -523,7 +523,7 @@ class BrowserAutomation:
                     self.logger.info("Retry attempt %d/%d", attempt + 1, REQUEST_MAX_RETRIES)
                 else:
                     break
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 if "Execution context was destroyed" in str(e):
                     if attempt < retry_attempts:
                         self.logger.info(
@@ -1195,7 +1195,7 @@ class BrowserAutomation:
                     while elem.is_checked() != value and retry < 5:
                         try:
                             elem.set_checked(checked=value)
-                        except Exception:
+                        except Exception:  # noqa: BLE001
                             self.logger.warning("Cannot set checkbox to value -> '%s'. (retry %s).", value, retry)
                         finally:
                             retry += 1
@@ -1278,7 +1278,7 @@ class BrowserAutomation:
             filename = download.suggested_filename
             save_path = str(Path(self.download_directory) / filename)
             download.save_as(save_path)
-        except Exception as e:
+        except ValueError as e:
             self.logger.error("Download failed; error -> %s", str(e))
             return None
 

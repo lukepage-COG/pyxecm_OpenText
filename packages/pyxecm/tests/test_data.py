@@ -2,7 +2,6 @@
 
 import pandas as pd
 import pytest
-
 from pyxecm.helper.data import Data
 
 

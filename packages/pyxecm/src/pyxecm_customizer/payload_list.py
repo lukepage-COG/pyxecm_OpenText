@@ -299,7 +299,7 @@ class PayloadList:
 
         for column, value in update_data.items():
             if column in self.payload_items.columns:
-                self.payload_items.at[index, column] = value  # noqa: PD008 - .loc breaks with non-scalar values (list/dict)
+                self.payload_items.at[index, column] = value  # noqa: PD008
 
         return True
 
@@ -778,7 +778,7 @@ class PayloadList:
                         "StopOnErrorException occurred. Stopping payload processing...",
                     )
 
-                except Exception:
+                except OSError:
                     success = False
                     thread_logger.error(
                         "An exception occurred: \n%s",

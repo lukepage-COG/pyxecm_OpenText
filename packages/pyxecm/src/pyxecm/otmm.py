@@ -186,7 +186,7 @@ class OTMM:
 
         try:
             target(*args, **kwargs)
-        except Exception:
+        except Exception:  # noqa: BLE001
             thread_name = threading.current_thread().name
             self.logger.error(
                 "Thread '%s' failed!",
@@ -269,7 +269,7 @@ class OTMM:
         except requests.exceptions.RequestException:
             self.logger.error("Request error requesting -> %s", request_url)
             return None
-        except Exception:
+        except ValueError:
             self.logger.error("Unexpected error requesting -> %s", request_url)
             return None
 
@@ -332,7 +332,7 @@ class OTMM:
         except requests.exceptions.RequestException:
             self.logger.error("Request error requesting -> %s", request_url)
             return None
-        except Exception:
+        except ValueError:
             self.logger.error("Unexpected error requesting -> %s", request_url)
             return None
 
@@ -400,7 +400,7 @@ class OTMM:
         except requests.exceptions.RequestException:
             self.logger.error("Request error requesting -> %s", request_url)
             return None
-        except Exception:
+        except ValueError:
             self.logger.error("Unexpected error requesting -> %s", request_url)
             return None
 
@@ -607,7 +607,7 @@ class OTMM:
         except requests.exceptions.RequestException:
             self.logger.error("Request error requesting -> %s", request_url)
             return None
-        except Exception:
+        except ValueError:
             self.logger.error("Unexpected error requesting -> %s", request_url)
             return None
 
@@ -931,7 +931,7 @@ class OTMM:
                 self.logger.error(
                     "File system error while writing to file -> '%s'; error -> %s", file_name, str(os_error)
                 )
-            except Exception:
+            except Exception:  # noqa: BLE001
                 self.logger.error("Unexpected error requesting -> %s!", request_url)
         # end with asset_lock:
 
@@ -1089,7 +1089,7 @@ class OTMM:
         except requests.exceptions.RequestException:
             self.logger.error("Request error requesting -> %s", request_url)
             return None
-        except Exception:
+        except ValueError:
             self.logger.error("Unexpected error requesting -> %s", request_url)
             return None
 
@@ -1289,7 +1289,7 @@ class OTMM:
         except requests.exceptions.RequestException:
             self.logger.error("Request error requesting -> %s", request_url)
             return None
-        except Exception:
+        except ValueError:
             self.logger.error("Unexpected error requesting -> %s", request_url)
             return None
 

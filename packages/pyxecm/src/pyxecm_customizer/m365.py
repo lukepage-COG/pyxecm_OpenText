@@ -4547,7 +4547,7 @@ class M365:
                             automation_name="email-verification",
                             logger=self.logger,
                         )
-                    except Exception:
+                    except Exception:  # noqa: BLE001
                         self.logger.error("Failed to create browser automation object. Bailing out...")
                         return False
 

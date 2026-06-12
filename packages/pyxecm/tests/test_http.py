@@ -2,7 +2,6 @@
 
 import requests
 import requests_mock as rm
-
 from pyxecm.helper.web import HTTP, REQUEST_MAX_RETRIES, REQUEST_TIMEOUT
 
 

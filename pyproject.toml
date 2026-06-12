@@ -50,7 +50,6 @@ ignore = [
   "FIX002",
   "TD002",
   "TD003",
-  "BLE001",
   "ERA001",
   "S105",
   "S106",
@@ -95,21 +94,41 @@ exclude = []
 
 [tool.ruff.lint.extend-per-file-ignores]
 "**/tests/*.py" = [
-    "INP001","D100","D103","ANN",
+    "INP001","D100","D101","D102","D103","ANN",
     "S101", # asserts allowed in tests...
     "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
     "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
     "PLR2004", # Magic value used in comparison, ...
     "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
+    "SLF001", # Private member access needed for testing internals
+    "F401", # Unused imports may be fixtures or re-exports
+    "TRY003", # Long exception messages acceptable in tests
+    "EM101", # String literals in exceptions acceptable in tests
+    "PTH123", # open() acceptable in tests
 ]
 "**/**/test_*.py" = [
-    "INP001","D100","D103","ANN",
+    "INP001","D100","D101","D102","D103","ANN",
     "S101", # asserts allowed in tests...
     "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
     "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
     "PLR2004", # Magic value used in comparison, ...
     "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
+    "SLF001", # Private member access needed for testing internals
+    "F401", # Unused imports may be fixtures or re-exports
+    "TRY003", # Long exception messages acceptable in tests
+    "EM101", # String literals in exceptions acceptable in tests
+    "PTH123", # open() acceptable in tests
 ]
 "**/__init__.py" = [
   "D104"
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["packages"]
+
+[tool.coverage.run]
+source = ["packages/pyxecm/src"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 50

@@ -525,7 +525,7 @@ class Data:
                 ignore_idx = not enforce_schema
                 self._df = pd.concat([self._df, new_df], ignore_index=ignore_idx)
 
-        except Exception as e:
+        except ValueError as e:
             self.logger.error("Append failed; error -> %s", str(e))
             return False
         else:
@@ -578,7 +578,7 @@ class Data:
                     self._df.set_index(self._index_columns, inplace=True, drop=False)
                     self.logger.debug("Applied index settings -> %s", self._index_columns)
 
-        except Exception as e:
+        except ValueError as e:
             self.logger.error("Failed to apply schema: %s", str(e))
             raise
 

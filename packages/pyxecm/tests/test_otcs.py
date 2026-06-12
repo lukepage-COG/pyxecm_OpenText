@@ -3,7 +3,6 @@
 from unittest.mock import MagicMock, patch
 
 import requests_mock as rm
-
 from pyxecm.otcs import OTCS
 
 
