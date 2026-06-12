@@ -7,6 +7,7 @@ import logging
 import os
 from datetime import UTC, datetime
 from http import HTTPStatus
+from pathlib import Path
 from typing import Annotated, Literal
 
 import anyio
@@ -73,9 +74,9 @@ async def create_payload_item(
         dependencies = prepare_dependencies(dependencies)
 
     # Set name if not provided
-    name = name or os.path.splitext(os.path.basename(upload_file.filename))[0]
-    file_extension = os.path.splitext(upload_file.filename)[1]
-    file_name = os.path.join(settings.temp_dir, f"{name}{file_extension}")
+    name = name or Path(upload_file.filename).stem
+    file_extension = Path(upload_file.filename).suffix
+    file_name = str(Path(settings.temp_dir) / f"{name}{file_extension}")
 
     # Read upload file asynchronously and write to disk using anyio
     content = await upload_file.read()
@@ -90,7 +91,7 @@ async def create_payload_item(
             name=name,
             filename=file_name,
             status="planned",
-            logfile=os.path.join(settings.temp_dir, "{}.log".format(name)),
+            logfile=str(Path(settings.temp_dir) / f"{name}.log"),
             dependencies=dependencies or [],
             enabled=enabled,
             loglevel=loglevel,
@@ -163,7 +164,7 @@ async def get_payload_item(
     if data is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload with index -> {} not found".format(payload_id),
+            detail=f"Payload with index -> {payload_id} not found",
         )
 
     return PayloadListItem(index=payload_id, **data, asd="123")
@@ -212,7 +213,7 @@ async def update_payload_item(
     if payload_item is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload with ID -> {} not found.".format(payload_id),
+            detail=f"Payload with ID -> {payload_id} not found.",
         )
 
     update_data = {}
@@ -235,7 +236,7 @@ async def update_payload_item(
     if customizer_settings is not None:
         try:
             update_data["customizer_settings"] = json.loads(customizer_settings)
-        except Exception as e:
+        except ValueError as e:
             raise HTTPException(detail=e, status_code=HTTPStatus.BAD_REQUEST) from e
 
     if "status" in update_data and update_data["status"] == "planned":
@@ -260,10 +261,7 @@ async def update_payload_item(
 
             now = datetime.now(UTC)
             old_log_name = (
-                os.path.dirname(data.logfile)
-                + "/"
-                + os.path.splitext(os.path.basename(data.logfile))[0]
-                + now.strftime("_%Y-%m-%d_%H-%M-%S.log")
+                str(Path(data.logfile).parent) + "/" + Path(data.logfile).stem + now.strftime("_%Y-%m-%d_%H-%M-%S.log")
             )
 
             await anyio.to_thread.run_sync(os.rename, data.logfile, old_log_name)
@@ -276,10 +274,7 @@ async def update_payload_item(
     if not result:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Failed to update Payload with ID -> {} with data -> {}".format(
-                payload_id,
-                update_data,
-            ),
+            detail=f"Failed to update Payload with ID -> {payload_id} with data -> {update_data}",
         )
 
     return UpdatedPayloadListItem(
@@ -310,7 +305,7 @@ async def delete_payload_item(
     if not result:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload with ID -> {} not found.".format(payload_id),
+            detail=f"Payload with ID -> {payload_id} not found.",
         )
 
 
@@ -338,9 +333,7 @@ async def move_payload_item_up(
     if position is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload item with index -> {} is either out of range or is already on top of the payload list!".format(
-                payload_id,
-            ),
+            detail=f"Payload item with index -> {payload_id} is either out of range or is already on top of the payload list!",
         )
 
     return {"result": {"new_position": position}}
@@ -371,9 +364,7 @@ async def move_payload_item_down(
     if position is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload item with index -> {} is either out of range or is already on bottom of the payload list!".format(
-                payload_id,
-            ),
+            detail=f"Payload item with index -> {payload_id} is either out of range or is already on bottom of the payload list!",
         )
 
     return {"result": {"new_position": position}}
@@ -407,7 +398,7 @@ async def get_payload_content(
     if data is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload with ID -> {} not found!".format(payload_id),
+            detail=f"Payload with ID -> {payload_id} not found!",
         )
 
     filename = data.filename
@@ -427,13 +418,13 @@ async def download_payload_content(
     if payload is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload with ID -> {} not found!".format(payload_id),
+            detail=f"Payload with ID -> {payload_id} not found!",
         )
 
     if not await anyio.to_thread.run_sync(os.path.isfile, payload.filename):
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Payload file -> '{}' not found".format(payload.filename),
+            detail=f"Payload file -> '{payload.filename}' not found",
         )
 
     async with await anyio.open_file(payload.filename, "rb") as file:
@@ -444,9 +435,9 @@ async def download_payload_content(
         content = gzip.decompress(content)
 
     download_name = (
-        os.path.basename(payload.filename.removesuffix(".gz.b64"))
+        Path(payload.filename.removesuffix(".gz.b64").name)
         if payload.filename.endswith(".gz.b64")
-        else os.path.basename(payload.filename)
+        else Path(payload.filename).name
     )
 
     return Response(
@@ -475,7 +466,7 @@ async def download_payload_logfile(
     if not await anyio.to_thread.run_sync(os.path.isfile, filename):
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail="Log file -> '{}' not found".format(filename),
+            detail=f"Log file -> '{filename}' not found",
         )
 
     async with await anyio.open_file(filename, "rb") as file:
@@ -485,7 +476,7 @@ async def download_payload_logfile(
         content,
         media_type="application/octet-stream",
         headers={
-            "Content-Disposition": f'attachment; filename="{os.path.basename(filename)}"',
+            "Content-Disposition": f'attachment; filename="{Path(filename).name}"',
         },
     )
 

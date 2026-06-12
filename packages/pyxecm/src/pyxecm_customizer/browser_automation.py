@@ -65,6 +65,7 @@ import tempfile
 import time
 import traceback
 from http import HTTPStatus
+from pathlib import Path
 from types import TracebackType
 
 default_logger = logging.getLogger("pyxecm_customizer.browser_automation")
@@ -159,11 +160,11 @@ class BrowserAutomation:
         """
 
         if not download_directory:
-            download_directory = os.path.join(
-                tempfile.gettempdir(),
-                "browser_automations",
-                self.sanitize_filename(filename=automation_name),
-                "downloads",
+            download_directory = str(
+                Path(tempfile.gettempdir())
+                / "browser_automations"
+                / self.sanitize_filename(filename=automation_name)
+                / "downloads"
             )
 
         if logger != default_logger:
@@ -186,15 +187,12 @@ class BrowserAutomation:
 
         self.wait_until = wait_until or DEFAULT_WAIT_UNTIL_STRATEGY
 
-        self.screenshot_directory = os.path.join(
-            tempfile.gettempdir(),
-            "browser_automations",
-            self.screenshot_names,
-            "screenshots",
+        self.screenshot_directory = str(
+            Path(tempfile.gettempdir()) / "browser_automations" / self.screenshot_names / "screenshots"
         )
         self.logger.debug("Creating screenshot directory... -> %s", self.screenshot_directory)
-        if self.take_screenshots and not os.path.exists(self.screenshot_directory):
-            os.makedirs(self.screenshot_directory)
+        if self.take_screenshots and not Path(self.screenshot_directory).exists():
+            Path(self.screenshot_directory).mkdir(parents=True, exist_ok=True)
 
         if os.getenv("HTTP_PROXY"):
             self.proxy = {
@@ -245,7 +243,7 @@ class BrowserAutomation:
         try:
             self.logger.debug("Creating Playwright instance...")
             self.playwright = sync_playwright().start()
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self.logger.error("Failed to start Playwright! Error -> %s", str(e))
             return False
 
@@ -258,7 +256,7 @@ class BrowserAutomation:
                     self.browser: Browser = self.playwright.chromium.launch(
                         headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy
                     )
-                except Exception:
+                except Exception:  # noqa: BLE001
                     result = self.install_browser(browser=browser)
                     if result:
                         self.browser: Browser = self.playwright.chromium.launch(
@@ -273,7 +271,7 @@ class BrowserAutomation:
                         slow_mo=100 if not self.headless else None,
                         proxy=self.proxy,
                     )
-                except Exception:
+                except Exception:  # noqa: BLE001
                     result = self.install_browser(browser=browser)
                     if result:
                         self.browser: Browser = self.playwright.chromium.launch(
@@ -291,7 +289,7 @@ class BrowserAutomation:
                         slow_mo=100 if not self.headless else None,
                         proxy=self.proxy,
                     )
-                except Exception:
+                except Exception:  # noqa: BLE001
                     result = self.install_browser(browser=browser)
                     if result:
                         self.browser: Browser = self.playwright.chromium.launch(
@@ -306,7 +304,7 @@ class BrowserAutomation:
                     self.browser: Browser = self.playwright.webkit.launch(
                         headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy
                     )
-                except Exception:
+                except Exception:  # noqa: BLE001
                     result = self.install_browser(browser=browser)
                     if result:
                         self.browser: Browser = self.playwright.webkit.launch(
@@ -318,7 +316,7 @@ class BrowserAutomation:
                     self.browser: Browser = self.playwright.firefox.launch(
                         headless=self.headless, slow_mo=100 if not self.headless else None, proxy=self.proxy
                     )
-                except Exception:
+                except Exception:  # noqa: BLE001
                     result = self.install_browser(browser=browser)
                     if result:
                         self.browser: Browser = self.playwright.firefox.launch(
@@ -403,15 +401,15 @@ class BrowserAutomation:
 
         """
 
-        screenshot_file = "{}/{}-{:02d}{}.png".format(
-            self.screenshot_directory, self.screenshot_names, self.screenshot_counter, suffix
+        screenshot_file = (
+            f"{self.screenshot_directory}/{self.screenshot_names}-{self.screenshot_counter:02d}{suffix}.png"
         )
         self.logger.debug("Save browser screenshot to -> %s", screenshot_file)
 
         try:
             self.page.screenshot(path=screenshot_file, full_page=self.screenshot_full_page)
             self.screenshot_counter += 1
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self.logger.error("Failed to take screenshot; error -> %s", e)
             return False
 
@@ -525,7 +523,7 @@ class BrowserAutomation:
                     self.logger.info("Retry attempt %d/%d", attempt + 1, REQUEST_MAX_RETRIES)
                 else:
                     break
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 if "Execution context was destroyed" in str(e):
                     if attempt < retry_attempts:
                         self.logger.info(
@@ -615,17 +613,17 @@ class BrowserAutomation:
             name_or_text = re.compile(selector) if regex else selector
 
             # Determine the base frame to search in (iframe or main page):
-            frame = self.page if iframe is None else self.page.locator("iframe[name='{}']".format(iframe)).content_frame
+            frame = self.page if iframe is None else self.page.locator(f"iframe[name='{iframe}']").content_frame
 
             match selector_type:
                 case "id":
-                    locator = frame.locator("#{}".format(selector))
+                    locator = frame.locator(f"#{selector}")
                 case "name":
-                    locator = frame.locator("[name='{}']".format(selector))
+                    locator = frame.locator(f"[name='{selector}']")
                 case "class_name":
-                    locator = frame.locator(".{}".format(selector))
+                    locator = frame.locator(f".{selector}")
                 case "xpath":
-                    locator = frame.locator("xpath={}".format(selector))
+                    locator = frame.locator(f"xpath={selector}")
                 case "css":
                     locator = frame.locator(selector)
                 case "text":
@@ -723,21 +721,21 @@ class BrowserAutomation:
         """
 
         failure_message = "Cannot find {} page element with selector -> '{}' ({}){}{}{}{}".format(
-            "occurence #{} of".format(occurrence) if occurrence > 1 else "any",
+            f"occurence #{occurrence} of" if occurrence > 1 else "any",
             selector,
             selector_type,
-            " and role type -> '{}'".format(role_type) if role_type else "",
-            " in iframe -> '{}'".format(iframe) if iframe else "",
-            ", occurrence -> {}".format(occurrence) if occurrence > 1 else "",
-            ", waiting for state -> '{}'".format(wait_state),
+            f" and role type -> '{role_type}'" if role_type else "",
+            f" in iframe -> '{iframe}'" if iframe else "",
+            f", occurrence -> {occurrence}" if occurrence > 1 else "",
+            f", waiting for state -> '{wait_state}'",
         )
         success_message = "Found {} page element with selector -> '{}' ('{}'){}{}{}".format(
-            "occurence #{} of".format(occurrence) if occurrence > 1 else "a",
+            f"occurence #{occurrence} of" if occurrence > 1 else "a",
             selector,
             selector_type,
-            " and role type -> '{}'".format(role_type) if role_type else "",
-            " in iframe -> '{}'".format(iframe) if iframe else "",
-            ", occurrence -> {}".format(occurrence) if occurrence > 1 else "",
+            f" and role type -> '{role_type}'" if role_type else "",
+            f" in iframe -> '{iframe}'" if iframe else "",
+            f", occurrence -> {occurrence}" if occurrence > 1 else "",
         )
 
         def do_find() -> Locator | None:
@@ -768,13 +766,13 @@ class BrowserAutomation:
                     return None
                 self.logger.debug(
                     "Wait for locator to find %selement with selector -> '%s' (%s%s%s) and state -> '%s'%s...",
-                    "occurrence #{} of ".format(occurrence) if occurrence > 1 else "",
+                    f"occurrence #{occurrence} of " if occurrence > 1 else "",
                     selector,
-                    "selector type -> '{}'".format(selector_type),
-                    ", role type -> '{}'".format(role_type) if role_type else "",
+                    f"selector type -> '{selector_type}'",
+                    f", role type -> '{role_type}'" if role_type else "",
                     ", using regular expression" if regex else "",
                     wait_state,
-                    " in iframe -> '{}'".format(iframe) if iframe else "",
+                    f" in iframe -> '{iframe}'" if iframe else "",
                 )
 
                 locator = locator.first if occurrence == 1 else locator.nth(index)
@@ -1003,8 +1001,8 @@ class BrowserAutomation:
                     self.logger.debug(
                         "Clicking on navigation-triggering element -> '%s' (%s%s) and wait until -> '%s'...",
                         selector,
-                        "selector type -> '{}'".format(selector_type),
-                        ", role type -> '{}'".format(role_type) if role_type else "",
+                        f"selector type -> '{selector_type}'",
+                        f", role type -> '{role_type}'" if role_type else "",
                         wait_until,
                     )
                     with self.page.expect_navigation(wait_until=wait_until):
@@ -1023,16 +1021,16 @@ class BrowserAutomation:
                     self.logger.debug(
                         "Hovering over element -> '%s' (%s%s)...",
                         selector,
-                        "selector type -> '{}'".format(selector_type),
-                        ", role type -> '{}'".format(role_type) if role_type else "",
+                        f"selector type -> '{selector_type}'",
+                        f", role type -> '{role_type}'" if role_type else "",
                     )
                     elem.hover()
                 else:
                     self.logger.debug(
                         "Clicking on non-navigating element -> '%s' (%s%s)...",
                         selector,
-                        "selector type -> '{}'".format(selector_type),
-                        ", role type -> '{}'".format(role_type) if role_type else "",
+                        f"selector type -> '{selector_type}'",
+                        f", role type -> '{role_type}'" if role_type else "",
                     )
                     elem.click(force=force, button=click_button, click_count=click_count, modifiers=click_modifiers)
                     time.sleep(1)
@@ -1041,8 +1039,8 @@ class BrowserAutomation:
                         "Successfully %s element -> '%s' (%s%s)",
                         "clicked" if not hover_only else "hovered over",
                         selector,
-                        "selector type -> '{}'".format(selector_type),
-                        ", role type -> '{}'".format(role_type) if role_type else "",
+                        f"selector type -> '{selector_type}'",
+                        f", role type -> '{role_type}'" if role_type else "",
                     )
 
         except PlaywrightError as e:
@@ -1152,9 +1150,7 @@ class BrowserAutomation:
 
         is_enabled = elem.is_enabled()
         if not is_enabled:
-            message = "Cannot set elem -> '{}' ({}) to value -> '{}'. It is not enabled!".format(
-                selector, selector_type, value
-            )
+            message = f"Cannot set elem -> '{selector}' ({selector_type}) to value -> '{value}'. It is not enabled!"
             if show_error:
                 self.logger.error(message)
             else:
@@ -1199,7 +1195,7 @@ class BrowserAutomation:
                     while elem.is_checked() != value and retry < 5:
                         try:
                             elem.set_checked(checked=value)
-                        except Exception:
+                        except Exception:  # noqa: BLE001
                             self.logger.warning("Cannot set checkbox to value -> '%s'. (retry %s).", value, retry)
                         finally:
                             retry += 1
@@ -1214,9 +1210,7 @@ class BrowserAutomation:
                     self.page.keyboard.press("Enter")
                 success = True
         except PlaywrightError as e:
-            message = "Cannot set page element selected by -> '{}' ({}) to value -> '{}'; error -> {}".format(
-                selector, selector_type, value, str(e)
-            )
+            message = f"Cannot set page element selected by -> '{selector}' ({selector_type}) to value -> '{value}'; error -> {e!s}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -1282,9 +1276,9 @@ class BrowserAutomation:
 
             download = download_info.value
             filename = download.suggested_filename
-            save_path = os.path.join(self.download_directory, filename)
+            save_path = str(Path(self.download_directory) / filename)
             download.save_as(save_path)
-        except Exception as e:
+        except ValueError as e:
             self.logger.error("Download failed; error -> %s", str(e))
             return None
 
@@ -1359,8 +1353,8 @@ class BrowserAutomation:
         failure_message = "No matching page element found with selector -> '{}' ({}){}{}".format(
             selector,
             selector_type,
-            " and role type -> '{}'".format(role_type) if role_type else "",
-            " in iframe -> '{}'".format(iframe) if iframe else "",
+            f" and role type -> '{role_type}'" if role_type else "",
+            f" in iframe -> '{iframe}'" if iframe else "",
         )
 
         # Determine the locator for the elements:
@@ -1382,11 +1376,11 @@ class BrowserAutomation:
             min_count,
             "s are" if min_count > 1 else " is",
             selector,
-            "selector type -> '{}'".format(selector_type),
-            ", role type -> {}".format(role_type) if role_type else "",
-            " with value -> '{}'".format(value) if value else "",
-            " in attribute -> '{}'".format(attribute) if attribute and value else "",
-            " in iframe -> '{}'".format(iframe) if iframe else "",
+            f"selector type -> '{selector_type}'",
+            f", role type -> {role_type}" if role_type else "",
+            f" with value -> '{value}'" if value else "",
+            f" in attribute -> '{attribute}'" if attribute and value else "",
+            f" in iframe -> '{iframe}'" if iframe else "",
         )
 
         # Wait for the element to be visible - don't immediately use logic like
@@ -1395,10 +1389,10 @@ class BrowserAutomation:
             self.logger.info(
                 "Wait for locator to find first matching element with selector -> '%s' (%s%s) and state -> '%s'%s...",
                 selector,
-                "selector type -> '{}'".format(selector_type),
-                ", role type -> {}".format(role_type) if role_type else "",
+                f"selector type -> '{selector_type}'",
+                f", role type -> {role_type}" if role_type else "",
                 wait_state,
-                " in iframe -> '{}'".format(iframe) if iframe else "",
+                f" in iframe -> '{iframe}'" if iframe else "",
             )
             self.logger.info("Locator count before waiting: %d", locator.count())
 
@@ -1438,14 +1432,14 @@ class BrowserAutomation:
             count,
             "s" if count > 1 else "",
             selector,
-            "selector type -> '{}'".format(selector_type),
-            ", role type -> '{}'".format(role_type) if role_type else "",
+            f"selector type -> '{selector_type}'",
+            f", role type -> '{role_type}'" if role_type else "",
         )
 
         if value:
             self.logger.info(
                 "Checking if their %s %s -> '%s'...",
-                "attribute -> '{}'".format(attribute) if attribute else "content",
+                f"attribute -> '{attribute}'" if attribute else "content",
                 "has value" if not substring else "contains",
                 value,
             )
@@ -1483,7 +1477,7 @@ class BrowserAutomation:
             if show_error:
                 self.logger.error(
                     "%s matching element%s found, expected at least %d",
-                    "Only {}".format(matching_elements_count) if matching_elems else "No",
+                    f"Only {matching_elements_count}" if matching_elems else "No",
                     "s" if matching_elements_count > 1 else "",
                     min_count,
                 )

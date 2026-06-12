@@ -1,8 +1,8 @@
 """Settings for Customizer execution."""
 
-import os
 import tempfile
 import uuid
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field
@@ -54,13 +54,13 @@ class CustomizerAPISettings(BaseSettings):
     )
 
     temp_dir: str = Field(
-        default=os.path.join(tempfile.gettempdir(), "customizer"),
+        default=str(Path(tempfile.gettempdir()) / "customizer"),
         description="location of the temp folder. Used for temporary files during the payload execution",
     )
 
     loglevel: Literal["INFO", "DEBUG", "WARNING", "ERROR"] = "INFO"
     logfolder: str = Field(
-        default=os.path.join(tempfile.gettempdir(), "customizer"),
+        default=str(Path(tempfile.gettempdir()) / "customizer"),
         description="Logfolder for Customizer logfiles",
     )
     logfile: str = Field(
@@ -112,7 +112,7 @@ class CustomizerAPISettings(BaseSettings):
         description="Port of the VictoriaLogs Server",
     )
 
-    upload_folder: str = Field(default=os.path.join(tempfile.gettempdir(), "upload"), description="Folder for uploads")
+    upload_folder: str = Field(default=str(Path(tempfile.gettempdir()) / "upload"), description="Folder for uploads")
 
     upload_key: str = Field(default=str(uuid.uuid4()), description="Upload key for the Logs")
 

@@ -67,7 +67,7 @@ async def ws_terminal(
             while True:
                 data = await loop.run_in_executor(None, os.read, fd, 1024)
                 await websocket.send_text(data.decode(errors="ignore"))
-        except Exception:  # noqa: S110
+        except Exception:  # noqa: S110, BLE001
             pass  # PTY closed or WebSocket failed
 
     async def write_to_pty() -> None:
@@ -85,7 +85,7 @@ async def ws_terminal(
 
                 else:
                     os.write(fd, data.encode())
-        except Exception:  # noqa: S110
+        except ValueError:
             pass
 
     try:

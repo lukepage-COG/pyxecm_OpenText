@@ -14,6 +14,7 @@ import platform
 import sys
 import time
 from importlib.metadata import version
+from pathlib import Path
 
 import requests
 
@@ -335,14 +336,9 @@ class AVTS:
             list_object = json.loads(response_object.text) if response_object.text else vars(response_object)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSON. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSON. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSON; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSON; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -610,10 +606,7 @@ class AVTS:
             json_data=payload,
             headers=request_header,
             timeout=None,
-            failure_message="Failed to create repository -> '{}' ({})".format(
-                name,
-                node_id,
-            ),
+            failure_message=f"Failed to create repository -> '{name}' ({node_id})",
             show_error=False,
         )
 
@@ -917,7 +910,7 @@ class AVTS:
             json_data=payload,
             headers=request_header,
             timeout=None,
-            failure_message="Failed to create repository -> '{}'".format(name),
+            failure_message=f"Failed to create repository -> '{name}'",
             show_error=False,
         )
 
@@ -1299,7 +1292,7 @@ class AVTS:
             json_data=payload,
             headers=request_header,
             timeout=None,
-            failure_message="Failed to create repository -> '{}'".format(name),
+            failure_message=f"Failed to create repository -> '{name}'",
             show_error=False,
         )
 
@@ -1336,9 +1329,7 @@ class AVTS:
             method="GET",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to set admin_consent for repository -> '{}'".format(
-                repo_id,
-            ),
+            failure_message=f"Failed to set admin_consent for repository -> '{repo_id}'",
         )
 
     # end method definition
@@ -1370,9 +1361,7 @@ class AVTS:
             method="POST",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to start crawling repository -> '{}'!".format(
-                repo_name,
-            ),
+            failure_message=f"Failed to start crawling repository -> '{repo_name}'!",
         )
 
     # end method definition
@@ -1402,9 +1391,7 @@ class AVTS:
             method="POST",
             headers=request_header,
             timeout=None,
-            failure_message="Failed to stop crawling repository -> '{}'!".format(
-                repo_name,
-            ),
+            failure_message=f"Failed to stop crawling repository -> '{repo_name}'!",
         )
 
     # end method definition
@@ -1471,22 +1458,22 @@ class AVTS:
 
         """
 
-        if not os.path.isfile(filepath):
+        if not Path(filepath).is_file():
             return None
 
-        file_ext = os.path.splitext(filepath)[1].lower()
+        file_ext = Path(filepath).suffix.lower()
 
         if self.running_in_kubernetes_pod() and file_ext == ".pfx":
             # Return file directly as already base64 encoded
             self.logger.warning(
                 "Detected a binary pfx file in Kubernetes environment, expecting it to be already base64 encoded",
             )
-            with open(filepath, encoding="UTF-8") as file:
+            with Path(filepath).open(encoding="UTF-8") as file:
                 return file.read().strip()
 
         else:
             # Return file as base64 encoded
-            with open(filepath, "rb") as file:
+            with Path(filepath).open("rb") as file:
                 # Read the content of the file
                 file_content = file.read()
                 # Convert the bytes to a base64 string

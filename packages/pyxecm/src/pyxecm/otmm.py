@@ -12,7 +12,6 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import os
 import platform
 import sys
 import threading
@@ -22,6 +21,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from importlib.metadata import version
 from json import JSONDecodeError
+from pathlib import Path
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -186,7 +186,7 @@ class OTMM:
 
         try:
             target(*args, **kwargs)
-        except Exception:
+        except Exception:  # noqa: BLE001
             thread_name = threading.current_thread().name
             self.logger.error(
                 "Thread '%s' failed!",
@@ -269,7 +269,7 @@ class OTMM:
         except requests.exceptions.RequestException:
             self.logger.error("Request error requesting -> %s", request_url)
             return None
-        except Exception:
+        except ValueError:
             self.logger.error("Unexpected error requesting -> %s", request_url)
             return None
 
@@ -332,7 +332,7 @@ class OTMM:
         except requests.exceptions.RequestException:
             self.logger.error("Request error requesting -> %s", request_url)
             return None
-        except Exception:
+        except ValueError:
             self.logger.error("Unexpected error requesting -> %s", request_url)
             return None
 
@@ -400,7 +400,7 @@ class OTMM:
         except requests.exceptions.RequestException:
             self.logger.error("Request error requesting -> %s", request_url)
             return None
-        except Exception:
+        except ValueError:
             self.logger.error("Unexpected error requesting -> %s", request_url)
             return None
 
@@ -607,7 +607,7 @@ class OTMM:
         except requests.exceptions.RequestException:
             self.logger.error("Request error requesting -> %s", request_url)
             return None
-        except Exception:
+        except ValueError:
             self.logger.error("Unexpected error requesting -> %s", request_url)
             return None
 
@@ -868,15 +868,15 @@ class OTMM:
         request_url = download_url or self.config()["assetsUrl"] + "/" + asset_id + "/contents"
 
         # We use the Asset ID as the filename to avoid name collisions:
-        file_name = os.path.join(self._download_dir, asset_id)
+        file_name = str(Path(self._download_dir) / asset_id)
 
         success = False
 
         with asset_lock:
             try:
-                if os.path.exists(file_name):
+                if Path(file_name).exists():
                     if asset_modification_date:
-                        file_mod_time = datetime.fromtimestamp(os.path.getmtime(file_name), tz=UTC)
+                        file_mod_time = datetime.fromtimestamp(Path(file_name).stat().st_mtime, tz=UTC)
                         date_last_updated = datetime.strptime(
                             asset_modification_date,
                             "%Y-%m-%dT%H:%M:%SZ",
@@ -900,15 +900,15 @@ class OTMM:
                             asset_id,
                             file_name,
                         )
-                        os.remove(file_name)
+                        Path(file_name).unlink()
 
                 # We only download if we have no success yet.
                 # Success means the file is already there and we don't
                 # need to update it.
                 if not success:
-                    if not os.path.exists(self._download_dir):
+                    if not Path(self._download_dir).exists():
                         # Create the directory
-                        os.makedirs(self._download_dir)
+                        Path(self._download_dir).mkdir(parents=True, exist_ok=True)
 
                     self.logger.info(
                         "Downloading asset -> '%s' (%s) to -> %s...",
@@ -918,7 +918,7 @@ class OTMM:
                     )
                     response = self._session.get(request_url, stream=True)
                     response.raise_for_status()
-                    with open(file_name, "wb") as f:
+                    with Path(file_name).open("wb") as f:
                         f.writelines(response.iter_content(chunk_size=8192))
                     success = True
             # end try:
@@ -931,7 +931,7 @@ class OTMM:
                 self.logger.error(
                     "File system error while writing to file -> '%s'; error -> %s", file_name, str(os_error)
                 )
-            except Exception:
+            except Exception:  # noqa: BLE001
                 self.logger.error("Unexpected error requesting -> %s!", request_url)
         # end with asset_lock:
 
@@ -974,16 +974,16 @@ class OTMM:
 
         """
 
-        file_name = os.path.join(self._download_dir, asset_id)
+        file_name = str(Path(self._download_dir) / asset_id)
 
         try:
-            if os.path.exists(file_name):
+            if Path(file_name).exists():
                 self.logger.debug(
                     "Deleting stale download file -> '%s' for asset %s...",
                     file_name,
-                    "-> '{}' ({})".format(asset_name, asset_id) if asset_name else "-> {}".format(asset_id),
+                    f"-> '{asset_name}' ({asset_id})" if asset_name else f"-> {asset_id}",
                 )
-                os.remove(file_name)
+                Path(file_name).unlink()
                 return True
         except OSError as os_error:
             self.logger.error("File system error while deleting file -> '%s'; error -> %s", file_name, str(os_error))
@@ -1089,7 +1089,7 @@ class OTMM:
         except requests.exceptions.RequestException:
             self.logger.error("Request error requesting -> %s", request_url)
             return None
-        except Exception:
+        except ValueError:
             self.logger.error("Unexpected error requesting -> %s", request_url)
             return None
 
@@ -1289,7 +1289,7 @@ class OTMM:
         except requests.exceptions.RequestException:
             self.logger.error("Request error requesting -> %s", request_url)
             return None
-        except Exception:
+        except ValueError:
             self.logger.error("Unexpected error requesting -> %s", request_url)
             return None
 

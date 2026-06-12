@@ -10,6 +10,7 @@ import asyncio
 import logging
 import os
 from collections.abc import AsyncGenerator
+from pathlib import Path
 
 import anyio
 from opentelemetry import trace
@@ -51,7 +52,7 @@ def import_payload(
         enabled: bool | None,
         dependencies: bool | None,
     ) -> None:
-        if not os.path.isfile(filename):
+        if not Path(filename).is_file():
             return
 
         if not (filename.endswith((".yaml", ".tfvars", ".tf", ".yml.gz.b64"))):
@@ -71,7 +72,7 @@ def import_payload(
             enabled = False if isinstance(enabled, str) and enabled.lower() == "false" else bool(enabled)
 
         # read name from options section if specified, otherwise take filename
-        name = payload_options.get("name", os.path.basename(filename))
+        name = payload_options.get("name", Path(filename).name)
 
         # Get the loglevel from payloadOptions if set, otherwise use the default loglevel
         loglevel = payload_options.get("loglevel", api_settings.loglevel)
@@ -101,7 +102,7 @@ def import_payload(
             try:
                 payload_items = len(PAYLOAD_LIST.get_payload_items()) - 1
                 dependencies = [payload_items] if payload_items != -1 else []
-            except Exception:
+            except Exception:  # noqa: BLE001
                 dependencies = []
         else:
             dependencies = []
@@ -128,7 +129,7 @@ def import_payload(
         exception = "No payload or payload_dir provided"
         raise ValueError(exception)
 
-    if payload and os.path.isdir(payload) and payload_dir is None:
+    if payload and Path(payload).is_dir() and payload_dir is None:
         payload_dir = payload
 
     if payload_dir is None:
@@ -139,14 +140,14 @@ def import_payload(
             logger.debug(exc, exc_info=True)
         return
 
-    elif not os.path.isdir(payload_dir):
+    elif not Path(payload_dir).is_dir():
         return
 
-    for filename in sorted(os.listdir(payload_dir)):
+    for filename in sorted(Path(payload_dir).iterdir()):
         try:
             with tracer.start_as_current_span("import_payload") as t:
                 t.set_attribute("payload", filename)
-                import_payload_file(os.path.join(payload_dir, filename), enabled, dependencies)
+                import_payload_file(str(Path(payload_dir) / filename), enabled, dependencies)
         except PayloadImportError as exc:
             logger.error(exc)
             logger.debug(exc, exc_info=True)

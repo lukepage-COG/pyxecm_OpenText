@@ -17,6 +17,7 @@ import sys
 import time
 from http import HTTPStatus
 from importlib.metadata import version
+from pathlib import Path
 
 import requests
 
@@ -113,7 +114,7 @@ class OTKD:
 
         otkd_base_url = protocol + "://" + otkd_config["hostname"]
         if str(port) not in ["80", "443"]:
-            otkd_base_url += ":{}".format(port)
+            otkd_base_url += f":{port}"
         otkd_config["baseUrl"] = otkd_base_url
         otkd_config["restUrl"] = otkd_config["baseUrl"] + "/nifi-api"
         otkd_config["flowUrl"] = otkd_config["restUrl"] + "/flow"
@@ -239,7 +240,7 @@ class OTKD:
         request_header = {}
         request_header.update(REQUEST_FORM_HEADERS)
         if self._otkd_token:
-            request_header.update({"Authorization": "Bearer {}".format(self._otkd_token)})
+            request_header.update({"Authorization": f"Bearer {self._otkd_token}"})
 
         return request_header
 
@@ -262,7 +263,7 @@ class OTKD:
         request_header = {}
         request_header.update(REQUEST_JSON_HEADERS)
         if self._otkd_token:
-            request_header.update({"Authorization": "Bearer {}".format(self._otkd_token)})
+            request_header.update({"Authorization": f"Bearer {self._otkd_token}"})
 
         return request_header
 
@@ -287,7 +288,7 @@ class OTKD:
         request_header = {}
         request_header.update(REQUEST_UPLOAD_HEADERS)
         if self._otkd_token:
-            request_header.update({"Authorization": "Bearer {}".format(self._otkd_token)})
+            request_header.update({"Authorization": f"Bearer {self._otkd_token}"})
 
         return request_header
 
@@ -492,14 +493,9 @@ class OTKD:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -867,7 +863,7 @@ class OTKD:
         request_header = self.request_upload_header()
 
         # Upload the Template JSON file
-        with open(file_path, "rb") as pg_file:
+        with Path(file_path).open("rb") as pg_file:
             response = self.do_request(
                 url=request_url,
                 method="POST",
@@ -1305,7 +1301,7 @@ class OTKD:
             url=request_url,
             method="GET",
             headers=request_header,
-            failure_message="Failed to get controller services for process group -> '{}'".format(process_group_id),
+            failure_message=f"Failed to get controller services for process group -> '{process_group_id}'",
         )
 
         if not controller_services:
@@ -1371,9 +1367,7 @@ class OTKD:
             method="PUT",
             headers=request_header,
             json_data=json_body,
-            failure_message="Unable to set state -> '{}' for controller-services in process-group -> '{}'".format(
-                state, name
-            ),
+            failure_message=f"Unable to set state -> '{state}' for controller-services in process-group -> '{name}'",
             show_error=True,
         )
 

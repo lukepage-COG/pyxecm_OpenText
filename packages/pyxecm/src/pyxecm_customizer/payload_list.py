@@ -10,12 +10,12 @@ __maintainer__ = "Dr. Marc Diefenbruch"
 __email__ = "mdiefenb@opentext.com"
 
 import logging
-import os
 import pprint
 import threading
 import time
 import traceback
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pandas as pd
 from opentelemetry import trace
@@ -299,7 +299,7 @@ class PayloadList:
 
         for column, value in update_data.items():
             if column in self.payload_items.columns:
-                self.payload_items.at[index, column] = value  # noqa: PD008 - .loc breaks with non-scalar values (list/dict)
+                self.payload_items.at[index, column] = value  # noqa: PD008
 
         return True
 
@@ -427,7 +427,7 @@ class PayloadList:
         """
 
         if index not in self.payload_items.index:
-            exception = "Index -> {} is out of range".format(index)
+            exception = f"Index -> {index} is out of range"
             raise IndexError(exception)
 
         return self.payload_items.loc[index]
@@ -471,7 +471,7 @@ class PayloadList:
             raise ValueError(msg)
 
         if index not in self.payload_items.index:
-            exception = "Index -> {} is out of range".format(index)
+            exception = f"Index -> {index} is out of range"
             raise IndexError(exception)
 
         self.payload_items.loc[index] = value
@@ -513,7 +513,7 @@ class PayloadList:
 
         """
 
-        error_message = "Payload list has no attribute -> '{}'".format(attribute)
+        error_message = f"Payload list has no attribute -> '{attribute}'"
 
         try:
             # Prevent infinite recursion in case the object is not fully initialized
@@ -753,7 +753,7 @@ class PayloadList:
                         cprofiler.disable()
 
                     now = datetime.now(UTC)
-                    log_path = os.path.dirname(payload_item.logfile)
+                    log_path = str(Path(payload_item.logfile).parent)
                     profile_log_prefix = (
                         f"{log_path}/{payload_item['index']}_{payload_item['name']}_{now.strftime('%Y-%m-%d_%H-%M-%S')}"
                     )
@@ -764,7 +764,7 @@ class PayloadList:
                         s = io.StringIO()
                         stats = pstats.Stats(cprofiler, stream=s).sort_stats("cumtime")
                         stats.print_stats()
-                        with open(f"{profile_log_prefix}.log", "w+") as f:
+                        with Path(f"{profile_log_prefix}.log").open("w+") as f:
                             f.write(s.getvalue())
                         stats.dump_stats(filename=f"{profile_log_prefix}.cprof")
 
@@ -778,7 +778,7 @@ class PayloadList:
                         "StopOnErrorException occurred. Stopping payload processing...",
                     )
 
-                except Exception:
+                except OSError:
                     success = False
                     thread_logger.error(
                         "An exception occurred: \n%s",

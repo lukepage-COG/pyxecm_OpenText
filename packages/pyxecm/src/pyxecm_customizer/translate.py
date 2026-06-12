@@ -56,12 +56,12 @@ class Translator:
 
         translate_config["apiKey"] = api_key
         translate_config["translateUrlV2"] = "https://translation.googleapis.com/language/translate/v2"
-        translate_config["translateUrlV3"] = "https://translation.googleapis.com/v3/projects/{}:translateText".format(
-            project_key,
+        translate_config["translateUrlV3"] = (
+            f"https://translation.googleapis.com/v3/projects/{project_key}:translateText"
         )
         translate_config["project"] = project_key
-        translate_config["parent"] = "projects/{}/locations/global".format(project_key)
-        translate_config["model"] = f"nmt{':{}'.format(domain) if domain else ''}"
+        translate_config["parent"] = f"projects/{project_key}/locations/global"
+        translate_config["model"] = f"nmt{f':{domain}' if domain else ''}"
 
         self._headers = {
             "Authorization": f"Bearer {api_key}",
@@ -161,7 +161,7 @@ class Translator:
                 self.logger.error("Failed to translate text -> %s", response.content)
                 return None
 
-        except Exception as error:
+        except requests.RequestException as error:
             self.logger.error("Failed translation request; error -> %s", str(error))
 
         translated_text = response.json()["data"]["translations"][0]["translatedText"]

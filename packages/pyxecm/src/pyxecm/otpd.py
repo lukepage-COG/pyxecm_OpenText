@@ -8,12 +8,12 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import os
 import platform
 import sys
 import time
 from http import HTTPStatus
 from importlib.metadata import version
+from pathlib import Path
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -127,7 +127,7 @@ class OTPD:
         # Base URL Settings
         otpd_base_url = protocol + "://" + otpd_config["hostname"]
         if str(port) not in ["80", "443"]:
-            otpd_base_url += ":{}".format(port)
+            otpd_base_url += f":{port}"
         otpd_config["baseUrl"] = otpd_base_url
 
         # Server Manager URL Settings:
@@ -242,14 +242,9 @@ class OTPD:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -358,7 +353,7 @@ class OTPD:
 
         """
 
-        if not file_path or not os.path.isfile(file_path):
+        if not file_path or not Path(file_path).is_file():
             self.logger.error(
                 "Cannot import PowerDocs database from non-existent file -> %s",
                 file_path,
@@ -367,10 +362,10 @@ class OTPD:
 
         try:
             # Extract the filename
-            file_name = os.path.basename(file_path)
+            file_name = Path(file_path).name
 
             # Open the file safely
-            with open(file_path, "rb") as file:
+            with Path(file_path).open("rb") as file:
                 file_tuple = (file_name, file, "application/zip")
 
                 # Prepare the multipart encoder
@@ -416,7 +411,7 @@ class OTPD:
             self.logger.error("File -> '%s' not found!", file_path)
         except requests.RequestException:
             self.logger.error("HTTP request to -> '%s' failed", request_url)
-        except Exception:
+        except ValueError:
             self.logger.error("An unexpected error occurred!")
 
         return None
@@ -474,7 +469,7 @@ class OTPD:
                     self.config()["username"],
                     self.config()["password"],
                 ),
-                verify=False,  # for localhost deployments this will fail otherwise # noqa: S501
+                verify=False,  # for localhost deployments this will fail otherwise  # noqa: S501
                 timeout=None,
             )
             if response.ok:
@@ -491,7 +486,7 @@ class OTPD:
                 message = "Failed to update PowerDocs setting -> '{}' with value -> '{}'{}; error -> {}".format(
                     setting_name,
                     setting_value,
-                    " (tenant -> '{}')".format(tenant_name) if tenant_name else "",
+                    f" (tenant -> '{tenant_name}')" if tenant_name else "",
                     response.text,
                 )
                 if retries > REQUEST_MAX_RETRIES:
