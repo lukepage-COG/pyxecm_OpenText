@@ -294,7 +294,7 @@ class Data:
 
         """
 
-        error_message = "Object -> '{}' has no attribute -> '{}'".format(type(self).__name__, attr)
+        error_message = f"Object -> '{type(self).__name__}' has no attribute -> '{attr}'"
 
         if self._df is None:
             raise AttributeError(error_message + " (internal data frame is None)")
@@ -1405,7 +1405,7 @@ class Data:
                     path_parts = relative_path.split(os.sep)
 
                     # Create a dictionary with the path parts and file details
-                    entry = {"level {}".format(i): part for i, part in enumerate(path_parts[:-1], start=1)}
+                    entry = {f"level {i}": part for i, part in enumerate(path_parts[:-1], start=1)}
 
                     entry.update(
                         {
@@ -1427,7 +1427,7 @@ class Data:
             # Ensure all entries have the same number of levels:
             for entry in data:
                 for i in range(1, max_levels + 1):
-                    entry.setdefault("level {}".format(i), "")
+                    entry.setdefault(f"level {i}", "")
 
             # Convert to data frame again to make sure all columns are consistent:
             self._df = pd.DataFrame(data)

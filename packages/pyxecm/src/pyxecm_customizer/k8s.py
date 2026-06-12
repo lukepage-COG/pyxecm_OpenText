@@ -646,7 +646,7 @@ class K8s:
 
         try:
             response = self.list_config_maps(
-                field_selector="metadata.name={}".format(config_map_name),
+                field_selector=f"metadata.name={config_map_name}",
             )
         except ApiException:
             self.logger.error(
@@ -1093,12 +1093,12 @@ class K8s:
         body = [
             {
                 "op": "replace",
-                "path": "/spec/rules/{}/http/paths/{}/backend/service/name".format(rule_index, path_index),
+                "path": f"/spec/rules/{rule_index}/http/paths/{path_index}/backend/service/name",
                 "value": service_name,
             },
             {
                 "op": "replace",
-                "path": "/spec/rules/{}/http/paths/{}/backend/service/port/number".format(rule_index, path_index),
+                "path": f"/spec/rules/{rule_index}/http/paths/{path_index}/backend/service/port/number",
                 "value": service_port,
             },
         ]

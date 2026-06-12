@@ -127,7 +127,7 @@ class OTPD:
         # Base URL Settings
         otpd_base_url = protocol + "://" + otpd_config["hostname"]
         if str(port) not in ["80", "443"]:
-            otpd_base_url += ":{}".format(port)
+            otpd_base_url += f":{port}"
         otpd_config["baseUrl"] = otpd_base_url
 
         # Server Manager URL Settings:
@@ -242,14 +242,9 @@ class OTPD:
             dict_object = json.loads(response_object.text)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSon. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSon. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSon; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSon; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -491,7 +486,7 @@ class OTPD:
                 message = "Failed to update PowerDocs setting -> '{}' with value -> '{}'{}; error -> {}".format(
                     setting_name,
                     setting_value,
-                    " (tenant -> '{}')".format(tenant_name) if tenant_name else "",
+                    f" (tenant -> '{tenant_name}')" if tenant_name else "",
                     response.text,
                 )
                 if retries > REQUEST_MAX_RETRIES:

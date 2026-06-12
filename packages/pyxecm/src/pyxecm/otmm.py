@@ -981,7 +981,7 @@ class OTMM:
                 self.logger.debug(
                     "Deleting stale download file -> '%s' for asset %s...",
                     file_name,
-                    "-> '{}' ({})".format(asset_name, asset_id) if asset_name else "-> {}".format(asset_id),
+                    f"-> '{asset_name}' ({asset_id})" if asset_name else f"-> {asset_id}",
                 )
                 os.remove(file_name)
                 return True

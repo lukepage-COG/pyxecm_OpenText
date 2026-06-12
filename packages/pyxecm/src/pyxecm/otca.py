@@ -236,16 +236,16 @@ class OTCA:
                 self.authenticate_user()
 
             if content_system == "xecm":
-                request_header["Authorization"] = "Bearer {}".format(self._chat_token_hashed)
+                request_header["Authorization"] = f"Bearer {self._chat_token_hashed}"
             if content_system == "otcm":
-                request_header["Authorization"] = "Bearer {}".format(self._chat_token)
+                request_header["Authorization"] = f"Bearer {self._chat_token}"
             elif content_system in {"xecm-direct", "otcm-direct"}:
                 request_header["otcsticket"] = self._chat_token
 
         elif service_type == "service":
             if self._embed_token is None:
                 self.authenticate_service()
-            request_header["Authorization"] = "Bearer {}".format(self._embed_token)
+            request_header["Authorization"] = f"Bearer {self._embed_token}"
 
         return request_header
 
@@ -457,14 +457,9 @@ class OTCA:
             list_object = json.loads(response_object.text) if response_object.text else vars(response_object)
         except json.JSONDecodeError as exception:
             if additional_error_message:
-                message = "Cannot decode response as JSON. {}; error -> {}".format(
-                    additional_error_message,
-                    exception,
-                )
+                message = f"Cannot decode response as JSON. {additional_error_message}; error -> {exception}"
             else:
-                message = "Cannot decode response as JSON; error -> {}".format(
-                    exception,
-                )
+                message = f"Cannot decode response as JSON; error -> {exception}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -809,7 +804,7 @@ class OTCA:
             method="GET",
             headers=request_header,
             params={"thread_id": thread_id},
-            failure_message="Failed to retrieve thread -> '{}'".format(thread_id),
+            failure_message=f"Failed to retrieve thread -> '{thread_id}'",
         )
 
     # end method definition
@@ -897,7 +892,7 @@ class OTCA:
             headers=request_header,
             json_data=search_data,
             timeout=None,
-            failure_message="Failed to to do a semantic search with query -> '{}'".format(query),
+            failure_message=f"Failed to to do a semantic search with query -> '{query}'",
         )
 
     # end method definition
@@ -1345,7 +1340,7 @@ class OTCA:
             url=request_url,
             method="GET",
             headers=request_header,
-            failure_message="Failed to get MCP server -> '{}'".format(server_id),
+            failure_message=f"Failed to get MCP server -> '{server_id}'",
         )
 
     # end method definition
@@ -1373,7 +1368,7 @@ class OTCA:
             method="PUT",
             headers=request_header,
             json_data=server_config,
-            failure_message="Failed to update MCP server -> '{}'".format(server_id),
+            failure_message=f"Failed to update MCP server -> '{server_id}'",
         )
 
     # end method definition
@@ -1398,7 +1393,7 @@ class OTCA:
             url=request_url,
             method="DELETE",
             headers=request_header,
-            failure_message="Failed to delete MCP server -> '{}'".format(server_id),
+            failure_message=f"Failed to delete MCP server -> '{server_id}'",
         )
 
     # end method definition

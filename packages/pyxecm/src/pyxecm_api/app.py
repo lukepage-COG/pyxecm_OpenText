@@ -169,7 +169,7 @@ def run_api() -> None:
         customizer_start_time = datetime.now(UTC).strftime(
             "%Y-%m-%d_%H-%M",
         )
-        api_settings.logfile = "customizer_{}.log".format(customizer_start_time)
+        api_settings.logfile = f"customizer_{customizer_start_time}.log"
 
     # Configure Logging for uvicorn
     log_config = uvicorn.config.LOGGING_CONFIG

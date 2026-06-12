@@ -90,7 +90,7 @@ class XML:
             node_dict = {}
 
             if element.attrib and include_attributes:
-                node_dict.update({"@{}".format(k): v for k, v in element.attrib.items()})
+                node_dict.update({f"@{k}": v for k, v in element.attrib.items()})
 
             if children:
                 child_dict = {}
@@ -672,11 +672,11 @@ class XML:
         """
 
         if is_simple:
-            pattern = r"&quot;{}&quot;:[^,]*".format(setting_key) if is_escaped else r'"{}":[^,]*'.format(setting_key)
+            pattern = rf"&quot;{setting_key}&quot;:[^,]*" if is_escaped else rf'"{setting_key}":[^,]*'
         elif is_escaped:
-            pattern = r"&quot;{}&quot;:&quot;.*&quot;".format(setting_key)
+            pattern = rf"&quot;{setting_key}&quot;:&quot;.*&quot;"
         else:
-            pattern = r'"{}":"([^"]*)"'.format(setting_key)
+            pattern = rf'"{setting_key}":"([^"]*)"'
 
         match = re.search(pattern, element_text)
         if match:
@@ -729,11 +729,11 @@ class XML:
         """
 
         if is_simple:
-            pattern = r"&quot;{}&quot;:[^,]*".format(setting_key) if is_escaped else r'"{}":[^,]*'.format(setting_key)
+            pattern = rf"&quot;{setting_key}&quot;:[^,]*" if is_escaped else rf'"{setting_key}":[^,]*'
         elif is_escaped:
-            pattern = r"&quot;{}&quot;:&quot;.*&quot;".format(setting_key)
+            pattern = rf"&quot;{setting_key}&quot;:&quot;.*&quot;"
         else:
-            pattern = r'"{}":"([^"]*)"'.format(setting_key)
+            pattern = rf'"{setting_key}":"([^"]*)"'
 
         new_text = re.sub(pattern, new_value, element_text)
 
