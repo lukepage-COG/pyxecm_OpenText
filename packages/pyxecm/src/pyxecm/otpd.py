@@ -8,12 +8,12 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import os
 import platform
 import sys
 import time
 from http import HTTPStatus
 from importlib.metadata import version
+from pathlib import Path
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -353,7 +353,7 @@ class OTPD:
 
         """
 
-        if not file_path or not os.path.isfile(file_path):
+        if not file_path or not Path(file_path).is_file():
             self.logger.error(
                 "Cannot import PowerDocs database from non-existent file -> %s",
                 file_path,
@@ -362,10 +362,10 @@ class OTPD:
 
         try:
             # Extract the filename
-            file_name = os.path.basename(file_path)
+            file_name = Path(file_path).name
 
             # Open the file safely
-            with open(file_path, "rb") as file:
+            with Path(file_path).open("rb") as file:
                 file_tuple = (file_name, file, "application/zip")
 
                 # Prepare the multipart encoder

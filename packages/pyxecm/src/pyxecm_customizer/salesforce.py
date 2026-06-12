@@ -11,9 +11,9 @@ __email__ = "mdiefenb@opentext.com"
 
 import json
 import logging
-import os
 import time
 from http import HTTPStatus
+from pathlib import Path
 
 import requests
 
@@ -700,7 +700,7 @@ class Salesforce:
         query = "SELECT {} FROM {}".format(", ".join(result_fields), object_type)
         if search_field and search_value:
             query += f" WHERE {search_field}='{search_value}'"
-        query += f" LIMIT {str(limit)}"
+        query += f" LIMIT {limit!s}"
 
         request_header = self.request_header()
         request_url = self.config()["queryUrl"] + f"?q={query}"
@@ -1399,13 +1399,13 @@ class Salesforce:
             self.authenticate()
 
         # Check if the photo file exists
-        if not os.path.isfile(photo_path):
+        if not Path(photo_path).is_file():
             self.logger.error("Photo file -> %s not found!", photo_path)
             return None
 
         try:
             # Read the photo file as binary data
-            with open(photo_path, "rb") as image_file:
+            with Path(photo_path).open("rb") as image_file:
                 photo_data = image_file.read()
         except OSError:
             # Handle any errors that occurred while reading the photo file

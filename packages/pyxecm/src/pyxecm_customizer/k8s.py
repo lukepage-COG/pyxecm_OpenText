@@ -17,6 +17,7 @@ import logging
 import os
 import time
 from datetime import UTC, datetime
+from pathlib import Path
 
 from kubernetes import client, config
 from kubernetes.client import (
@@ -97,7 +98,7 @@ class K8s:
         if kubeconfig_file is None:
             kubeconfig_file = os.getenv(
                 "KUBECONFIG",
-                os.path.expanduser("~/.kube/config"),
+                str(Path("~/.kube/config").expanduser()),
             )
 
         if not configured:
@@ -116,8 +117,7 @@ class K8s:
         if namespace == "default":
             # Read current namespace
             try:
-                with open(
-                    "/var/run/secrets/kubernetes.io/serviceaccount/namespace",
+                with Path("/var/run/secrets/kubernetes.io/serviceaccount/namespace").open(
                     encoding="utf-8",
                 ) as namespace_file:
                     self._namespace = namespace_file.read()

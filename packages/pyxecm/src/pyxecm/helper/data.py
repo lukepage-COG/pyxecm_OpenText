@@ -20,6 +20,7 @@ import os
 import re
 import threading
 from io import StringIO
+from pathlib import Path
 
 import pandas as pd
 import requests
@@ -742,7 +743,7 @@ class Data:
             if not json_path.endswith(suffix):
                 json_path += suffix
 
-        if not os.path.exists(json_path):
+        if not Path(json_path).exists():
             self.logger.error(
                 "Missing JSON file - you have not specified a valid path -> '%s'.",
                 json_path,
@@ -868,8 +869,8 @@ class Data:
         # Save data to JSON file
         try:
             if self._df is not None:
-                if not os.path.exists(os.path.dirname(json_path)):
-                    os.makedirs(os.path.dirname(json_path), exist_ok=True)
+                if not Path(json_path).parent.exists():
+                    Path(json_path).parent.mkdir(parents=True, exist_ok=True)
 
                 # index parameter is only allowed if orient has one of the following values:
                 if orient in ("columns", "index", "table", "split"):
@@ -980,7 +981,7 @@ class Data:
 
         """
 
-        if xlsx_path is not None and os.path.exists(xlsx_path):
+        if xlsx_path is not None and Path(xlsx_path).exists():
             # Load data from Excel file
             try:
                 df = pd.read_excel(
@@ -1085,9 +1086,9 @@ class Data:
 
         try:
             # Check if the directory exists
-            directory = os.path.dirname(excel_path)
-            if directory and not os.path.exists(directory):
-                os.makedirs(directory)
+            directory = str(Path(excel_path).parent)
+            if directory and not Path(directory).exists():
+                Path(directory).mkdir(parents=True, exist_ok=True)
 
             # Validate columns if provided
             if columns:
@@ -1206,7 +1207,7 @@ class Data:
             # Convert bytes to a string using utf-8 and create a file-like object
             csv_file = StringIO(response.content.decode(encoding))
 
-        elif os.path.exists(csv_path):
+        elif Path(csv_path).exists():
             self.logger.debug("Using local CSV file -> '%s'.", csv_path)
             csv_file = csv_path
 
@@ -1318,7 +1319,7 @@ class Data:
             # Convert bytes to a string using utf-8 and create a file-like object
             xml_file = StringIO(response.content.decode(encoding))
 
-        elif os.path.exists(xml_path):
+        elif Path(xml_path).exists():
             self.logger.debug("Using local XML file -> '%s'.", xml_path)
             xml_file = xml_path
 
@@ -1386,7 +1387,7 @@ class Data:
 
         try:
             # Check if the provided path is a directory
-            if not os.path.isdir(path_to_root):
+            if not Path(path_to_root).is_dir():
                 self.logger.error(
                     "The provided path -> '%s' is not a valid directory.",
                     path_to_root,
@@ -1399,10 +1400,10 @@ class Data:
             # Walk through the directory
             for root, _, files in os.walk(path_to_root):
                 for file in files:
-                    file_path = os.path.join(root, file)
-                    file_size = os.path.getsize(file_path)
-                    relative_path = os.path.relpath(file_path, path_to_root)
-                    path_parts = relative_path.split(os.sep)
+                    file_path = str(Path(root) / file)
+                    file_size = Path(file_path).stat().st_size
+                    relative_path = str(Path(file_path).relative_to(path_to_root))
+                    path_parts = Path(relative_path).parts
 
                     # Create a dictionary with the path parts and file details
                     entry = {f"level {i}": part for i, part in enumerate(path_parts[:-1], start=1)}
@@ -1483,7 +1484,7 @@ class Data:
 
         try:
             # Check if the provided path is a directory
-            if not os.path.isdir(path_to_root):
+            if not Path(path_to_root).is_dir():
                 self.logger.error(
                     "The provided path -> '%s' is not a valid directory.",
                     path_to_root,
@@ -1493,9 +1494,9 @@ class Data:
             # Walk through the directory
             for root, _, files in os.walk(path_to_root):
                 for file in files:
-                    file_path = os.path.join(root, file)
-                    file_size = os.path.getsize(file_path)
-                    file_name = os.path.basename(file_path)
+                    file_path = str(Path(root) / file)
+                    file_size = Path(file_path).stat().st_size
+                    file_name = Path(file_path).name
 
                     if file_name in xml_files:
                         self.logger.info(

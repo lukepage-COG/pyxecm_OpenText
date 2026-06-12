@@ -9,10 +9,10 @@ __email__ = "mdiefenb@opentext.com"
 import base64
 import json
 import logging
-import os
 import platform
 import sys
 from importlib.metadata import version
+from pathlib import Path
 
 import requests
 from suds import WebFault
@@ -526,11 +526,11 @@ class OTAC:
         """
 
         # Check if the photo file exists
-        if not os.path.isfile(cert_path):
+        if not Path(cert_path).is_file():
             self.logger.error("Certificate file -> '%s' not found!", cert_path)
             return None
 
-        with open(file=cert_path, encoding="utf-8") as cert_file:
+        with Path(file=cert_path).open(encoding="utf-8") as cert_file:
             cert_content = cert_file.read().strip()
 
         # Check that we have the pem certificate file - this is what OTAC expects.

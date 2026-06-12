@@ -65,6 +65,7 @@ import tempfile
 import time
 import traceback
 from http import HTTPStatus
+from pathlib import Path
 from types import TracebackType
 
 default_logger = logging.getLogger("pyxecm_customizer.browser_automation")
@@ -159,11 +160,11 @@ class BrowserAutomation:
         """
 
         if not download_directory:
-            download_directory = os.path.join(
-                tempfile.gettempdir(),
-                "browser_automations",
-                self.sanitize_filename(filename=automation_name),
-                "downloads",
+            download_directory = str(
+                Path(tempfile.gettempdir())
+                / "browser_automations"
+                / self.sanitize_filename(filename=automation_name)
+                / "downloads"
             )
 
         if logger != default_logger:
@@ -186,15 +187,12 @@ class BrowserAutomation:
 
         self.wait_until = wait_until or DEFAULT_WAIT_UNTIL_STRATEGY
 
-        self.screenshot_directory = os.path.join(
-            tempfile.gettempdir(),
-            "browser_automations",
-            self.screenshot_names,
-            "screenshots",
+        self.screenshot_directory = str(
+            Path(tempfile.gettempdir()) / "browser_automations" / self.screenshot_names / "screenshots"
         )
         self.logger.debug("Creating screenshot directory... -> %s", self.screenshot_directory)
-        if self.take_screenshots and not os.path.exists(self.screenshot_directory):
-            os.makedirs(self.screenshot_directory)
+        if self.take_screenshots and not Path(self.screenshot_directory).exists():
+            Path(self.screenshot_directory).mkdir(parents=True, exist_ok=True)
 
         if os.getenv("HTTP_PROXY"):
             self.proxy = {
@@ -1212,7 +1210,7 @@ class BrowserAutomation:
                     self.page.keyboard.press("Enter")
                 success = True
         except PlaywrightError as e:
-            message = f"Cannot set page element selected by -> '{selector}' ({selector_type}) to value -> '{value}'; error -> {str(e)}"
+            message = f"Cannot set page element selected by -> '{selector}' ({selector_type}) to value -> '{value}'; error -> {e!s}"
             if show_error:
                 self.logger.error(message)
             else:
@@ -1278,7 +1276,7 @@ class BrowserAutomation:
 
             download = download_info.value
             filename = download.suggested_filename
-            save_path = os.path.join(self.download_directory, filename)
+            save_path = str(Path(self.download_directory) / filename)
             download.save_as(save_path)
         except Exception as e:
             self.logger.error("Download failed; error -> %s", str(e))

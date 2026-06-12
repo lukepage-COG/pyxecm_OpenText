@@ -7,6 +7,7 @@ import logging
 import os
 from datetime import UTC, datetime
 from http import HTTPStatus
+from pathlib import Path
 from typing import Annotated, Literal
 
 import anyio
@@ -73,9 +74,9 @@ async def create_payload_item(
         dependencies = prepare_dependencies(dependencies)
 
     # Set name if not provided
-    name = name or os.path.splitext(os.path.basename(upload_file.filename))[0]
-    file_extension = os.path.splitext(upload_file.filename)[1]
-    file_name = os.path.join(settings.temp_dir, f"{name}{file_extension}")
+    name = name or Path(upload_file.filename).stem
+    file_extension = Path(upload_file.filename).suffix
+    file_name = str(Path(settings.temp_dir) / f"{name}{file_extension}")
 
     # Read upload file asynchronously and write to disk using anyio
     content = await upload_file.read()
@@ -90,7 +91,7 @@ async def create_payload_item(
             name=name,
             filename=file_name,
             status="planned",
-            logfile=os.path.join(settings.temp_dir, f"{name}.log"),
+            logfile=str(Path(settings.temp_dir) / f"{name}.log"),
             dependencies=dependencies or [],
             enabled=enabled,
             loglevel=loglevel,
@@ -260,10 +261,7 @@ async def update_payload_item(
 
             now = datetime.now(UTC)
             old_log_name = (
-                os.path.dirname(data.logfile)
-                + "/"
-                + os.path.splitext(os.path.basename(data.logfile))[0]
-                + now.strftime("_%Y-%m-%d_%H-%M-%S.log")
+                str(Path(data.logfile).parent) + "/" + Path(data.logfile).stem + now.strftime("_%Y-%m-%d_%H-%M-%S.log")
             )
 
             await anyio.to_thread.run_sync(os.rename, data.logfile, old_log_name)
@@ -437,9 +435,9 @@ async def download_payload_content(
         content = gzip.decompress(content)
 
     download_name = (
-        os.path.basename(payload.filename.removesuffix(".gz.b64"))
+        Path(payload.filename.removesuffix(".gz.b64").name)
         if payload.filename.endswith(".gz.b64")
-        else os.path.basename(payload.filename)
+        else Path(payload.filename).name
     )
 
     return Response(
@@ -478,7 +476,7 @@ async def download_payload_logfile(
         content,
         media_type="application/octet-stream",
         headers={
-            "Content-Disposition": f'attachment; filename="{os.path.basename(filename)}"',
+            "Content-Disposition": f'attachment; filename="{Path(filename).name}"',
         },
     )
 

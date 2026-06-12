@@ -10,12 +10,12 @@ __maintainer__ = "Dr. Marc Diefenbruch"
 __email__ = "mdiefenb@opentext.com"
 
 import logging
-import os
 import pprint
 import threading
 import time
 import traceback
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pandas as pd
 from opentelemetry import trace
@@ -753,7 +753,7 @@ class PayloadList:
                         cprofiler.disable()
 
                     now = datetime.now(UTC)
-                    log_path = os.path.dirname(payload_item.logfile)
+                    log_path = str(Path(payload_item.logfile).parent)
                     profile_log_prefix = (
                         f"{log_path}/{payload_item['index']}_{payload_item['name']}_{now.strftime('%Y-%m-%d_%H-%M-%S')}"
                     )
@@ -764,7 +764,7 @@ class PayloadList:
                         s = io.StringIO()
                         stats = pstats.Stats(cprofiler, stream=s).sort_stats("cumtime")
                         stats.print_stats()
-                        with open(f"{profile_log_prefix}.log", "w+") as f:
+                        with Path(f"{profile_log_prefix}.log").open("w+") as f:
                             f.write(s.getvalue())
                         stats.dump_stats(filename=f"{profile_log_prefix}.cprof")
 
