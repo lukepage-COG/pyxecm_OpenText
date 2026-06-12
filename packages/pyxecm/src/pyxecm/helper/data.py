@@ -3142,7 +3142,7 @@ class Data:
 
     # end method definition
 
-    def set_value(self, column: str, value, condition: pd.Series | None = None) -> None:  # noqa: ANN001
+    def set_value(self, column: str, value: object, condition: pd.Series | None = None) -> None:
         """Set the value in the data frame based on a condition.
 
         Args:
@@ -3265,7 +3265,7 @@ class Data:
 
         if group_chars is not None:
 
-            def process_grouping(x) -> str | None:  # noqa: ANN001
+            def process_grouping(x: str) -> str | None:
                 if pd.isna(x):
                     return None
                 # Split into groups

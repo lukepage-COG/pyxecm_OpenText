@@ -115,7 +115,7 @@ class HTTP:
         wait_on_status: list | None = None,
         show_error: bool = True,
         stream: bool = False,
-    ) -> dict | None:
+    ) -> requests.Response | None:
         """Issues an http request to a given URL.
 
         Args:
